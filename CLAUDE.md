@@ -4,7 +4,61 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
-**MortalSoul**은 Unity 6 (버전 6000.3.10f1)으로 개발 중인 2D 모바일 게임입니다. 플랫폼은 Android이며, Universal Render Pipeline(URP) 기반의 2D 렌더링을 사용합니다.
+**Mortal Soul**은 Unity 6 (버전 6000.3.10f1)으로 개발 중인 **핵앤슬래시 2D 횡스크롤 로그라이크** 게임입니다. 플랫폼은 Android이며, Universal Render Pipeline(URP) 기반의 2D 렌더링을 사용합니다. 포트폴리오용 데모버전 수준의 분량을 목표로 합니다.
+
+**레퍼런스 게임**: 스컬, 세피리아, 슬레이더스파이어
+
+### 게임 진행 흐름
+
+1. **타이틀 화면** — 단순 UI. 첫 실행 시 Addressables로 리소스 다운로드, 화면 터치로 게임 시작
+2. **마을 (인게임)** — 캐릭터/맵 스폰, 조이스틱 조작. 타이틀 로딩 후 곧바로 마을에서 시작
+3. **던전 입장** — 마을에서 던전 입구와 상호작용하여 입장. 랜덤 던전 생성 및 진행
+4. **마을 복귀** — 던전 클리어/실패 시 마을로 복귀
+
+### 던전 시스템
+
+- **랜덤 생성 구조** (슬레이더스파이어 방식): 루트가 존재하며, 입구에서 최종보스 방까지 진행
+- **분기 선택**: 현재 구역에서 다음 구역으로 이동 시 팝업 UI로 선택지 제공
+  ```
+           [전투]
+  [시작] ─<        >─ [이벤트] → [보스]
+           [상점]
+  ```
+- 플레이어가 전략적으로 다음 구역을 선택
+
+### 캐릭터 및 무기 시스템
+
+**무기 종류**: 대검, 한손검, 단도, 활, 지팡이(스태프) — 총 5종
+
+**장비 슬롯**:
+- **메인 슬롯**: 현재 장착 중인 무기 1개. 고유 스킬 2개 + 기본공격 제공
+- **서브 슬롯**: 보조무기 1개. 패시브 효과로 추가 능력치 부여 (등급 비례)
+- 던전 진행 중 획득하며, 2슬롯이 꽉 찼을 때 장착/교체/버리기 가능 (되돌리기 없음)
+
+**무기 스위칭**:
+- B→A 무기로 스위칭 시 A 무기의 고유 '스위칭 효과' 발동 (예: 단검 → n초간 공속 증가)
+- 스위칭 효과는 등급에 비례
+- 캐릭터를 뒤덮는 이펙트로 잠깐 가린 뒤 스킨 교체
+
+**조작 키**: 기본공격(무기별 고유), 대시, 점프, 스킬1, 스킬2 (장착 무기의 고유 스킬)
+
+### 애니메이션
+
+- **Spine 애니메이션** 사용. Spine 애니메이션 이벤트를 적극 활용 (구현 시기에 상세 논의)
+
+### 아키텍처 개편 사항
+
+**BattleSystemComponent (BSC) 도입**:
+- 기존 SSC(SkillSystemComponent)를 확장하여 BSC가 대체
+- BSC 내부에 축소된 SSC가 존재하는 구조: `BSC { SSC(스킬 전담), TakeDamage, StatusEffect, ... }`
+- SSC는 오로지 스킬 관리만 담당
+
+**Main 패턴 (싱글톤 제거)**:
+- 기존: 모든 매니저가 개별 싱글톤
+- 개편: `Main`이라는 단일 모노싱글톤 클래스가 모든 매니저를 보유하여 중앙집중 관리
+- 각 매니저는 일반 클래스로 구현 (싱글톤 제거)
+- 기존 모노싱글톤을 사용하던 매니저에는 의존성 주입으로 필요 오브젝트 주입
+- 이점: 진입점 통일, 초기화 순서 제어
 
 ## Work Flow
 ** 반드시 이 규칙을 따라 작업을 수행합니다. **
@@ -42,6 +96,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `com.unity.2d.tilemap` v1.0.0 — 타일맵 기반 레벨
 - `com.unity.2d.spriteshape` v13.0.0 — 유기적인 지형 표현
 
+**Spine 애니메이션**: 캐릭터 애니메이션에 Spine 사용. Spine 이벤트 시스템 활용
+
 **Visual Scripting**: `com.unity.visualscripting` v1.9.9 포함 (코드와 병행 사용 가능)
 
 ### 스크립트 작성 지침
@@ -49,6 +105,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 새 스크립트는 기능에 따라 `Assets/02. Scripts/` 하위 폴더(예: `Player/`, `Enemy/`, `UI/`, `Manager/`)를 만들어 정리합니다.
 - 데이터 중심 설계를 위해 설정값은 `ScriptableObject`로 분리하여 `03. Resources/ScriptableObjects/`에 배치합니다.
 - 입력 처리는 반드시 `InputSystem_Actions.inputactions`의 액션을 통해서만 받습니다(레거시 Input 사용 금지).
+- **Main 패턴**: 매니저 접근은 `Main.Instance.XXXManager`를 통해 수행합니다. 개별 매니저에 싱글톤을 사용하지 않습니다.
+- **BSC 구조**: 캐릭터의 전투 관련 로직은 `BattleSystemComponent`를 통해 처리합니다. 스킬 관리는 BSC 내부의 `SkillSystemComponent`가 담당합니다.
 
 ## 레퍼런스 스크립트 (이전 프로젝트)
 
