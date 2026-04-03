@@ -180,22 +180,26 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "38d920f1509df71e",
+  "active": "3aba16942f8b763f",
   "lastOpenFiles": [
+    "04. Assets/02. Scripts/Utils/TransformExtensions.cs.meta",
+    "04. Assets/02. Scripts/Utils/TransformExtensions.cs",
+    "04. Assets/02. Scripts/Utils/Settings.cs.meta",
+    "04. Assets/02. Scripts/Utils/Settings.cs",
+    "04. Assets/02. Scripts/Utils/MathUtils.cs.meta",
+    "04. Assets/02. Scripts/Utils/MathUtils.cs",
+    "04. Assets/02. Scripts/Utils/DataUtils.cs.meta",
+    "04. Assets/02. Scripts/Utils/DataUtils.cs",
+    "04. Assets/02. Scripts/Utils/CanvasBillboard.cs.meta",
+    "04. Assets/02. Scripts/Utils/CanvasBillboard.cs",
+    "04. Assets/02. Scripts/Utils/BattleUtils.cs.meta",
     "03. Archive/테스트 작업요청.md",
-    "03. Archive/테스트 작업요청.md.tmp.3128.1775222334708",
     "01. WorkReq/테스트 작업요청.md",
     "02. InProgress/테스트 작업요청.md",
     "CLAUDE.md",
     "04. Assets/메모.md",
     "05. Template/무제.md",
     "무제.md",
-    "05. Template",
-    "04. Assets/Image",
-    "04. Assets",
-    "03. Archive",
-    "02. InProgress",
-    "환영합니다!.md",
-    "01. WorkReq"
+    "환영합니다!.md"
   ]
 }
