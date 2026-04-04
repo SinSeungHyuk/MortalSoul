@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class AddressableEditor
 {
-    [MenuItem("Assets/Addressables/±×·ì¿¡ µî·Ï")]
+    [MenuItem("Assets/Addressables/AddResource")]
     private static void RegisterToAddressables()
     {
         foreach (var obj in Selection.objects)
@@ -18,7 +18,7 @@ public class AddressableEditor
         }
     }
 
-    [MenuItem("Assets/Addressables/±×·ì¿¡ µî·Ï + ºôµå")]
+    [MenuItem("Assets/Addressables/AddResourceAndBuild")]
     private static void RegisterAndBuild()
     {
         foreach (var obj in Selection.objects)
@@ -30,7 +30,6 @@ public class AddressableEditor
         }
 
         AddressableAssetSettings.BuildPlayerContent();
-        Debug.Log("[Addressable] ºôµå ¿Ï·á");
     }
 
     private static void Register(string assetPath)
@@ -38,7 +37,7 @@ public class AddressableEditor
         var settings = AddressableAssetSettingsDefaultObject.Settings;
         if (settings == null)
         {
-            Debug.LogError("[Addressable] AddressableAssetSettings¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("[Addressable] AddressableAssetSettingsï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             return;
         }
 
@@ -49,7 +48,7 @@ public class AddressableEditor
         if (group == null)
         {
             group = settings.CreateGroup(folderName, false, false, true, null);
-            Debug.Log($"[Addressable] ±×·ì »ý¼º: {folderName}");
+            Debug.Log($"[Addressable] ï¿½×·ï¿½ ï¿½ï¿½ï¿½ï¿½: {folderName}");
         }
 
         string guid = AssetDatabase.AssetPathToGUID(assetPath);
@@ -59,6 +58,6 @@ public class AddressableEditor
         settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, entry, true);
         AssetDatabase.SaveAssets();
 
-        Debug.Log($"[Addressable] '{assetName}' ¡æ ±×·ì '{folderName}' µî·Ï ¿Ï·á");
+        Debug.Log($"[Addressable] '{assetName}' ï¿½ï¿½ ï¿½×·ï¿½ '{folderName}' ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½");
     }
 }
