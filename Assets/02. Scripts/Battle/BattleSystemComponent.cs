@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MS.Field;
 using System.Collections.Generic;
 
@@ -20,11 +21,11 @@ namespace MS.Battle
             SSC.InitSSC(_owner, _attributeSet);
         }
 
-        public bool UseSkill(string _key)
+        public async UniTask UseSkill(string _key)
         {
             // 상태이상 체크 (기절 등으로 스킬 사용 불가 시 차단)
             // 현재는 항상 통과 — 추후 구현
-            return SSC.UseSkill(_key);
+            await SSC.UseSkill(_key);
         }
 
         public void ApplyStatusEffect(string _key, StatusEffect _effect)
