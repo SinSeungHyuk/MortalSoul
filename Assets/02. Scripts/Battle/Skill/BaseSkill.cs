@@ -1,4 +1,8 @@
+using Cysharp.Threading.Tasks;
+using MS.Data;
 using MS.Field;
+using MS.Utils;
+using System.Threading;
 using UnityEngine;
 
 namespace MS.Battle
@@ -8,36 +12,57 @@ namespace MS.Battle
         protected SkillSystemComponent ownerSSC;
         protected FieldCharacter owner;
         protected BaseAttributeSet attributeSet;
+        protected SkillSettingData skillData;
 
-        private float cooltime;
+        private float curCooltime;
         private float elapsedCooltime;
 
-        public bool IsCooltime => elapsedCooltime < cooltime;
-        public float CooltimeRatio => cooltime > 0 ? Mathf.Clamp01(elapsedCooltime / cooltime) : 1f;
+        public bool IsCooltime => elapsedCooltime > 0;
+        public float CooltimeRatio => curCooltime > 0 ? elapsedCooltime / curCooltime : 0f;
+        public bool IsPostUseCooltime => skillData.IsPostUseCooltime;
 
 
-        public void InitSkill(SkillSystemComponent _ownerSSC, float _cooltime)
+        public virtual void InitSkill(SkillSystemComponent _ownerSSC, SkillSettingData _skillData)
         {
             ownerSSC = _ownerSSC;
             owner = _ownerSSC.Owner;
             attributeSet = _ownerSSC.AttributeSet;
-            cooltime = _cooltime;
-            elapsedCooltime = _cooltime;
+            skillData = _skillData;
+
+            curCooltime = _skillData.Cooltime;
+            elapsedCooltime = 0;
         }
 
-        public abstract void ActivateSkill();
+        public abstract UniTask ActivateSkill(CancellationToken token);
 
         public virtual bool CanActivateSkill() => true;
 
         public void SetCooltime()
         {
-            elapsedCooltime = 0f;
+            float cooltime = skillData.Cooltime;
+            float cooltimeAccel = attributeSet.GetStatValueByType(EStatType.CooltimeAccel);
+            if (cooltimeAccel > 0)
+            {
+                float cooltimePercent = MathUtils.BattleScaling(cooltimeAccel);
+                cooltime = MathUtils.DecreaseByPercent(cooltime, cooltimePercent);
+            }
+
+            curCooltime = cooltime;
+            elapsedCooltime = cooltime;
+        }
+
+        public async UniTask SetSkillCasting(CancellationToken token)
+        {
+            // TODO: FieldCharacter에 Animator/Spine 애니메이션 인터페이스 연결 시 활성화
+            // owner.Animator.SetBool(Settings.AnimHashCasting, true);
+            await UniTask.WaitForSeconds(skillData.GetValue(ESkillValueType.Casting), cancellationToken: token);
+            // owner.Animator.SetBool(Settings.AnimHashCasting, false);
         }
 
         public void OnUpdate(float _deltaTime)
         {
-            if (elapsedCooltime < cooltime)
-                elapsedCooltime += _deltaTime;
+            if (elapsedCooltime > 0)
+                elapsedCooltime -= _deltaTime;
         }
     }
 }
