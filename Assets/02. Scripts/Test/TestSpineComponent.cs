@@ -39,6 +39,9 @@ public class TestSpineComponent : MonoBehaviour
 
     private void Start()
     {
+        // 기본 스킨 조합 적용
+        ApplyDefaultSkin();
+
         // 기본 믹스 타임 설정
         skeletonAnimation.AnimationState.Data.DefaultMix = defaultMix;
 
@@ -47,6 +50,20 @@ public class TestSpineComponent : MonoBehaviour
 
         // 시작 시 Idle 재생
         PlayIdle();
+    }
+
+    private void ApplyDefaultSkin()
+    {
+        var skeleton = skeletonAnimation.Skeleton;
+        var combinedSkin = new Skin("default");
+
+        combinedSkin.AddSkin(skeleton.Data.FindSkin("BODY/base"));
+        combinedSkin.AddSkin(skeleton.Data.FindSkin("HEAD/headA"));
+        combinedSkin.AddSkin(skeleton.Data.FindSkin("HAIR/hairA_a"));
+        combinedSkin.AddSkin(skeleton.Data.FindSkin("RIGHTHAND/Sword_TwoHand_Common1"));
+
+        skeleton.SetSkin(combinedSkin);
+        skeleton.SetSlotsToSetupPose();
     }
 
     private void OnDestroy()
@@ -191,6 +208,24 @@ public class TestSpineComponent : MonoBehaviour
         isActioning = false;
         isMoving = false;
         PlayIdle();
+    }
+
+    /// <summary> 점프 (Wait4 재생) </summary>
+    public void OnJump()
+    {
+        if (isDead) return;
+
+        isActioning = false;
+        PlayAnimation("Wait4", true);
+    }
+
+    /// <summary> 대시 (Run3 재생) </summary>
+    public void OnDash()
+    {
+        if (isDead) return;
+
+        isActioning = false;
+        PlayAnimation("Run3", true);
     }
 
     // ===== MoveComponent 연동 메서드 =====

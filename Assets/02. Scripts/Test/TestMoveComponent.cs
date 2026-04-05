@@ -222,7 +222,7 @@ public class TestMoveComponent : MonoBehaviour
     private void OnJumpEnter(int prevState, object[] param)
     {
         rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
-        spineComponent.OnStopMove(); // Wait1 재생
+        spineComponent.OnJump();
     }
 
     private void OnJumpUpdate(float dt)
@@ -267,7 +267,7 @@ public class TestMoveComponent : MonoBehaviour
         rb.gravityScale = 0f;
         rb.linearVelocity = new Vector2(rb.linearVelocityX, 0f);
 
-        spineComponent.OnStopMove(); // Wait1 재생
+        spineComponent.OnDash();
     }
 
     private void OnDashUpdate(float dt)
@@ -284,7 +284,13 @@ public class TestMoveComponent : MonoBehaviour
         {
             targetVelocityX = 0f;
 
-            if (Mathf.Abs(moveInput.x) > 0.1f)
+            // 공중 대시 종료 → 수직 낙하 (수평 속도 제거)
+            if (!isGrounded)
+            {
+                rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
+                stateMachine.TransitState((int)EMoveState.Jump);
+            }
+            else if (Mathf.Abs(moveInput.x) > 0.1f)
                 stateMachine.TransitState((int)EMoveState.Move);
             else
                 stateMachine.TransitState((int)EMoveState.Idle);

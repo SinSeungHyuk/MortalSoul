@@ -11,8 +11,8 @@ namespace MS.Utils
         public static float GravityScale = 3f;
         public static float FallMultiplier = 2.5f;
         public static float MaxFallSpeed = -20f;
-        public static float DashSpeed = 18f;
-        public static float DashDuration = 0.15f;
+        public static float DashSpeed = 30f;
+        public static float DashDuration = 0.3f;
         public static float DashCooldown = 0.8f;
         public static float AirControlMultiplier = 0.8f;
         #endregion
