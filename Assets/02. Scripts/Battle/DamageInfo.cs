@@ -22,5 +22,6 @@ namespace MS.Battle
         public float Damage;
         public bool IsCritic;
         public float KnockbackForce;
+        public BaseSkill SourceSkill;
     }
 }
