@@ -48,7 +48,12 @@ namespace MS.Battle
                 return;
             }
 
-            SkillSettingData skillData = Main.Instance.DataManager.SettingData.SkillSettingDict[_skillKey];
+            if (!Main.Instance.DataManager.SettingData.SkillSettingDict.TryGetValue(_skillKey, out SkillSettingData skillData))
+            {
+                Debug.LogError($"[SSC] SkillSettingData를 찾을 수 없음: {_skillKey}");
+                return;
+            }
+
             skillInstance.InitSkill(this, skillData);
             ownedSkillDict.Add(_skillKey, skillInstance);
             OnSkillAdded?.Invoke(_skillKey, skillInstance);
@@ -98,7 +103,8 @@ namespace MS.Battle
 
         public void CancelAllSkills()
         {
-            foreach (var cts in runningSkillDict.Values)
+            var ctsList = new List<CancellationTokenSource>(runningSkillDict.Values);
+            foreach (var cts in ctsList)
                 cts.Cancel();
         }
 
@@ -122,6 +128,9 @@ namespace MS.Battle
         public void ClearSSC()
         {
             CancelAllSkills();
+            foreach (var cts in runningSkillDict.Values)
+                cts.Dispose();
+            runningSkillDict.Clear();
             ownedSkillDict.Clear();
         }
 

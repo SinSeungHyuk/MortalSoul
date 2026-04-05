@@ -26,6 +26,8 @@ namespace MS.Utils
         /// </summary>
         public static bool IsSuccess(float percent)
         {
+            if (percent <= 0f) return false;
+            if (percent >= 100f) return true;
             float chance = Random.Range(0f, 100f);
             return percent >= chance;
         }
