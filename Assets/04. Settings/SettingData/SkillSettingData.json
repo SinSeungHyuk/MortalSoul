@@ -1,0 +1,15 @@
+{
+  "TestOneHandAttack": {
+    "OwnerType": "Player",
+    "IconKey": "",
+    "CategoryKeyList": [],
+    "AttributeType": 0,
+    "Cooltime": 1.0,
+    "IsPostUseCooltime": false,
+    "SkillValueDict": {
+      "0": 10.0,
+      "1": 1.5,
+      "2": 3.0
+    }
+  }
+}
