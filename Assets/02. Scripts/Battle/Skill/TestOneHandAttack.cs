@@ -1,11 +1,13 @@
+using Cysharp.Threading.Tasks;
 using MS.Field;
+using System.Threading;
 using UnityEngine;
 
 namespace MS.Battle
 {
     public class TestOneHandAttack : BaseSkill
     {
-        public override void ActivateSkill()
+        public override async UniTask ActivateSkill(CancellationToken token)
         {
             Debug.Log($"[TestOneHandAttack] 스킬 사용! ATK: {attributeSet.AttackPower.Value}");
 
@@ -13,6 +15,8 @@ namespace MS.Battle
             {
                 player.SpineComponent.OnAttackOneHand();
             }
+
+            await UniTask.CompletedTask;
         }
     }
 }

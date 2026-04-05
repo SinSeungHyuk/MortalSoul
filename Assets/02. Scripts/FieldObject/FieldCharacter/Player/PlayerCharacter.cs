@@ -27,8 +27,8 @@ namespace MS.Field
             BSC = new BattleSystemComponent();
             BSC.InitBSC(this, attrSet);
 
-            // 테스트 스킬 등록 (쿨타임 1초)
-            BSC.SSC.GiveSkill("TestOneHandAttack", new TestOneHandAttack(), 1f);
+            // 테스트 스킬 등록
+            BSC.SSC.GiveSkill("TestOneHandAttack");
         }
 
         protected override void Update()
