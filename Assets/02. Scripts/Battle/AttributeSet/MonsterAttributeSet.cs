@@ -4,7 +4,7 @@ namespace MS.Battle
     {
         public Stat AttackRange { get; private set; }
 
-        protected override void RegisterAdditionalStats()
+        protected override void InitAttributeSet()
         {
             AttackRange = new Stat(0);
 

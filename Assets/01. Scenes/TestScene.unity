@@ -798,6 +798,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4597921852059231406, guid: b59766034e0977446afd9b6e55037ec1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 635419624}
+    - targetCorrespondingSourceObject: {fileID: 4597921852059231406, guid: b59766034e0977446afd9b6e55037ec1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 635419639}
   m_SourcePrefab: {fileID: 100100000, guid: b59766034e0977446afd9b6e55037ec1, type: 3}
 --- !u!1 &635419623 stripped
 GameObject:
@@ -841,6 +844,18 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2875858622314935805, guid: b59766034e0977446afd9b6e55037ec1, type: 3}
   m_PrefabInstance: {fileID: 635419622}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &635419639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635419623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21a37adc483c9d24a83fb5f62aa6ddc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MS.Field.PlayerCharacter
 --- !u!1 &695262307
 GameObject:
   m_ObjectHideFlags: 0
@@ -993,7 +1008,7 @@ GameObject:
   - component: {fileID: 1011895779}
   - component: {fileID: 1011895778}
   m_Layer: 5
-  m_Name: Button (2)
+  m_Name: btnDash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1305,6 +1320,7 @@ GameObject:
   - component: {fileID: 1526612370}
   - component: {fileID: 1526612369}
   - component: {fileID: 1526612368}
+  - component: {fileID: 1526612372}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1391,6 +1407,7 @@ RectTransform:
   - {fileID: 1011895777}
   - {fileID: 1906854204}
   - {fileID: 150361108}
+  - {fileID: 1663661958}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1398,6 +1415,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1526612372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1526612367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 074ee6a6894834148a498759cea918ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestUIController
 --- !u!1 &1603354821
 GameObject:
   m_ObjectHideFlags: 0
@@ -1537,6 +1566,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1603354821}
   m_CullTransparentMesh: 1
+--- !u!1 &1663661957
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1663661958}
+  m_Layer: 5
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1663661958
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1663661957}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1526612371}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -97.02936, y: -114.27905}
+  m_SizeDelta: {x: 294.0587, y: 328.5581}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1702740456
 GameObject:
   m_ObjectHideFlags: 0
@@ -1550,7 +1614,7 @@ GameObject:
   - component: {fileID: 1702740459}
   - component: {fileID: 1702740458}
   m_Layer: 5
-  m_Name: Button
+  m_Name: btnJump
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1671,7 +1735,7 @@ GameObject:
   - component: {fileID: 1906854206}
   - component: {fileID: 1906854205}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: btnAttack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

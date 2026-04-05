@@ -34,7 +34,7 @@ namespace MS.Battle
         public float HealthRatio => MaxHealth.Value > 0 ? Health / MaxHealth.Value : 0f;
 
 
-        public void InitAttributeSet(Dictionary<EStatType, float> _baseValues)
+        public void InitBaseAttributeSet(Dictionary<EStatType, float> _baseValues)
         {
             statDict.Clear();
 
@@ -50,7 +50,7 @@ namespace MS.Battle
             statDict.Add(EStatType.MoveSpeed, MoveSpeed);
 
             // 2. 서브클래스 추가 스탯 등록
-            RegisterAdditionalStats();
+            InitAttributeSet();
 
             // 3. baseValues로 초기값 설정
             foreach (var pair in _baseValues)
@@ -65,7 +65,7 @@ namespace MS.Battle
             Health = MaxHealth.Value;
         }
 
-        protected abstract void RegisterAdditionalStats();
+        protected abstract void InitAttributeSet();
 
         public Stat GetStatByType(EStatType _type)
         {

@@ -395,12 +395,6 @@ public class TestMoveComponent : MonoBehaviour
             jumpRequested = true;
     }
 
-    public void OnAttack(InputValue value)
-    {
-        if (value.isPressed)
-            attackRequested = true;
-    }
-
     public void OnSprint(InputValue value)
     {
         if (value.isPressed)

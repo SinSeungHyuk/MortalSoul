@@ -12,7 +12,7 @@ namespace MS.Battle
         public Stat KnockbackMultiple { get; private set; }
         public Stat CoinMultiple { get; private set; }
 
-        protected override void RegisterAdditionalStats()
+        protected override void InitAttributeSet()
         {
             CriticChance = new Stat(0);
             CriticMultiple = new Stat(0);

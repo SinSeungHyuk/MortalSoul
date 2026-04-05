@@ -26,6 +26,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   ```
 - 플레이어가 전략적으로 다음 구역을 선택
 
+### 경험치 / 레벨업 시스템
+
+- **경험치/레벨은 공용**: 소울이 바뀌어도 경험치와 레벨은 하나. 캐릭터(육체)는 한 명이고 영혼만 교체되는 컨셉
+- **레벨업 보상 타이밍**: 전투 중 레벨업해도 즉시 보상 없음. **방 클리어 후 휴무 상태**에 진입하면 그때 레벨업 보상 선택지 팝업
+- **다회 레벨업**: 방 안에서 여러 번 레벨업 시 보상 횟수를 누적 → 휴무 진입 시 연속으로 선택지 팝업 (1회 선택 → 다음 팝업 → ... 반복)
+- **보상 방식**: 랜덤 스탯 선택지 (이전 프로젝트와 유사한 방식)
+- **레벨업 스탯 저장**: `Stat.baseValue`는 소울 고유 전용. 레벨업 보상은 `bonusStat`에 "levelup" 키(Flat)로 누적 합산값을 덮어써서 관리. 별도 `Dictionary<EStatType, float> levelUpGrowth`로 누적량 추적
+- **던전 진행 흐름**: 던전 입장 → 전투맵 이동 → 몬스터 전투(경험치 상승/레벨업) → 전멸 → 맵 클리어/휴무 → 레벨업 보상 선택 → 다음 지역 이동
+
 ### 소울 시스템
 
 **핵심 컨셉**: 무기 교체가 아닌 **소울(Soul) 교체**가 핵심 메카닉. 스컬과 유사한 캐릭터 교체 방식. 소울을 교체하면 캐릭터의 외형(Spine 스킨), 무기, 스킬이 모두 변경된다.
@@ -46,6 +55,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 스위칭 효과는 등급에 비례하며, 단순 스탯 버프를 넘어 다양한 효과 지향 (예: "스위칭 후 첫 3회 공격 반드시 치명타" 등)
 - 캐릭터를 뒤덮는 이펙트로 잠깐 가린 뒤 Spine 스킨 교체로 외형 변경
 
+**소울별 스탯**: 각 소울은 고유한 BaseStat을 가짐. 소울 교체 시 baseValue만 새 소울 값으로 swap하고, bonusStat(레벨업/버프)은 유지.
+- **체력 보존**: 소울별로 마지막 체력(lastHealth)을 저장. 교체 시 해당 소울의 마지막 체력 상태로 복원
+- **스탯 계층**: baseValue(소울 고유, 교체됨) + bonusStat "levelup" 키(레벨업 누적, 유지) + 기타 bonusStat(버프, 유지)
+
 **소울 구성 요소**: 각 소울은 다음을 포함
 - 부위별 Spine 스킨 키값 (head, body, weapon 등)
 - 무기 타입 (대검, 한손검, 단도, 활, 지팡이 중 1개 — 소울에 종속)
@@ -53,6 +66,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 고유 스킬 2개 (소울에 종속)
 - 스위칭 효과 (소울 고유)
 - 서브슬롯 패시브 효과 (소울 고유)
+- 고유 BaseStat (소울별 고유 기본 스탯값)
 
 **조작 키**: 기본공격(소울별 고유), 대시, 점프, 스킬1, 스킬2 (장착 소울의 고유 스킬), 소울 스위칭
 
@@ -163,8 +177,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `MonsterSettingData.cs` | 몬스터 설정. 6개 스탯 + 약점속성 + 스킬리스트(발동확률, 애니메이션키, 지속시간) |
 | `StageSettingData.cs` | 스테이지 웨이브 설정. 웨이브별 몬스터 스폰 정보, 보스키, 스폰간격, 아이템드롭확률 |
 | `SkillSettingData.cs` | 스킬 설정. OwnerType, 속성, 쿨타임, `ESkillValueType`(Default/Damage/Knockback/Move/Buff/Duration/Casting) |
-| `ItemSettingData.cs` | 아이템 설정. `EItemType`(Coin, RedCrystal, GreenCrystal, BlueCrystal, BossChest, Artifact) |
-| `ArtifactSettingData.cs` | 아티팩트 설정. 트리거(OnAcquire/OnSkillUse/OnItemAcquire/OnHit) + 조건 + 액션 |
+| `ItemSettingData.cs` | 아이템 설정. `EItemType`(Coin, RedCrystal, GreenCrystal, BlueCrystal, BossChest) |
 | `StatRewardSettingData.cs` | 스탯 보상 설정(스탯타입, 등급, 보상값) |
 | `SoundSettingData.cs` | 사운드 설정(볼륨 범위, 루프) |
 
@@ -197,13 +210,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `FieldMap.cs` | 맵 관리. 랜덤 스폰포인트(NavMesh), 층 활성화 애니메이션(DOTween) |
 | `FieldCharacter.cs` | 캐릭터 기반. `SkillSystemComponent(SSC)` 보유, 넉백/스턴 추상 메서드 |
 | `MonsterCharacter.cs` | 4상태 상태머신(Idle→Trace→Attack→Dead). NavMeshAgent 경로탐색, 확률적 스킬 선택, 보스 변환(250%HP/200%ATK) |
-| `PlayerCharacter.cs` | PlayerController + PlayerLevelSystem + PlayerArtifact 조합. SSC로 스킬 관리 |
+| `PlayerCharacter.cs` | PlayerController + PlayerLevelSystem 조합. SSC로 스킬 관리 |
 | `PlayerController.cs` | InputSystem → CharacterController 이동. NavMesh 유효성 검증 |
 | `PlayerLevelSystem.cs` | 레벨/경험치/골드. `MSReactProp`으로 UI 자동 갱신 |
-| `PlayerArtifact.cs` | 아티팩트 트리거 시스템. 이벤트 구독 방식(OnSkillUse, OnHit 등) |
 | `MovementLockState.cs` | Animator StateMachineBehaviour. 특정 애니메이션 중 이동 잠금 |
 
-**필드 아이템**: `FieldObject` → `FieldItem(abstract)` → `ResourceItem`(코인/크리스탈 버프) / `InteractionItem`(보스상자→스킬보상, 아티팩트)
+**필드 아이템**: `FieldObject` → `FieldItem(abstract)` → `ResourceItem`(코인/크리스탈 버프) / `InteractionItem`(보스상자→스킬보상)
 
 **스킬 오브젝트**: `SkillObject(abstract)` → `ProjectileObject`(투사체, 직선/호밍) / `AreaObject`(범위, 간격 공격, 딜레이) / `IndicatorObject`(범위 표시기)
 
@@ -245,7 +257,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `TitlePanel.cs` | 타이틀. Addressables CCD 패치 체크/다운로드 |
 | `SkillRewardPopup.cs` | 스킬 보상 선택 팝업 (timeScale=0) |
 | `StatRewardPopup.cs` | 스탯 보상 선택 팝업 (등급별 색상) |
-| `ArtifactPopup.cs` | 아티팩트 정보 팝업 |
 | `StageEndPopup.cs` | 스테이지 결과 팝업 (클리어/실패, 스킬DPS 통계) |
 | `DamageText.cs` | 플로팅 데미지 텍스트. 크리티컬 강조, 풀 반환 |
 | `SkillSlot.cs` | 스킬 슬롯. 쿨타임 오버레이 |
@@ -274,7 +285,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `BattleUtils.cs` | 전투 계산. 방어력/회피/약점속성/스킬데미지/크리티컬/랜덤위치(NavMesh) |
 | `TransformExtensions.cs` | Transform 확장. `FindChildDeep`, `FindChildComponentDeep<T>`, `GetOrAddComponent<T>` |
 | `DataUtils.cs` | 스킬 설명 포맷팅. StringTable에서 가져와 `{key}` 치환 + 금색 컬러 |
-| `ArtifactUtil.cs` | 아티팩트 조건/액션 전략 패턴. 델리게이트 딕셔너리로 확장 가능 |
 | `CanvasBillboard.cs` | Canvas를 항상 카메라 방향으로 회전 |
 
 ### 핵심 디자인 패턴 정리
@@ -284,11 +294,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **MVVM**: `BattlePanelViewModel` + `MSReactProp` → UI 자동 갱신
 4. **오브젝트 풀링**: `ObjectPoolManager` — 몬스터, 이펙트, 투사체, 아이템 전부 풀링
 5. **데이터 드리븐**: JSON 설정 → `DataManager` → 각 시스템
-6. **전략 패턴**: `ArtifactUtil` 델리게이트 딕셔너리
-7. **옵저버 패턴**: `MSReactProp`, `Stat.OnValueChanged`, SSC 이벤트
-8. **템플릿 메서드**: `BaseSkill.ActivateSkill()` 추상 → 각 스킬 구현
-9. **리플렉션 팩토리**: `SSC.GiveSkill()` — 문자열 키로 스킬 인스턴스 생성
-10. **GPU Instancing**: `FieldItemManager` — Matrix4x4[1023] 배치 렌더링
+6. **옵저버 패턴**: `MSReactProp`, `Stat.OnValueChanged`, SSC 이벤트
+7. **템플릿 메서드**: `BaseSkill.ActivateSkill()` 추상 → 각 스킬 구현
+8. **리플렉션 팩토리**: `SSC.GiveSkill()` — 문자열 키로 스킬 인스턴스 생성
+9. **GPU Instancing**: `FieldItemManager` — Matrix4x4[1023] 배치 렌더링
 
 ### 외부 의존성
 
