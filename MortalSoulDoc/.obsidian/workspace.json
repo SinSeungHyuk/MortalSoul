@@ -11,10 +11,14 @@
             "id": "1467da91669d4305",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "01. WorkReq/무제.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "새 탭"
+              "title": "무제"
             }
           }
         ]
@@ -182,6 +186,7 @@
   },
   "active": "1467da91669d4305",
   "lastOpenFiles": [
+    "01. WorkReq/무제.md",
     "02. InProgress/Main 및 매니저 채우기.md",
     "03. Archive/Main 및 매니저 채우기.md",
     "01. WorkReq/Main 및 매니저 채우기.md",

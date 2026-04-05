@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetSettings
-  m_DefaultGroup: 06d86854603849949a3ac37e05563ed4
+  m_DefaultGroup: 954459331ab747e41a0247dd86774e59
   m_currentHash:
     serializedVersion: 2
-    Hash: b34642ac4da6081b74e799560b58b2c6
+    Hash: ddb09f343eaea303c74c5178b469708f
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -64,6 +64,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fc7f55c1b9617ee4c87a80628c300918, type: 2}
   - {fileID: 11400000, guid: ebec4cec02b9a174494fc5f9f535f6c1, type: 2}
   - {fileID: 11400000, guid: 35a2e780ea7e87c43936517f8c2dbac8, type: 2}
+  - {fileID: 11400000, guid: 980859f30989bbf48bec743155142f17, type: 2}
   - {fileID: 11400000, guid: 5fb0a0a3b13adfb478d238864c371e23, type: 2}
   m_BuildSettings:
     m_LogResourceManagerExceptions: 1

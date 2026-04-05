@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MS.Field;
 using MS.Utils;
 using UnityEngine;
@@ -25,7 +26,7 @@ public class TestUIController : MonoBehaviour
         btnAttack.onClick.AddListener(() =>
         {
             if (playerCharacter != null)
-                playerCharacter.BSC.UseSkill("TestOneHandAttack");
+                playerCharacter.BSC.UseSkill("TestOneHandAttack").Forget();
         });
     }
 }

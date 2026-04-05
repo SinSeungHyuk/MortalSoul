@@ -54,9 +54,7 @@ namespace MS.Battle
         public async UniTask SetSkillCasting(CancellationToken token)
         {
             // TODO: FieldCharacter에 Animator/Spine 애니메이션 인터페이스 연결 시 활성화
-            // owner.Animator.SetBool(Settings.AnimHashCasting, true);
             await UniTask.WaitForSeconds(skillData.GetValue(ESkillValueType.Casting), cancellationToken: token);
-            // owner.Animator.SetBool(Settings.AnimHashCasting, false);
         }
 
         public void OnUpdate(float _deltaTime)

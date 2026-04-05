@@ -35,9 +35,5 @@ namespace MS.Utils
         public static Color32 Critical = new Color32(255, 102, 2, 255); // ��Ȳ
         public static Color32 Magnet = new Color32(255, 191, 0, 255); // Ȳ��
         #endregion
-
-        #region ANIMATOR HASH
-        public static readonly int AnimHashCasting = Animator.StringToHash("Casting");
-        #endregion
     }
 }
