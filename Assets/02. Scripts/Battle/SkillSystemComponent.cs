@@ -1,6 +1,11 @@
+using Core;
+using Cysharp.Threading.Tasks;
+using MS.Data;
 using MS.Field;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using UnityEngine;
 
 namespace MS.Battle
 {
@@ -10,6 +15,7 @@ namespace MS.Battle
         public BaseAttributeSet AttributeSet { get; private set; }
 
         private Dictionary<string, BaseSkill> ownedSkillDict;
+        private Dictionary<string, CancellationTokenSource> runningSkillDict;
 
         public event Action<string, BaseSkill> OnSkillAdded;
         public event Action<string> OnSkillUsed;
@@ -20,33 +26,85 @@ namespace MS.Battle
             Owner = _owner;
             AttributeSet = _attributeSet;
             ownedSkillDict = new Dictionary<string, BaseSkill>();
+            runningSkillDict = new Dictionary<string, CancellationTokenSource>();
         }
 
-        public void GiveSkill(string _key, BaseSkill _skill, float _cooltime)
+        public void GiveSkill(string _skillKey)
         {
-            if (ownedSkillDict.ContainsKey(_key))
+            if (ownedSkillDict.ContainsKey(_skillKey))
                 return;
 
-            _skill.InitSkill(this, _cooltime);
-            ownedSkillDict.Add(_key, _skill);
-            OnSkillAdded?.Invoke(_key, _skill);
+            Type skillType = Type.GetType("MS.Battle." + _skillKey);
+            if (skillType == null)
+            {
+                Debug.LogError($"[SSC] 스킬 타입을 찾을 수 없음: MS.Battle.{_skillKey}");
+                return;
+            }
+
+            BaseSkill skillInstance = Activator.CreateInstance(skillType) as BaseSkill;
+            if (skillInstance == null)
+            {
+                Debug.LogError($"[SSC] 스킬 인스턴스 생성 실패: {_skillKey}");
+                return;
+            }
+
+            SkillSettingData skillData = Main.Instance.DataManager.SettingData.SkillSettingDict[_skillKey];
+            skillInstance.InitSkill(this, skillData);
+            ownedSkillDict.Add(_skillKey, skillInstance);
+            OnSkillAdded?.Invoke(_skillKey, skillInstance);
         }
 
-        public bool UseSkill(string _key)
+        public async UniTask UseSkill(string _skillKey)
         {
-            if (!ownedSkillDict.TryGetValue(_key, out BaseSkill skill))
-                return false;
+            if (!ownedSkillDict.TryGetValue(_skillKey, out BaseSkill skillToUse)) return;
+            if (skillToUse.IsCooltime) return;
+            if (!skillToUse.CanActivateSkill()) return;
+            if (runningSkillDict.ContainsKey(_skillKey)) return;
 
-            if (skill.IsCooltime)
-                return false;
+            CancellationTokenSource cts = new CancellationTokenSource();
+            runningSkillDict[_skillKey] = cts;
 
-            if (!skill.CanActivateSkill())
-                return false;
+            try
+            {
+                if (!skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
+                await skillToUse.ActivateSkill(cts.Token);
+                OnSkillUsed?.Invoke(_skillKey);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log($"[SSC] {_skillKey} 스킬 캔슬");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[SSC] {_skillKey} 스킬 사용 중 에러: {e.Message}");
+            }
+            finally
+            {
+                if (skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
 
-            skill.ActivateSkill();
-            skill.SetCooltime();
-            OnSkillUsed?.Invoke(_key);
-            return true;
+                if (runningSkillDict.ContainsKey(_skillKey))
+                {
+                    runningSkillDict.Remove(_skillKey);
+                    cts.Dispose();
+                }
+            }
+        }
+
+        public void CancelSkill(string _skillKey)
+        {
+            if (runningSkillDict.TryGetValue(_skillKey, out CancellationTokenSource cts))
+                cts.Cancel();
+        }
+
+        public void CancelAllSkills()
+        {
+            foreach (var cts in runningSkillDict.Values)
+                cts.Cancel();
+        }
+
+        public bool IsRunningSkill(string _skillKey)
+        {
+            return runningSkillDict.ContainsKey(_skillKey);
         }
 
         public bool IsCooltime(string _key)
@@ -63,6 +121,7 @@ namespace MS.Battle
 
         public void ClearSSC()
         {
+            CancelAllSkills();
             ownedSkillDict.Clear();
         }
 
