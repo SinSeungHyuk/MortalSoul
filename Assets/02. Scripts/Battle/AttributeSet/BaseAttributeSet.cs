@@ -6,6 +6,7 @@ namespace MS.Battle
 {
     public abstract class BaseAttributeSet
     {
+                            // cur, max
         public event Action<float, float> OnHealthChanged;
 
         protected Dictionary<EStatType, Stat> statDict = new Dictionary<EStatType, Stat>();

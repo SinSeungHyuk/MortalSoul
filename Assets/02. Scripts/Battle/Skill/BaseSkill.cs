@@ -22,7 +22,7 @@ namespace MS.Battle
             owner = _ownerSSC.Owner;
             attributeSet = _ownerSSC.AttributeSet;
             cooltime = _cooltime;
-            elapsedCooltime = _cooltime; // 초기: 쿨타임 완료 상태 (즉시 사용 가능)
+            elapsedCooltime = _cooltime;
         }
 
         public abstract void ActivateSkill();

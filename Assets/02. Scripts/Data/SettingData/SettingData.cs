@@ -14,7 +14,7 @@ namespace MS.Data
         public Dictionary<string, SkillSettingData> SkillSettingDict { get; private set; }
         public Dictionary<string, SoundSettingData> SoundSettingDict { get; private set; }
 
-        public async UniTask LoadAllAsync()
+        public async UniTask LoadAllSettingDataAsync()
         {
             try
             {
@@ -29,8 +29,6 @@ namespace MS.Data
 
                 TextAsset soundJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("SoundSettingData");
                 SoundSettingDict = JsonConvert.DeserializeObject<Dictionary<string, SoundSettingData>>(soundJson.text);
-
-                Debug.Log("[SettingData] 모든 세팅 데이터 로드 완료");
             }
             catch (Exception e)
             {

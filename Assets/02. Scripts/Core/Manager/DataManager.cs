@@ -12,7 +12,7 @@ namespace Core
             SettingData = new SettingData();
         }
 
-        public void CreateGameData()
+        public void InitGameData()
         {
             GameData = new GameData();
         }

@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 06d86854603849949a3ac37e05563ed4
   m_currentHash:
     serializedVersion: 2
-    Hash: edeb5fcb05c797a0a7f3b0b825577358
+    Hash: b34642ac4da6081b74e799560b58b2c6
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -55,7 +55,7 @@ MonoBehaviour:
     m_Id: ac3d6c7c0b7f1954e9f1393b5761848c
   m_RemoteCatalogLoadPath:
     m_Id: 
-  m_ContentStateBuildPathProfileVariableName: 
+  m_ContentStateBuildPathProfileVariableName: <default settings path>
   m_CustomContentStateBuildPath: 
   m_ContentStateBuildPath: 
   m_BuildAddressablesWithPlayerBuild: 0
@@ -81,7 +81,7 @@ MonoBehaviour:
       - m_Id: 70be0e9a0b346154b8de6a9f5ae30d0a
         m_Value: 'https://SinSeungHyuk.github.io/MortalSoulResource/[BuildTarget]'
       - m_Id: 7621c00117fe7724ca6e81607eab484f
-        m_Value: 'C:/Users/gazzz/Desktop/work/MortalSoulResource/[BuildTarget]'
+        m_Value: 'C:\Users\syjsh\UnityProjects\MortalSoulResource/[BuildTarget]'
       - m_Id: ac3d6c7c0b7f1954e9f1393b5761848c
         m_Value: 'ServerData/[BuildTarget]'
     m_ProfileEntryNames:

@@ -5,13 +5,8 @@ namespace MS.Field
 {
     public abstract class FieldCharacter : FieldObject
     {
-        public BattleSystemComponent BSC { get; private set; }
+        public BattleSystemComponent BSC { get; protected set; }
 
-        protected void InitBSC(BaseAttributeSet _attributeSet)
-        {
-            BSC = new BattleSystemComponent();
-            BSC.InitBSC(this, _attributeSet);
-        }
 
         virtual protected void Awake()
         {

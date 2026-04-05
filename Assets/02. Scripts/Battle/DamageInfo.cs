@@ -1,3 +1,5 @@
+using MS.Field;
+
 namespace MS.Battle
 {
     [System.Flags]
@@ -14,8 +16,8 @@ namespace MS.Battle
 
     public struct DamageInfo
     {
-        public object Attacker;
-        public object Target;
+        public FieldCharacter Attacker;
+        public FieldCharacter Target;
         public EDamageAttributeType AttributeType;
         public float Damage;
         public bool IsCritic;

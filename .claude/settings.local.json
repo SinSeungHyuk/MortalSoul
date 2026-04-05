@@ -4,7 +4,11 @@
       "Bash(xargs wc:*)",
       "Bash(python3 -c ':*)",
       "Bash(node -e ':*)",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(ls \"c:/Users/syjsh/UnityProjects/MortalSoul/Assets/05. ExternalAssets/Shinabro/MiniFantasyCharacters/\"*.png)",
+      "Bash(git -C \"c:/Users/syjsh/UnityProjects/MortalSoul\" log --oneline -10)",
+      "Bash(grep \"\\\\.cs$\")",
+      "Bash(grep -v \"\\\\.meta$\")"
     ]
   }
 }

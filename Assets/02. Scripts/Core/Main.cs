@@ -20,7 +20,12 @@ namespace Core
             AddressableManager = new AddressableManager();
             UIManager = new UIManager();
             SoundManager = new SoundManager();
+            
+            Transform poolContainer = new GameObject("ObjectPool").transform;
+            poolContainer.SetParent(transform);
+
             ObjectPoolManager = new ObjectPoolManager();
+            ObjectPoolManager.InitObjectPoolManager(poolContainer);
             PlayerManager = new PlayerManager();
             MonsterManager = new MonsterManager();
         }

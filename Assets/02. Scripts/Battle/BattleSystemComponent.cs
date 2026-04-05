@@ -48,7 +48,7 @@ namespace MS.Battle
 
         private void UpdateStatusEffects(float _deltaTime)
         {
-            List<string> expiredKeys = null;
+            var removeEffectKeyList = new List<string>();
 
             foreach (var pair in statusEffectDict)
             {
@@ -57,16 +57,12 @@ namespace MS.Battle
                 if (pair.Value.IsFinished)
                 {
                     pair.Value.End();
-                    expiredKeys ??= new List<string>();
-                    expiredKeys.Add(pair.Key);
+                    removeEffectKeyList.Add(pair.Key);
                 }
             }
 
-            if (expiredKeys != null)
-            {
-                foreach (var key in expiredKeys)
-                    statusEffectDict.Remove(key);
-            }
+            foreach (var key in removeEffectKeyList)
+                statusEffectDict.Remove(key);
         }
     }
 }

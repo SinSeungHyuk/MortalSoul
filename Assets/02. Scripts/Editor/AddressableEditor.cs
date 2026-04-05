@@ -57,7 +57,5 @@ public class AddressableEditor
 
         settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, entry, true);
         AssetDatabase.SaveAssets();
-
-        Debug.Log($"[Addressable] '{assetName}' �� �׷� '{folderName}' ��� �Ϸ�");
     }
 }
