@@ -19,6 +19,7 @@ namespace Core
             DataManager = new DataManager();
             AddressableManager = new AddressableManager();
             UIManager = new UIManager();
+            UIManager.InitUIManager(transform);
             SoundManager = new SoundManager();
             
             Transform poolContainer = new GameObject("ObjectPool").transform;
