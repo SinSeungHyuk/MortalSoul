@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FX
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: FX
-  m_GUID: 3c6a0721fac48974ab5dc04fb29ddfb3
+  m_GUID: 7d4a22082b8036d42a5f9392646dc62c
   m_SerializeEntries:
   - m_GUID: 51f0c54706b53c14c9c24bbd63bb18a6
     m_Address: FX_Jump
@@ -28,4 +28,6 @@ MonoBehaviour:
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 6c8d43aabf35ae14c98e02119d87fbeb, type: 2}
   m_SchemaSet:
-    m_Schemas: []
+    m_Schemas:
+    - {fileID: 11400000, guid: aa710a806c6cbce49a585a17cc60626b, type: 2}
+    - {fileID: 11400000, guid: 8f2c70d8115ad264d8a72f3863a80732, type: 2}

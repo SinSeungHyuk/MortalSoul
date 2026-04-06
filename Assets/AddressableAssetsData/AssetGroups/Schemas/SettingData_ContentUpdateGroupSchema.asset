@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5834b5087d578d24c926ce20cd31e6d6, type: 3}
-  m_Name: GameplayCue_ContentUpdateGroupSchema
+  m_Name: SettingData_ContentUpdateGroupSchema
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.GroupSchemas.ContentUpdateGroupSchema
-  m_Group: {fileID: 11400000, guid: fc7f55c1b9617ee4c87a80628c300918, type: 2}
+  m_Group: {fileID: 11400000, guid: 980859f30989bbf48bec743155142f17, type: 2}
   m_StaticContent: 0

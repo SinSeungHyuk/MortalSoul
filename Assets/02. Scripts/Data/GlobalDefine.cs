@@ -10,15 +10,6 @@ namespace MS.Data
         Legendary
     }
 
-    public enum EWeaponType
-    {
-        GreatSword,
-        OneHandSword,
-        Dagger,
-        Bow,
-        Staff
-    }
-
     public enum EZoneType
     {
         Battle,

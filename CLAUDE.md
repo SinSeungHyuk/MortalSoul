@@ -30,10 +30,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **경험치/레벨은 공용**: 소울이 바뀌어도 경험치와 레벨은 하나. 캐릭터(육체)는 한 명이고 영혼만 교체되는 컨셉
 - **레벨업 보상 타이밍**: 전투 중 레벨업해도 즉시 보상 없음. **방 클리어 후 휴무 상태**에 진입하면 그때 레벨업 보상 선택지 팝업
-- **다회 레벨업**: 방 안에서 여러 번 레벨업 시 보상 횟수를 누적 → 휴무 진입 시 연속으로 선택지 팝업 (1회 선택 → 다음 팝업 → ... 반복)
-- **보상 방식**: 랜덤 스탯 선택지 (이전 프로젝트와 유사한 방식)
+- **다회 레벨업**: 방 안에서 여러 번 레벨업 시 보상 횟수를 누적 → 휴무 진입 시 연속으로 선택지 팝업
+- **보상 방식**: 랜덤 스탯 선택지
 - **레벨업 스탯 저장**: `Stat.baseValue`는 소울 고유 전용. 레벨업 보상은 `bonusStat`에 "levelup" 키(Flat)로 누적 합산값을 덮어써서 관리. 별도 `Dictionary<EStatType, float> levelUpGrowth`로 누적량 추적
-- **던전 진행 흐름**: 던전 입장 → 전투맵 이동 → 몬스터 전투(경험치 상승/레벨업) → 전멸 → 맵 클리어/휴무 → 레벨업 보상 선택 → 다음 지역 이동
 
 ### 소울 시스템
 
@@ -41,19 +40,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Spine 스킨 교체**: 플레이어 프리팹은 하나만 사용. 소울 교체 시 JSON에 정의된 부위별 스킨 키값을 읽어 Spine 런타임에서 스킨을 교체하여 적용.
 
-**소울 등급**: Normal / Rare / Unique / Legendary — 등급이 높을수록 스펙이 강하지만, 스킬 난이도가 높은 소울은 등급이 높아도 사용하기 어려울 수 있음. 등급과 실질적 강함이 반드시 비례하지 않는 설계.
+**소울 등급**: Normal / Rare / Unique / Legendary
 
 **소울 슬롯**:
-- **메인 슬롯**: 현재 조작 중인 소울 1개. 해당 소울의 기본공격 + 고유 스킬 2개 사용 가능
-- **서브 슬롯**: 대기 중인 소울 1개. 패시브 효과로 추가 능력치 부여 (소울 고유, 등급 비례)
+- **메인 슬롯**: 현재 조작 중인 소울 1개. 기본공격 + 고유 스킬 2개 사용 가능
+- **서브 슬롯**: 대기 중인 소울 1개. 패시브 효과로 추가 능력치 부여
 - 게임 시작 시 기본 소울 1개로 시작. 던전 진행 중 새로운 소울 획득
 - 2슬롯이 꽉 찼을 때 새 소울 획득 시 교체/버리기 선택 (되돌리기 없음)
-- 소울은 던전 내 휘발성 — 던전 종료 시 초기화, 영구 보관 없음 (프로토타입 범위)
+- 소울은 던전 내 휘발성 — 던전 종료 시 초기화
 
 **소울 스위칭**:
 - 서브→메인으로 스위칭 시, **새로 메인이 되는 소울**의 고유 '스위칭 효과' 발동
-- 스위칭 효과는 등급에 비례하며, 단순 스탯 버프를 넘어 다양한 효과 지향 (예: "스위칭 후 첫 3회 공격 반드시 치명타" 등)
-- 캐릭터를 뒤덮는 이펙트로 잠깐 가린 뒤 Spine 스킨 교체로 외형 변경
+- **공격/콤보 진행 중에는 소울 스위칭 불가** — WSC의 "공격 진행 중" 플래그로 차단
 
 **소울별 스탯**: 각 소울은 고유한 BaseStat을 가짐. 소울 교체 시 baseValue만 새 소울 값으로 swap하고, bonusStat(레벨업/버프)은 유지.
 - **체력 보존**: 소울별로 마지막 체력(lastHealth)을 저장. 교체 시 해당 소울의 마지막 체력 상태로 복원
@@ -62,41 +60,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **소울 구성 요소**: 각 소울은 다음을 포함
 - 부위별 Spine 스킨 키값 (head, body, weapon 등)
 - 무기 타입 (대검, 한손검, 단도, 활, 지팡이 중 1개 — 소울에 종속)
-- 기본공격 (스킬로 구현, 쿨타임 가속 대신 공격속도 영향)
-- 고유 스킬 2개 (소울에 종속)
+- **기본공격**: WSC(WeaponSystemComponent)가 직접 실행. 스킬이 아님. 무기 종류별로 WeaponSettingData를 참조하는 데이터 드리븐 방식. AttackSpeed에 비례해 애니메이션 재생 속도 + 공격 주기 빨라짐
+- 고유 스킬 2개 (소울에 종속, SSC로 관리)
 - 스위칭 효과 (소울 고유)
 - 서브슬롯 패시브 효과 (소울 고유)
 - 고유 BaseStat (소울별 고유 기본 스탯값)
 
-**조작 키**: 기본공격(소울별 고유), 대시, 점프, 스킬1, 스킬2 (장착 소울의 고유 스킬), 소울 스위칭
+**조작 키**: 기본공격, 대시, 점프, 스킬1, 스킬2, 소울 스위칭
 
 **조작 규칙**:
 - 조이스틱을 사용하여 좌,우 이동을 진행하며 이동시 해당 방향을 바라본다. 이동 애니메이션은 항상 'Run1'을 사용한다.
-- 버튼 클릭을 통해 점프를 사용할 수 있다. 점프 사용 시 'Wait1' 애니메이션을 재생하며 점프를 수행하는 동안에는 다른 애니메이션을 재생할 수 없으며 공중에 있는 동안 좌,우 방향 전환 및 이동과 '대시'가 가능하다.
-- 대시는 버튼클릭을 통해 사용하고 'Wait1' 애니메이션을 재생하며 빠른 속도로 현재 바라보고 있는 방향을 향해 이동한다. 대시를 수행하는 동안 다른 애니메이션 및 동작을 할 수 없다.
-- 공격은 버튼클릭을 통해 사용하며 각 소울의 무기 종류별 고유한 애니메이션 키값을 사용하게 된다. 공격을 수행하는 동안에는 다른 조작(이동,대시,점프,스킬)을 모두 할 수 없으며 공격 애니메이션이 모두 종료된 이후에 다른 동작을 수행할 수 있다.
-- 스킬 캐스팅은 특정 스킬을 발동할 때 재생되는 애니메이션으로, 캐스팅은 시전 도중 다른 조작을 통해 취소할 수 있다.(이동,점프,대시,공격 등 모두 캐스팅을 즉시 취소)
+- 점프 사용 시 'Wait1' 애니메이션을 재생하며 점프를 수행하는 동안에는 다른 애니메이션을 재생할 수 없으며 공중에 있는 동안 좌,우 방향 전환 및 이동과 '대시'가 가능하다.
+- 대시는 'Wait1' 애니메이션을 재생하며 빠른 속도로 현재 바라보고 있는 방향을 향해 이동한다. 대시를 수행하는 동안 다른 애니메이션 및 동작을 할 수 없다.
+- **공격**은 버튼클릭을 통해 사용하며 공격을 수행하는 동안에는 다른 조작(이동,대시,점프,스킬)을 모두 할 수 없다. 공격 중 피격당해도 공격이 취소되지 않음(슈퍼아머). 공격 중 방향 전환 불가 — 콤보 종료 후에만 가능.
+- 스킬 캐스팅은 이동,점프,대시,공격 등으로 즉시 취소 가능.
+
+### 기본공격 콤보 시스템
+
+**WeaponSettingData** 기반 데이터 드리븐. WSC가 대리인+실행자 역할을 겸함.
+
+**Spine 이벤트 기반 타이밍 제어**:
+- `hit` 이벤트: 무기가 휘둘러지는 타이밍 → 히트판정 실행
+- `combo_ready` 이벤트: 조기 캔슬 허용 시점 → 예약 ON이면 회수 동작 스킵 후 즉시 다음 콤보로 전환
+- `Complete` (Spine 기본): 예약 있으면 다음 콤보, 없으면 종료 및 콤보인덱스 리셋
+
+**선입력(버퍼링)**: 공격 진행 중 아무 때나 공격 버튼을 누르면 예약 플래그 ON. 예약은 한 번만 ON (중복 입력 무시).
+
+**WSC 내부 상태**: 현재 WeaponType, 콤보 인덱스, 다음 콤보 예약 플래그, 공격 진행 중 여부
 
 ### 애니메이션
 
-- **Spine 애니메이션** 사용. Spine 애니메이션 이벤트를 적극 활용 (구현 시기에 상세 논의)
-
-### 아키텍처 개편 사항
-
-**BattleSystemComponent (BSC) 도입**:
-- 기존 SSC(SkillSystemComponent)를 확장하여 BSC가 대체
-- BSC 내부에 축소된 SSC가 존재하는 구조: `BSC { SSC(스킬 전담), TakeDamage, StatusEffect, ... }`
-- SSC는 오로지 스킬 관리만 담당
-
-**Main 패턴 (싱글톤 제거)**:
-- 기존: 모든 매니저가 개별 싱글톤
-- 개편: `Main`이라는 단일 모노싱글톤 클래스가 모든 매니저를 보유하여 중앙집중 관리
-- 각 매니저는 일반 클래스로 구현 (싱글톤 제거)
-- 기존 모노싱글톤을 사용하던 매니저에는 의존성 주입으로 필요 오브젝트 주입
-- 이점: 진입점 통일, 초기화 순서 제어
+**Spine 애니메이션** 사용. SpineComponent가 중간 레이어 역할 — Spine 내부 이벤트를 게임 이벤트로 변환 후 노출:
+- `OnHitEvent` → WSC.HandleHit()
+- `OnComboReadyEvent` → WSC.HandleComboReady()
+- `OnActionCompleted` → WSC.HandleComplete()
 
 ## Work Flow
 ** 반드시 이 규칙을 따라 작업을 수행합니다. **
+0. 주석은 최소한으로 사용한다.
 1. MortalSoulDoc\01. WorkReq 폴더의 작업요청 md 문서를 참조할 경우 이 문서의 내용을 바탕으로 작업을 수행한다.
 2. 작업을 수행하기 시작하면 사용자 승인 없이 즉시 MortalSoulDoc\02. InProgress 폴더로 해당 md 파일을 옮긴다.
 3. 모든 작업이 완료되면 작업 내용을 요약하여 사용자에게 승인을 요청한다.
@@ -117,187 +118,111 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `Editor/` — Unity Editor 전용 스크립트
   - `Test/` — 테스트 스크립트
 - `03. Resources/` — Prefab 및 ScriptableObject 에셋
-  - `Prefabs/` — 재사용 가능한 게임 오브젝트
-  - `ScriptableObjects/` — 데이터 컨테이너(설정값, 게임 데이터)
-- `04. Settings/` — 게임 설정 관련 파일
-- `Settings/` — URP 렌더링 파이핀 설정 (Renderer2D.asset, UniversalRP.asset)
+- `04. Settings/` — 게임 설정 관련 파일 (JSON 데이터 포함)
+- `Settings/` — URP 렌더링 파이핀 설정
 
 ### 핵심 시스템
 
-**입력 시스템**: Unity Input System v1.18.0 사용. 입력 정의는 `Assets/InputSystem_Actions.inputactions`에서 관리됩니다. 현재 정의된 액션 맵:
-- Player: Move(Vector2), Look(Vector2), Attack(Button), Interact(Button+Hold), Crouch(Button)
+**입력 시스템**: Unity Input System v1.18.0. `Assets/InputSystem_Actions.inputactions`에서 관리.
 
-**렌더링**: Universal Render Pipeline(URP) v17.3.0 + 2D Renderer. 모바일 최적화가 목표이므로 Draw Call 최소화와 Sprite Atlas 활용을 고려해야 합니다.
+**렌더링**: Universal Render Pipeline(URP) v17.3.0 + 2D Renderer.
 
-**2D 핵심 패키지**:
-- `com.unity.2d.animation` v13.0.4 — 캐릭터 애니메이션
-- `com.unity.2d.tilemap` v1.0.0 — 타일맵 기반 레벨
-- `com.unity.2d.spriteshape` v13.0.0 — 유기적인 지형 표현
-
-**Spine 애니메이션**: 캐릭터 애니메이션에 Spine 사용. Spine 이벤트 시스템 활용
-
-**Visual Scripting**: `com.unity.visualscripting` v1.9.9 포함 (코드와 병행 사용 가능)
+**Spine 애니메이션**: 캐릭터 애니메이션에 Spine 사용. Spine 이벤트 시스템 활용.
 
 ### 스크립트 작성 지침
 
-- 새 스크립트는 기능에 따라 `Assets/02. Scripts/` 하위 폴더(예: `Player/`, `Enemy/`, `UI/`, `Manager/`)를 만들어 정리합니다.
-- 데이터 중심 설계를 위해 설정값은 `ScriptableObject`로 분리하여 `03. Resources/ScriptableObjects/`에 배치합니다.
 - 입력 처리는 반드시 `InputSystem_Actions.inputactions`의 액션을 통해서만 받습니다(레거시 Input 사용 금지).
 - **Main 패턴**: 매니저 접근은 `Main.Instance.XXXManager`를 통해 수행합니다. 개별 매니저에 싱글톤을 사용하지 않습니다.
-- **BSC 구조**: 캐릭터의 전투 관련 로직은 `BattleSystemComponent`를 통해 처리합니다. 스킬 관리는 BSC 내부의 `SkillSystemComponent`가 담당합니다.
+- **BSC 구조**: 캐릭터의 전투 관련 로직은 `BattleSystemComponent`를 통해 처리합니다.
 
-## 레퍼런스 스크립트 (이전 프로젝트)
+### 씬 구조
 
-> **위치**: `MortalSoulDoc/04. Assets/02. Scripts/`
-> **용도**: 이전 프로젝트에서 사용했던 스크립트 모음. 초반 설계/구현 시 참고 자료로 활용. 더 이상 필요 없어지면 이 섹션과 해당 폴더를 삭제할 것.
+```
+[Scene]
+└─ Main (MonoSingleton)
+   ├─ ObjectPool        ← 동적 생성
+   ├─ ViewCanvas        ← 에디터 배치
+   ├─ PopupCanvas       ← 에디터 배치
+   └─ SystemCanvas      ← 에디터 배치
+```
 
-### 전체 아키텍처 요약
+UIManager는 일반 클래스. `Main.Awake()`에서 `new` 후 `InitUIManager(transform)` 호출. `FindChildDeep`으로 Canvas를 찾아 참조 저장. `[SerializeField]` 미사용.
 
-싱글톤 기반 매니저 패턴 + 상태머신 + MVVM UI + 오브젝트 풀링 + 데이터 드리븐 설계. UniTask(async/await), DOTween, Addressables, Newtonsoft.Json 사용.
+### 아키텍처 구조
 
-### Core (`Core/`)
+**Main 패턴 (단일 모노싱글톤)**:
+- `Main`이 모든 매니저를 보유하여 중앙집중 관리
+- 각 매니저는 일반 클래스 (싱글톤 아님)
+
+**BattleSystemComponent (BSC)**:
+```
+BattleSystemComponent (BSC) — 전투 시스템 통합 관리
+├─ SkillSystemComponent (SSC)    — 항상 존재 (플레이어/몬스터 공통)
+├─ WeaponSystemComponent (WSC)   — 플레이어만 존재 (nullable)
+├─ StatusEffect 관리
+└─ TakeDamage
+```
+- 플레이어 초기화: `BSC.InitBSC(owner, attrSet, weaponType)` → WSC 생성됨
+- 몬스터 초기화: `BSC.InitBSC(owner, attrSet)` → WSC = null
+- 소울 교체 시: `WSC.ChangeWeapon(newWeaponType)` 으로 무기 타입 + 콤보 리셋
+
+### 핵심 스크립트
+
+#### Core (`Core/`)
 
 | 파일 | 설명 |
 |------|------|
-| `Singleton.cs` | `Singleton<T>` (일반 클래스), `MonoSingleton<T>` (MonoBehaviour) — 모든 매니저의 기반 |
-| `Stat.cs` | 스탯 시스템. baseValue + bonusStat(Flat/Percentage) 딕셔너리. `OnValueChanged` 이벤트. 계산: `base * (1 + %합/100) + flat합` |
-| `MSEffect.cs` | 파티클 이펙트 래퍼. 오브젝트 풀 연동, 대상 추적(traceTarget), 지속시간 관리 |
-| `GameplayCue.cs` | ScriptableObject. 이펙트+사운드+카메라쉐이크를 하나로 묶어 Play(owner/pos)로 실행 |
-| `MSReactProp<T>` | 옵저버 패턴 반응형 프로퍼티. `onValueChanged(oldVal, newVal)`. UI 데이터 바인딩에 사용 |
-| `MSState.cs` | 상태머신 상태. Enter/Update/Exit 콜백을 Action 델리게이트로 주입 |
-| `MSStateMachine.cs` | 제네릭 상태머신. 상태 등록/전환(지연 전환 방식)/업데이트 루프 |
+| `Stat.cs` | 스탯 시스템. baseValue + bonusStat(Flat/Percentage). `OnValueChanged` 이벤트. 계산: `base * (1 + %합/100) + flat합` |
+| `MSReactProp<T>` | 반응형 프로퍼티. `onValueChanged(oldVal, newVal)`. UI 데이터 바인딩 |
+| `MSStateMachine.cs` | 제네릭 상태머신. 상태 등록/전환/업데이트 루프 |
+| `Main.cs` | 단일 모노싱글톤. DataManager, UIManager, SoundManager, ObjectPoolManager, PlayerManager, MonsterManager 보유 |
 
-### Data (`Data/`)
+#### Data (`Data/`)
 
 | 파일 | 설명 |
 |------|------|
-| `GlobalDefine.cs` | `EGrade` enum(Normal/Rare/Unique/Legendary), 등급별 색상/확률 딕셔너리 |
-| `StageStatisticsData.cs` | 스테이지 결과 데이터(킬수, 골드, 스킬별 DPS 등) |
-| `CharacterSettingData.cs` | 캐릭터 설정. `AttributeSetSettingData`에 13개 스탯(MaxHealth, AttackPower, Defense, Evasion, MoveSpeed, CriticChance, CriticMultiple, LifeSteal, CooltimeAccel, ProjectileCount, AreaRangeMultiple, KnockbackMultiple, CoinMultiple) |
-| `MonsterSettingData.cs` | 몬스터 설정. 6개 스탯 + 약점속성 + 스킬리스트(발동확률, 애니메이션키, 지속시간) |
-| `StageSettingData.cs` | 스테이지 웨이브 설정. 웨이브별 몬스터 스폰 정보, 보스키, 스폰간격, 아이템드롭확률 |
-| `SkillSettingData.cs` | 스킬 설정. OwnerType, 속성, 쿨타임, `ESkillValueType`(Default/Damage/Knockback/Move/Buff/Duration/Casting) |
-| `ItemSettingData.cs` | 아이템 설정. `EItemType`(Coin, RedCrystal, GreenCrystal, BlueCrystal, BossChest) |
-| `StatRewardSettingData.cs` | 스탯 보상 설정(스탯타입, 등급, 보상값) |
-| `SoundSettingData.cs` | 사운드 설정(볼륨 범위, 루프) |
+| `GlobalDefine.cs` | `EGrade`(Normal/Rare/Unique/Legendary), `EZoneType`(Battle/Shop/Event/Boss), `ESkillValueType` |
+| `SettingData.cs` | JSON 비동기 로드. CharacterSettingData, MonsterSettingData, SkillSettingData, SoundSettingData, WeaponSettingData 관리 |
+| `CharacterSettingData.cs` | 캐릭터 설정. Grade, AttributeSet(13개 스탯), SkinKeys, WeaponType, SkillKeys[], SwitchingEffectKey, SubPassiveKey |
+| `WeaponSettingData.cs` | 무기별 기본공격 데이터. `EWeaponType`(GreatSword/OneHandSword/Dagger/Bow/Staff) 키. `AttackComboData`(AnimKey, DamageMultiplier, HitRange, HitOffset, Knockback) |
+| `SkillSettingData.cs` | 스킬 설정. OwnerType, 속성, 쿨타임, SkillValueDict |
+| `MonsterSettingData.cs` | 몬스터 설정. 6개 스탯 + 약점속성 + 스킬리스트 |
 
-### Manager (`Manager/`)
-
-| 파일 | 역할 |
-|------|------|
-| `GameManager.cs` | 게임 라이프사이클. 60FPS, 모드 전환(`ChangeMode`), 구글플레이+Firebase 로그인(`GameManager_SDK.cs`) |
-| `DataManager.cs` | JSON에서 모든 설정 데이터 로드. Addressables + Newtonsoft.Json |
-| `AddressableManager.cs` | 리소스 로드/캐싱 추상화 (Load/Release) |
-| `StringTable.cs` | 로컬라이제이션. `Get(category, key, args)` |
-| `UIManager.cs` | UI 프리팹 캐싱, View/Popup 관리(LIFO 스택), 데미지텍스트/회피텍스트 |
-| `CameraManager.cs` | Cinemachine v3 카메라 + 화면 흔들림(ShakeCamera) |
-| `SoundManager.cs` | BGM/SFX 분리, AudioMixer, PlayerPrefs 볼륨 저장 |
-| `ObjectPoolManager.cs` | 범용 오브젝트 풀. `CreatePoolAsync` → `Get` → `Return` |
-| `EffectManager.cs` | MSEffect 생명주기 관리, 풀링 |
-| `GameplayCueManager.cs` | GameplayCue 에셋 로드 및 Play(key) |
-| `PlayerManager.cs` | 플레이어 스폰/파괴 |
-| `MonsterManager.cs` | 몬스터 스폰(풀 기반), `GetNearestMonster`/`GetNearestMonsters` 공간 쿼리 |
-| `SkillObjectManager.cs` | 스킬 오브젝트(투사체/범위) 스폰, 지연 정리 패턴 |
-| `FieldItemManager.cs` | 필드 아이템 관리 + **GPU Instancing** (Matrix4x4[1023] 배치 렌더링) |
-
-### FieldObject (`FieldObject/`)
+#### FieldObject (`FieldObject/`)
 
 **계층 구조**: `FieldObject(abstract)` → `FieldCharacter(abstract)` → `PlayerCharacter` / `MonsterCharacter`
 
 | 파일 | 설명 |
 |------|------|
-| `FieldObject.cs` | 최상위 추상 클래스. `FieldObjectType`(Player/Monster/SkillObject/FieldItem), `FieldObjectLifeState`(Live/Dying/Death) |
-| `FieldMap.cs` | 맵 관리. 랜덤 스폰포인트(NavMesh), 층 활성화 애니메이션(DOTween) |
-| `FieldCharacter.cs` | 캐릭터 기반. `SkillSystemComponent(SSC)` 보유, 넉백/스턴 추상 메서드 |
-| `MonsterCharacter.cs` | 4상태 상태머신(Idle→Trace→Attack→Dead). NavMeshAgent 경로탐색, 확률적 스킬 선택, 보스 변환(250%HP/200%ATK) |
-| `PlayerCharacter.cs` | PlayerController + PlayerLevelSystem 조합. SSC로 스킬 관리 |
-| `PlayerController.cs` | InputSystem → CharacterController 이동. NavMesh 유효성 검증 |
-| `PlayerLevelSystem.cs` | 레벨/경험치/골드. `MSReactProp`으로 UI 자동 갱신 |
-| `MovementLockState.cs` | Animator StateMachineBehaviour. 특정 애니메이션 중 이동 잠금 |
+| `PlayerCharacter.cs` | 플레이어 최상위. BSC, PlayerController, PlayerSpineController 조합 |
+| `PlayerController.cs` | Rigidbody2D 기반 이동. 상태머신(Idle/Move/Jump/Dash). 지면 판정(BoxCast), 중력, 에어컨트롤 |
+| `PlayerSpineController.cs` | Spine 애니메이션 관리. Idle/Move/Jump/Dash 루프 재생, 방향 전환(ScaleX) |
 
-**필드 아이템**: `FieldObject` → `FieldItem(abstract)` → `ResourceItem`(코인/크리스탈 버프) / `InteractionItem`(보스상자→스킬보상)
-
-**스킬 오브젝트**: `SkillObject(abstract)` → `ProjectileObject`(투사체, 직선/호밍) / `AreaObject`(범위, 간격 공격, 딜레이) / `IndicatorObject`(범위 표시기)
-
-### Skill (`Skill/`)
+#### Battle (`Battle/`)
 
 | 파일 | 설명 |
 |------|------|
-| `DamageInfo.cs` | 데미지 정보 구조체. `EDamageAttributeType`(Fire/Ice/Electric/Wind/Saint/Dark, 비트 플래그) |
-| `BaseSkill.cs` | 스킬 추상 기반. 쿨타임 관리, `ActivateSkill(CancellationToken)` 비동기, 레벨/DPS 추적 |
-| `BaseAttributeSet.cs` | 스탯 딕셔너리(`EStatType` → `Stat`). 26개 스탯 타입 |
-| `PlayerAttributeSet.cs` | 플레이어 전용 9개 추가 스탯(CriticChance, Evasion, LifeSteal 등) |
-| `MonsterAttributeSet.cs` | 몬스터 전용 1개 추가 스탯(AttackRange) |
+| `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC 보유, StatusEffect 관리, TakeDamage |
+| `SkillSystemComponent.cs` | 스킬 관리 전담. 리플렉션으로 스킬 생성(`GiveSkill`), 쿨타임 체크, UniTask 비동기 실행, CancellationToken 취소 |
+| `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). 콤보 인덱스/예약 플래그 관리. SpineComponent 이벤트 구독 |
+| `BaseAttributeSet.cs` | 스탯 딕셔너리(`EStatType` → `Stat`). Health 관리, OnHealthChanged 이벤트 |
+| `PlayerAttributeSet.cs` | 플레이어 전용 스탯(CriticChance, Evasion, LifeSteal 등) |
+| `MonsterAttributeSet.cs` | 몬스터 전용 스탯(AttackRange) |
+| `DamageInfo.cs` | 데미지 정보 구조체. Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce. 기본공격 속성은 Void(무속성) 고정 |
+| `BaseSkill.cs` | 스킬 추상 기반. 쿨타임, `ActivateSkill(CancellationToken)` 비동기 |
 | `StatusEffect.cs` | 상태이상. duration/elapsed + Start/Update/End 콜백 |
-| `StatusEffectUtils.cs` | 확장 메서드: `ApplyStatEffect`, `ApplyStunEffect`, `ApplyBurnEffect`(2%HP/1초), `ApplyCharmEffect`(-50%속도/방어), `ApplyFrostEffect` |
 
-**SSC (SkillSystemComponent)**: 캐릭터의 스킬/상태이상/데미지 처리 핵심 컴포넌트
-- `GiveSkill()`: 리플렉션으로 스킬 문자열 키 → 인스턴스 생성
-- `TakeDamage()`: 회피 → 약점배율 → 방어력 감소 → 흡혈 → 넉백
-- `UseSkill()`: 쿨타임 체크 → 비동기 실행 → CancellationToken으로 취소 가능
-
-**플레이어 스킬 패턴** (20+개):
-- **투사체형**: FireBall(화상), IceBall(빙결장판), BloodBall(흡혈), StunBall(기절), Charm(매혹)
-- **범위형**: BigCrystal/FastCrystal(빙결), Blizzard(17히트), FOBS(버스트), Meteor(화상), Plexus(기절)
-- **유틸**: Teleport(NavMesh 레이캐스트 이동)
-- **버프형**: SlashGreen(+50%이속)
-- **공통 로직**: MonsterManager에서 타겟 획득 → BattleUtils로 데미지 계산 → SkillObjectManager로 오브젝트 스폰
-
-**몬스터 스킬**: BowAttackA(원거리), OnehandAttackA/SheildAttackA/TwoHandAttackA(근접, 딜레이/범위 차이)
-
-### UI (`UI/`)
+#### Utils (`Utils/`)
 
 | 파일 | 설명 |
 |------|------|
-| `BaseUI.cs` | UI 추상 기반. Show()/Close() |
-| `BasePopup.cs` | 팝업 기반. Close 시 UIManager 스택에서 제거 |
-| `BattlePanelViewModel.cs` | **MVVM 데이터 레이어**. MSReactProp으로 KillCount/WaveCount/Timer/Gold/Level/Exp 바인딩 |
-| `BattlePanel.cs` | 전투 UI. 스킬슬롯(최대6개), HP바, 경험치바, 보스HP바, 웨이브/킬/타이머 표시 |
-| `MainPanel.cs` | 메인 메뉴. 서바이벌 모드 시작 버튼 |
-| `TitlePanel.cs` | 타이틀. Addressables CCD 패치 체크/다운로드 |
-| `SkillRewardPopup.cs` | 스킬 보상 선택 팝업 (timeScale=0) |
-| `StatRewardPopup.cs` | 스탯 보상 선택 팝업 (등급별 색상) |
-| `StageEndPopup.cs` | 스테이지 결과 팝업 (클리어/실패, 스킬DPS 통계) |
-| `DamageText.cs` | 플로팅 데미지 텍스트. 크리티컬 강조, 풀 반환 |
-| `SkillSlot.cs` | 스킬 슬롯. 쿨타임 오버레이 |
-| `Tooltip.cs` | 툴팁. 화면 경계 클램핑 |
-| `Notification.cs` | 알림. 페이드 인/아웃 애니메이션(UniTask+DOTween) |
-| `HPBar.cs` / `ExpBar.cs` | HP/경험치 바 |
-| `PlayerStatInfo.cs` | 플레이어 스탯 상세 표시. EStatType별 행 생성 |
+| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, JumpForce=12, DashSpeed=30, DashDuration=0.3), 애니메이션 키(Idle="Wait1", Run="Run1", Jump="Wait4", Dash="Run3"), 레이어마스크, 색상 팔레트 |
 
-### Mode (`Mode/`)
+#### Test (`Test/`)
 
 | 파일 | 설명 |
 |------|------|
-| `GameModeBase.cs` | 모드 추상 기반. MSStateMachine 사용. StartMode → OnRegisterStates → OnUpdate → EndMode |
-| `LobbyMode.cs` | 로비. MainPanel 표시 + BGM |
-| `SurvivalMode.cs` | 서바이벌 본체. 상태(Load/BattleStart/LastWave), 킬/웨이브/타이머 반응형 프로퍼티, EndMode에서 전체 정리 |
-| `SurvivalMode_Load.cs` | 로드 상태. Effect→SkillObject→FieldItem→Monster→Map→Player 순서 비동기 로드 |
-| `SurvivalMode_BattleStart.cs` | 전투 상태. 가중치 랜덤 몬스터 스폰, 웨이브 타이머, 보스 스폰(EndWaveAsync), 다음 웨이브 전환(ActivateNextWaveAsync) |
-| `SurvivalMode_LastWave.cs` | 최종 웨이브. 메테오 환경 위험(2-4초 간격, 2-4개, 50데미지, 인디케이터 경고) |
-
-### Utils (`Utils/`)
-
-| 파일 | 설명 |
-|------|------|
-| `Settings.cs` | 전역 상수. 전투(MaxWaveCount=5, BattleScalingConstant=100, WeaknessMultiple=1.3), 레이어, 애니메이터 해시, 색상 팔레트 |
-| `MathUtils.cs` | 수학 유틸. 화면 밖 체크, 확률 판정, 퍼센트 증감, `BattleScaling(v/(v+100)*100)`, 등급 랜덤 |
-| `BattleUtils.cs` | 전투 계산. 방어력/회피/약점속성/스킬데미지/크리티컬/랜덤위치(NavMesh) |
-| `TransformExtensions.cs` | Transform 확장. `FindChildDeep`, `FindChildComponentDeep<T>`, `GetOrAddComponent<T>` |
-| `DataUtils.cs` | 스킬 설명 포맷팅. StringTable에서 가져와 `{key}` 치환 + 금색 컬러 |
-| `CanvasBillboard.cs` | Canvas를 항상 카메라 방향으로 회전 |
-
-### 핵심 디자인 패턴 정리
-
-1. **싱글톤**: 모든 매니저 (`Singleton<T>`, `MonoSingleton<T>`)
-2. **상태머신**: `MSStateMachine` — 몬스터 AI, 게임 모드
-3. **MVVM**: `BattlePanelViewModel` + `MSReactProp` → UI 자동 갱신
-4. **오브젝트 풀링**: `ObjectPoolManager` — 몬스터, 이펙트, 투사체, 아이템 전부 풀링
-5. **데이터 드리븐**: JSON 설정 → `DataManager` → 각 시스템
-6. **옵저버 패턴**: `MSReactProp`, `Stat.OnValueChanged`, SSC 이벤트
-7. **템플릿 메서드**: `BaseSkill.ActivateSkill()` 추상 → 각 스킬 구현
-8. **리플렉션 팩토리**: `SSC.GiveSkill()` — 문자열 키로 스킬 인스턴스 생성
-9. **GPU Instancing**: `FieldItemManager` — Matrix4x4[1023] 배치 렌더링
+| `TestSpineComponent.cs` | 프로토타이핑용 Spine 컴포넌트. 이동/점프/대시/공격/스킬/피격/사망 애니메이션, 상태 관리, 완료 콜백 |
 
 ### 외부 의존성
 
@@ -305,6 +230,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **DOTween** — 애니메이션/트윈
 - **Unity.AddressableAssets** — 리소스 동적 로드
 - **Newtonsoft.Json** — JSON 직렬화
-- **Firebase Auth + Google Play Games SDK** — 인증
 - **Unity Cinemachine v3** — 카메라
 - **Unity Input System** — 입력
+
+## 레퍼런스 스크립트 (이전 프로젝트)
+
+> **위치**: `MortalSoulDoc/04. Assets/02. Scripts/`
+> **용도**: 이전 프로젝트에서 사용했던 스크립트 모음. 초반 설계/구현 시 참고 자료로 활용. 더 이상 필요 없어지면 이 섹션과 해당 폴더를 삭제할 것.

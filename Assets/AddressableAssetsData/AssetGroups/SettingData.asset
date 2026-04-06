@@ -20,7 +20,14 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8af6f283f73fd1b4eb9e600ea0036918
+    m_Address: WeaponSettingData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 6c8d43aabf35ae14c98e02119d87fbeb, type: 2}
   m_SchemaSet:
-    m_Schemas: []
+    m_Schemas:
+    - {fileID: 11400000, guid: 0095398f1487db5409b0b72a39cbf091, type: 2}
+    - {fileID: 11400000, guid: d35384cd50ad8e448bad557205f8966f, type: 2}

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Spine;
 using Spine.Unity;
+using System;
 
 /// <summary>
 /// SpineController 프로토타입.
@@ -19,7 +20,7 @@ public class TestSpineComponent : MonoBehaviour
     // 외부 접근용 프로퍼티/이벤트
     public bool IsActioning => isActioning;
     public bool IsDead => isDead;
-    public System.Action OnActionCompleted;
+    public event Action OnActionCompleted;
 
     // 현재 상태
     private bool isMoving;

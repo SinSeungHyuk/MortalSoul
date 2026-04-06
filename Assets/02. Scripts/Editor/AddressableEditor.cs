@@ -2,6 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine;
 
 public class AddressableEditor
@@ -47,8 +48,21 @@ public class AddressableEditor
         AddressableAssetGroup group = settings.FindGroup(folderName);
         if (group == null)
         {
-            group = settings.CreateGroup(folderName, false, false, true, null);
-            Debug.Log($"[Addressable] �׷� ����: {folderName}");
+            group = settings.CreateGroup(folderName, false, false, true, null,
+                typeof(BundledAssetGroupSchema), typeof(ContentUpdateGroupSchema));
+
+            var bundledSchema = group.GetSchema<BundledAssetGroupSchema>();
+            if (bundledSchema != null)
+            {
+                bundledSchema.BuildPath.SetVariableByName(settings, AddressableAssetSettings.kRemoteBuildPath);
+                bundledSchema.LoadPath.SetVariableByName(settings, AddressableAssetSettings.kRemoteLoadPath);
+                bundledSchema.BundleMode = BundledAssetGroupSchema.BundlePackingMode.PackSeparately;
+                bundledSchema.IncludeAddressInCatalog = true;
+                bundledSchema.IncludeGUIDInCatalog = true;
+                bundledSchema.IncludeLabelsInCatalog = true;
+            }
+
+            Debug.Log($"[Addressable] 그룹 생성: {folderName}");
         }
 
         string guid = AssetDatabase.AssetPathToGUID(assetPath);

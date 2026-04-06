@@ -28,7 +28,7 @@ namespace MS.Field
             BSC.InitBSC(this, attrSet);
 
             // 테스트 스킬 등록
-            BSC.SSC.GiveSkill("TestOneHandAttack");
+            //BSC.SSC.GiveSkill("TestOneHandAttack");
         }
 
         protected override void Update()

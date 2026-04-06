@@ -8,7 +8,9 @@
       "Bash(ls \"c:/Users/syjsh/UnityProjects/MortalSoul/Assets/05. ExternalAssets/Shinabro/MiniFantasyCharacters/\"*.png)",
       "Bash(git -C \"c:/Users/syjsh/UnityProjects/MortalSoul\" log --oneline -10)",
       "Bash(grep \"\\\\.cs$\")",
-      "Bash(grep -v \"\\\\.meta$\")"
+      "Bash(grep -v \"\\\\.meta$\")",
+      "Bash(python /tmp/validate_json.py)",
+      "Bash(bash /tmp/comprehensive_check.sh)"
     ]
   }
 }
