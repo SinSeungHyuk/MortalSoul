@@ -106,6 +106,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 코드 규칙
 1. [SerializeField] 어트리뷰트 등 인스펙터 연결 사용은 최대한 자제한다.
+2. 입력 처리는 반드시 `InputSystem_Actions.inputactions`의 액션을 통해서만 받습니다(레거시 Input 사용 금지).
+3. **Main 패턴**: 매니저 접근은 `Main.Instance.XXXManager`를 통해 수행합니다. 개별 매니저에 싱글톤을 사용하지 않습니다.
+4. **BSC 구조**: 캐릭터의 전투 관련 로직은 `BattleSystemComponent`를 통해 처리합니다.
+5. 이벤트는 반드시 event Action 타입으로 선언합니다.
+6. 이벤트 구독 함수명은 On*Callback 규칙을 사용합니다.
+7. UI 버튼 바인드 함수명은 OnBtn*Clicked 규칙을 사용합니다.
 
 ## 코드 아키텍처
 
@@ -128,12 +134,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **렌더링**: Universal Render Pipeline(URP) v17.3.0 + 2D Renderer.
 
 **Spine 애니메이션**: 캐릭터 애니메이션에 Spine 사용. Spine 이벤트 시스템 활용.
-
-### 스크립트 작성 지침
-
-- 입력 처리는 반드시 `InputSystem_Actions.inputactions`의 액션을 통해서만 받습니다(레거시 Input 사용 금지).
-- **Main 패턴**: 매니저 접근은 `Main.Instance.XXXManager`를 통해 수행합니다. 개별 매니저에 싱글톤을 사용하지 않습니다.
-- **BSC 구조**: 캐릭터의 전투 관련 로직은 `BattleSystemComponent`를 통해 처리합니다.
 
 ### 씬 구조
 
