@@ -17,7 +17,7 @@ namespace MS.Field
 
         private Rigidbody2D rb;
         private BoxCollider2D col;
-        private PlayerSpineController spineController;
+        private SpineController spineController;
         private MSStateMachine<PlayerController> stateMachine;
 
         private Vector2 moveInput;
@@ -39,7 +39,7 @@ namespace MS.Field
         {
             rb = GetComponent<Rigidbody2D>();
             col = GetComponent<BoxCollider2D>();
-            spineController = GetComponent<PlayerSpineController>();
+            spineController = GetComponent<SpineController>();
         }
 
         private void Start()

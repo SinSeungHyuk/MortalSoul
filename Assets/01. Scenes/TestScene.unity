@@ -1126,7 +1126,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccf15c44c2079124e845ea1e9bb4ffe6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MS.Field.PlayerSpineController
+  m_EditorClassIdentifier: Assembly-CSharp::MS.Field.SpineController
 --- !u!1 &695262307
 GameObject:
   m_ObjectHideFlags: 0
