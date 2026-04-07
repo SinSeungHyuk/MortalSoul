@@ -6,16 +6,16 @@ namespace MS.Utils
 {
     public static class TransformExtensions
     {
-        public static Transform FindChildDeep(this Transform parent, string childName)
+        public static Transform FindChildDeep(this Transform _parent, string _childName)
         {
-            foreach (Transform child in parent)
+            foreach (Transform child in _parent)
             {
-                if (child.name == childName)
+                if (child.name == _childName)
                 {
                     return child;
                 }
 
-                Transform result = FindChildDeep(child, childName);
+                Transform result = FindChildDeep(child, _childName);
                 if (result != null)
                 {
                     return result;
@@ -24,9 +24,9 @@ namespace MS.Utils
             return null;
         }
 
-        public static T FindChildComponentDeep<T>(this Transform parent, string childName) where T : Component
+        public static T FindChildComponentDeep<T>(this Transform _parent, string _childName) where T : Component
         {
-            var findTransform = FindChildDeep(parent, childName);
+            var findTransform = FindChildDeep(_parent, _childName);
             if (findTransform != null)
             {
                 return findTransform.GetComponent<T>();
@@ -34,9 +34,9 @@ namespace MS.Utils
             return null;
         }
 
-        public static T GetOrAddComponent<T>(this Transform parent, string childName) where T : Component
+        public static T GetOrAddComponent<T>(this Transform _parent, string _childName) where T : Component
         {
-            var findTransform = FindChildDeep(parent, childName);
+            var findTransform = FindChildDeep(_parent, _childName);
             if (findTransform != null)
             {
                 T result = findTransform.GetComponent<T>();

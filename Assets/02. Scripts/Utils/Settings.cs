@@ -32,6 +32,13 @@ namespace MS.Utils
         public const string AnimRun  = "Run1";
         public const string AnimJump = "Wait4";
         public const string AnimDash = "Run3";
+
+        // Spine 트랙
+        public const int SpineMainTrack = 0;
+
+        // Spine user data event 이름
+        public const string SpineEventAttack = "attack";
+        public const string SpineEventComboReady = "combo_ready";
         #endregion
 
         #region BATTLE SETTING

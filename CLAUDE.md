@@ -112,6 +112,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 5. 이벤트는 반드시 event Action 타입으로 선언합니다.
 6. 이벤트 구독 함수명은 On*Callback 규칙을 사용합니다.
 7. UI 버튼 바인드 함수명은 OnBtn*Clicked 규칙을 사용합니다.
+8. 함수(메서드/생성자) 매개변수명은 반드시 언더스코어(`_`) 접두사를 붙입니다. 예: `void SetFacing(bool _right)`. 람다 파라미터는 예외.
+9. 주석은 최소한으로 작성하며 '/// <summary>' 패턴은 절대 사용하지 않는다.
+10. Current* 변수명은 Cur*로 줄여서 작성
 
 ## 코드 아키텍처
 

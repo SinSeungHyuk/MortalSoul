@@ -185,13 +185,13 @@ public class TestMoveComponent : MonoBehaviour
 
     // ===== Idle 상태 =====
 
-    private void OnIdleEnter(int prevState, object[] param)
+    private void OnIdleEnter(int _prevState, object[] _param)
     {
         targetVelocityX = 0f;
         spineComponent.OnStopMove();
     }
 
-    private void OnIdleUpdate(float dt)
+    private void OnIdleUpdate(float _dt)
     {
         if (TryHandleCommonInput()) return;
 
@@ -201,12 +201,12 @@ public class TestMoveComponent : MonoBehaviour
 
     // ===== Move 상태 =====
 
-    private void OnMoveEnter(int prevState, object[] param)
+    private void OnMoveEnter(int _prevState, object[] _param)
     {
         spineComponent.OnStartMove();
     }
 
-    private void OnMoveUpdate(float dt)
+    private void OnMoveUpdate(float _dt)
     {
         UpdateFacing();
         targetVelocityX = moveInput.x * Settings.MoveSpeed;
@@ -219,13 +219,13 @@ public class TestMoveComponent : MonoBehaviour
 
     // ===== Jump 상태 =====
 
-    private void OnJumpEnter(int prevState, object[] param)
+    private void OnJumpEnter(int _prevState, object[] _param)
     {
         rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
         spineComponent.OnJump();
     }
 
-    private void OnJumpUpdate(float dt)
+    private void OnJumpUpdate(float _dt)
     {
         UpdateFacing();
         targetVelocityX = moveInput.x * Settings.MoveSpeed * Settings.AirControlMultiplier;
@@ -255,7 +255,7 @@ public class TestMoveComponent : MonoBehaviour
 
     // ===== Dash 상태 =====
 
-    private void OnDashEnter(int prevState, object[] param)
+    private void OnDashEnter(int _prevState, object[] _param)
     {
         dashTimer = Settings.DashDuration;
         dashCooldownTimer = Settings.DashCooldown;
@@ -270,9 +270,9 @@ public class TestMoveComponent : MonoBehaviour
         spineComponent.OnDash();
     }
 
-    private void OnDashUpdate(float dt)
+    private void OnDashUpdate(float _dt)
     {
-        dashTimer -= dt;
+        dashTimer -= _dt;
 
         // 대시 중 모든 입력 소비 (무시)
         jumpRequested = false;
@@ -297,7 +297,7 @@ public class TestMoveComponent : MonoBehaviour
         }
     }
 
-    private void OnDashExit(int nextState)
+    private void OnDashExit(int _nextState)
     {
         // 대시 종료 시 중력 복원
         rb.gravityScale = Settings.GravityScale;
@@ -307,14 +307,14 @@ public class TestMoveComponent : MonoBehaviour
 
     private bool attackComplete;
 
-    private void OnAttackEnter(int prevState, object[] param)
+    private void OnAttackEnter(int _prevState, object[] _param)
     {
         attackComplete = false;
         targetVelocityX = 0f;
         spineComponent.OnAttackOneHand(); // 테스트용: 한손검 공격
     }
 
-    private void OnAttackUpdate(float dt)
+    private void OnAttackUpdate(float _dt)
     {
         // 공격 중 모든 입력 소비 (무시)
         jumpRequested = false;
@@ -339,13 +339,13 @@ public class TestMoveComponent : MonoBehaviour
 
     // ===== Cast 상태 =====
 
-    private void OnCastEnter(int prevState, object[] param)
+    private void OnCastEnter(int _prevState, object[] _param)
     {
         targetVelocityX = 0f;
         spineComponent.OnStartCast();
     }
 
-    private void OnCastUpdate(float dt)
+    private void OnCastUpdate(float _dt)
     {
         bool anyInput = dashRequested || attackRequested || jumpRequested
                         || Mathf.Abs(moveInput.x) > 0.1f;
@@ -382,22 +382,22 @@ public class TestMoveComponent : MonoBehaviour
 
     // ===== Input System 콜백 (PlayerInput SendMessages) =====
 
-    public void OnMove(InputValue value)
+    public void OnMove(InputValue _value)
     {
-        moveInput = value.Get<Vector2>();
+        moveInput = _value.Get<Vector2>();
         moveInput.y = 0f;
         moveInput.x = Mathf.Clamp(moveInput.x, -1f, 1f);
     }
 
-    public void OnJump(InputValue value)
+    public void OnJump(InputValue _value)
     {
-        if (value.isPressed)
+        if (_value.isPressed)
             jumpRequested = true;
     }
 
-    public void OnSprint(InputValue value)
+    public void OnSprint(InputValue _value)
     {
-        if (value.isPressed)
+        if (_value.isPressed)
             dashRequested = true;
     }
 }

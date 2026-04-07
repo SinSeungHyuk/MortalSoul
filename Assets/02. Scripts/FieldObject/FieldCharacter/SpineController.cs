@@ -1,4 +1,4 @@
-using System;
+using Cysharp.Threading.Tasks;
 using MS.Utils;
 using Spine;
 using Spine.Unity;
@@ -6,24 +6,14 @@ using UnityEngine;
 
 namespace MS.Field
 {
-    /// <summary>
-    /// Player/Monster 공용 Spine 애니메이션 컨트롤러.
-    /// 이동 상태 루프 재생, 단발 액션 재생(+완료 콜백), Spine 이벤트의 게임 이벤트 변환을 담당한다.
-    /// </summary>
-    [RequireComponent(typeof(SkeletonAnimation))]
     public class SpineController : MonoBehaviour
     {
-        public event Action OnAttackEvent;
-        public event Action OnComboReadyEvent;
-        public event Action OnActionCompleted;
-
-        private const int MainTrack = 0;
-        private const string EventNameAttack = "attack";
-        private const string EventNameComboReady = "combo_ready";
-
         private SkeletonAnimation skeletonAnimation;
-        private bool isActioning;
-        private Action pendingOnceCallback;
+
+        private string curWaitEventKey;
+        private UniTaskCompletionSource curWaitEventTcs;
+        private UniTaskCompletionSource curWaitCompleteTcs;
+
 
         private void Awake()
         {
@@ -49,6 +39,8 @@ namespace MS.Field
                 skeletonAnimation.AnimationState.Event -= OnSpineEvent;
                 skeletonAnimation.AnimationState.Complete -= OnSpineComplete;
             }
+
+            CancelAllWaitTcs();
         }
 
         // ===== 루프 재생 =====
@@ -57,46 +49,69 @@ namespace MS.Field
         public void PlayJump() => PlayLoop(Settings.AnimJump);
         public void PlayDash() => PlayLoop(Settings.AnimDash);
 
-        private void PlayLoop(string animationName)
+        private void PlayLoop(string _animationName)
         {
-            isActioning = false;
-            pendingOnceCallback = null;
-            skeletonAnimation.AnimationState.SetAnimation(MainTrack, animationName, true);
+            CancelAllWaitTcs();
+            skeletonAnimation.AnimationState.SetAnimation(Settings.SpineMainTrack, _animationName, true);
         }
 
-        // ===== 단발 재생 =====
-        public void PlayOnce(string animationName, Action onComplete = null)
+        public void PlayAnimation(string _animationName, bool _loop)
         {
-            isActioning = true;
-            pendingOnceCallback = onComplete;
-            skeletonAnimation.AnimationState.SetAnimation(MainTrack, animationName, false);
+            CancelAllWaitTcs();
+            skeletonAnimation.AnimationState.SetAnimation(Settings.SpineMainTrack, _animationName, _loop);
+        }
+
+        // ===== 비동기 대기 헬퍼 =====
+        public UniTask WaitForAnimEventAsync(string _eventKey)
+        {
+            curWaitEventTcs?.TrySetCanceled();
+
+            curWaitEventKey = _eventKey;
+            curWaitEventTcs = new UniTaskCompletionSource();
+            return curWaitEventTcs.Task;
+        }
+
+        public UniTask WaitForCompleteAsync()
+        {
+            curWaitCompleteTcs?.TrySetCanceled();
+            curWaitCompleteTcs = new UniTaskCompletionSource();
+            return curWaitCompleteTcs.Task;
+        }
+
+        private void CancelAllWaitTcs()
+        {
+            curWaitEventTcs?.TrySetCanceled();
+            curWaitEventTcs = null;
+            curWaitEventKey = null;
+
+            curWaitCompleteTcs?.TrySetCanceled();
+            curWaitCompleteTcs = null;
         }
 
         // ===== 방향 =====
-        public void SetFacing(bool right)
+        public void SetScaleX(bool _right)
         {
-            skeletonAnimation.Skeleton.ScaleX = right ? -1f : 1f;
+            skeletonAnimation.Skeleton.ScaleX = _right ? -1f : 1f;
         }
 
-        // ===== 스킨 (몬스터에서는 호출하지 않음) =====
-        public void SetCombinedSkin(params string[] skinKeys)
+        // ===== 스킨 =====
+        public void SetCombinedSkin(params string[] _skinKeys)
         {
             var skeleton = skeletonAnimation.Skeleton;
             var combinedSkin = new Skin("combined");
 
-            if (skinKeys == null || skinKeys.Length == 0)
+            if (_skinKeys == null || _skinKeys.Length == 0)
             {
-                // 폴백: 테스트용 기본 스킨 조합
                 combinedSkin.AddSkin(skeleton.Data.FindSkin("BODY/base"));
                 combinedSkin.AddSkin(skeleton.Data.FindSkin("HEAD/headA"));
                 combinedSkin.AddSkin(skeleton.Data.FindSkin("HAIR/hairA_a"));
-                combinedSkin.AddSkin(skeleton.Data.FindSkin("RIGHTHAND/Sword_TwoHand_Common1"));
+                combinedSkin.AddSkin(skeleton.Data.FindSkin("RIGHTHAND/Sword_OneHand_Common1"));
             }
             else
             {
-                for (int i = 0; i < skinKeys.Length; i++)
+                for (int i = 0; i < _skinKeys.Length; i++)
                 {
-                    var skin = skeleton.Data.FindSkin(skinKeys[i]);
+                    var skin = skeleton.Data.FindSkin(_skinKeys[i]);
                     if (skin != null) combinedSkin.AddSkin(skin);
                 }
             }
@@ -105,29 +120,28 @@ namespace MS.Field
             skeleton.SetSlotsToSetupPose();
         }
 
-        // ===== Spine 이벤트 → 게임 이벤트 =====
-        private void OnSpineEvent(TrackEntry entry, Spine.Event e)
+        // ===== Spine raw 이벤트 =====
+        private void OnSpineEvent(TrackEntry _entry, Spine.Event _e)
         {
-            if (entry.TrackIndex != MainTrack) return;
+            if (_entry.TrackIndex != Settings.SpineMainTrack) return;
+            if (curWaitEventTcs == null) return;
+            if (_e.Data.Name != curWaitEventKey) return;
 
-            var name = e.Data.Name;
-            if (name == EventNameAttack)
-                OnAttackEvent?.Invoke();
-            else if (name == EventNameComboReady)
-                OnComboReadyEvent?.Invoke();
+            var tcs = curWaitEventTcs;
+            curWaitEventTcs = null;
+            curWaitEventKey = null;
+            tcs.TrySetResult();
         }
 
-        private void OnSpineComplete(TrackEntry entry)
+        private void OnSpineComplete(TrackEntry _entry)
         {
-            if (entry.TrackIndex != MainTrack) return;
-            if (!isActioning) return;
+            if (_entry.TrackIndex != Settings.SpineMainTrack) return;
+            if (_entry.Loop) return;
+            if (curWaitCompleteTcs == null) return;
 
-            isActioning = false;
-            var cb = pendingOnceCallback;
-            pendingOnceCallback = null;
-
-            OnActionCompleted?.Invoke();
-            cb?.Invoke();
+            var tcs = curWaitCompleteTcs;
+            curWaitCompleteTcs = null;
+            tcs.TrySetResult();
         }
     }
 }

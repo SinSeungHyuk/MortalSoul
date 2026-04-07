@@ -33,7 +33,7 @@ public class AddressableEditor
         AddressableAssetSettings.BuildPlayerContent();
     }
 
-    private static void Register(string assetPath)
+    private static void Register(string _assetPath)
     {
         var settings = AddressableAssetSettingsDefaultObject.Settings;
         if (settings == null)
@@ -42,8 +42,8 @@ public class AddressableEditor
             return;
         }
 
-        string folderName = Path.GetFileName(Path.GetDirectoryName(assetPath));
-        string assetName = Path.GetFileNameWithoutExtension(assetPath);
+        string folderName = Path.GetFileName(Path.GetDirectoryName(_assetPath));
+        string assetName = Path.GetFileNameWithoutExtension(_assetPath);
 
         AddressableAssetGroup group = settings.FindGroup(folderName);
         if (group == null)
@@ -65,7 +65,7 @@ public class AddressableEditor
             Debug.Log($"[Addressable] 그룹 생성: {folderName}");
         }
 
-        string guid = AssetDatabase.AssetPathToGUID(assetPath);
+        string guid = AssetDatabase.AssetPathToGUID(_assetPath);
         var entry = settings.CreateOrMoveEntry(guid, group);
         entry.address = assetName;
 

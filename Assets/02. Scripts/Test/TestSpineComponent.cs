@@ -75,9 +75,9 @@ public class TestSpineComponent : MonoBehaviour
 
     // ===== 액션 완료 콜백 =====
 
-    private void OnAnimationComplete(TrackEntry trackEntry)
+    private void OnAnimationComplete(TrackEntry _trackEntry)
     {
-        if (trackEntry.TrackIndex != MainTrack) return;
+        if (_trackEntry.TrackIndex != MainTrack) return;
         if (!isActioning) return;
 
         // 액션 애니메이션이 끝나면 상태 복귀
@@ -232,12 +232,12 @@ public class TestSpineComponent : MonoBehaviour
     // ===== MoveComponent 연동 메서드 =====
 
     /// <summary> 방향 전환만 수행 (이동 애니메이션 변경 없이) </summary>
-    public void SetFacing(bool right)
+    public void SetFacing(bool _right)
     {
         if (isDead) return;
 
-        facingRight = right;
-        skeletonAnimation.Skeleton.ScaleX = right ? -1f : 1f;
+        facingRight = _right;
+        skeletonAnimation.Skeleton.ScaleX = _right ? -1f : 1f;
     }
 
     /// <summary> 캐스팅 시작 (Cast1 루프 재생) </summary>
@@ -265,12 +265,12 @@ public class TestSpineComponent : MonoBehaviour
 
     // ===== 내부 =====
 
-    private void PlayAction(string animationName)
+    private void PlayAction(string _animationName)
     {
         if (isDead) return;
 
         isActioning = true;
-        PlayAnimation(animationName, false);
+        PlayAnimation(_animationName, false);
     }
 
     private void PlayIdle()
@@ -278,8 +278,8 @@ public class TestSpineComponent : MonoBehaviour
         PlayAnimation("Wait1", true);
     }
 
-    private void PlayAnimation(string animationName, bool loop)
+    private void PlayAnimation(string _animationName, bool _loop)
     {
-        skeletonAnimation.AnimationState.SetAnimation(MainTrack, animationName, loop);
+        skeletonAnimation.AnimationState.SetAnimation(MainTrack, _animationName, _loop);
     }
 }

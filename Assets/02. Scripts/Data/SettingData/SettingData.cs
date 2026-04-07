@@ -17,26 +17,29 @@ namespace MS.Data
 
         public async UniTask LoadAllSettingDataAsync()
         {
+            CharacterSettingData = await LoadOneAsync<GameCharacterSettingData>("CharacterSettingData");
+            MonsterSettingDict = await LoadOneAsync<Dictionary<string, MonsterSettingData>>("MonsterSettingData");
+            SkillSettingDict = await LoadOneAsync<Dictionary<string, SkillSettingData>>("SkillSettingData");
+            SoundSettingDict = await LoadOneAsync<Dictionary<string, SoundSettingData>>("SoundSettingData");
+            WeaponSettingDict = await LoadOneAsync<Dictionary<EWeaponType, WeaponSettingData>>("WeaponSettingData");
+        }
+
+        private async UniTask<T> LoadOneAsync<T>(string _key) where T : class
+        {
             try
             {
-                TextAsset characterJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("CharacterSettingData");
-                CharacterSettingData = JsonConvert.DeserializeObject<GameCharacterSettingData>(characterJson.text);
-
-                TextAsset monsterJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("MonsterSettingData");
-                MonsterSettingDict = JsonConvert.DeserializeObject<Dictionary<string, MonsterSettingData>>(monsterJson.text);
-
-                TextAsset skillJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("SkillSettingData");
-                SkillSettingDict = JsonConvert.DeserializeObject<Dictionary<string, SkillSettingData>>(skillJson.text);
-
-                TextAsset soundJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("SoundSettingData");
-                SoundSettingDict = JsonConvert.DeserializeObject<Dictionary<string, SoundSettingData>>(soundJson.text);
-
-                TextAsset weaponJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("WeaponSettingData");
-                WeaponSettingDict = JsonConvert.DeserializeObject<Dictionary<EWeaponType, WeaponSettingData>>(weaponJson.text);
+                TextAsset json = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>(_key);
+                if (json == null)
+                {
+                    Debug.LogWarning($"[SettingData] 리소스 없음(스킵): {_key}");
+                    return null;
+                }
+                return JsonConvert.DeserializeObject<T>(json.text);
             }
             catch (Exception e)
             {
-                Debug.LogError($"[SettingData] 데이터 로딩 실패: {e.Message}");
+                Debug.LogWarning($"[SettingData] {_key} 로드 실패(스킵): {e.Message}");
+                return null;
             }
         }
     }

@@ -33,7 +33,7 @@ namespace MS.Battle
             elapsedCooltime = 0;
         }
 
-        public abstract UniTask ActivateSkill(CancellationToken token);
+        public abstract UniTask ActivateSkill(CancellationToken _token);
 
         public virtual bool CanActivateSkill() => true;
 
@@ -51,10 +51,10 @@ namespace MS.Battle
             elapsedCooltime = cooltime;
         }
 
-        public async UniTask SetSkillCasting(CancellationToken token)
+        public async UniTask SetSkillCasting(CancellationToken _token)
         {
             // TODO: FieldCharacter에 Animator/Spine 애니메이션 인터페이스 연결 시 활성화
-            await UniTask.WaitForSeconds(skillData.GetValue(ESkillValueType.Casting), cancellationToken: token);
+            await UniTask.WaitForSeconds(skillData.GetValue(ESkillValueType.Casting), cancellationToken: _token);
         }
 
         public void OnUpdate(float _deltaTime)

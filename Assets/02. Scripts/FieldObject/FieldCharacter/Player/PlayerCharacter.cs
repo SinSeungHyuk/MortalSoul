@@ -1,20 +1,27 @@
+using Core;
+using Cysharp.Threading.Tasks;
 using MS.Battle;
+using MS.Data;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace MS.Field
 {
     public class PlayerCharacter : FieldCharacter
     {
-        public TestSpineComponent SpineComponent { get; private set; }
-
         protected override void Awake()
         {
             base.Awake();
+        }
 
-            SpineComponent = GetComponent<TestSpineComponent>();
+        private void Start()
+        {
+            InitTestAsync().Forget();
+        }
 
-            // 테스트용 AttributeSet + BSC 초기화
+        private async UniTaskVoid InitTestAsync()
+        {
+            await UniTask.WaitUntil(() => Main.Instance.IsBootCompleted);
+
             var attrSet = new PlayerAttributeSet();
             attrSet.InitBaseAttributeSet(new Dictionary<EStatType, float>
             {
@@ -25,10 +32,7 @@ namespace MS.Field
             });
 
             BSC = new BattleSystemComponent();
-            BSC.InitBSC(this, attrSet);
-
-            // 테스트 스킬 등록
-            //BSC.SSC.GiveSkill("TestOneHandAttack");
+            BSC.InitBSC(this, attrSet, EWeaponType.OneHandSword);
         }
 
         protected override void Update()

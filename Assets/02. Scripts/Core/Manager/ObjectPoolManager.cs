@@ -12,89 +12,89 @@ namespace Core
         private Dictionary<string, AsyncOperationHandle<GameObject>> _loadedAssetHandles = new Dictionary<string, AsyncOperationHandle<GameObject>>();
         private Transform _poolParent;
 
-        public void InitObjectPoolManager(Transform poolParent)
+        public void InitObjectPoolManager(Transform _parent)
         {
-            _poolParent = poolParent;
+            _poolParent = _parent;
         }
 
-        public async UniTask CreatePoolAsync(string key, int initialCount)
+        public async UniTask CreatePoolAsync(string _key, int _initialCount)
         {
-            if (string.IsNullOrEmpty(key))
+            if (string.IsNullOrEmpty(_key))
             {
                 Debug.LogError("[PoolManager] Pool Key가 null이거나 비어있습니다.");
                 return;
             }
 
-            if (_pool.ContainsKey(key))
+            if (_pool.ContainsKey(_key))
             {
-                Debug.LogWarning($"[PoolManager] Pool with key '{key}'가 이미 존재합니다.");
+                Debug.LogWarning($"[PoolManager] Pool with key '{_key}'가 이미 존재합니다.");
                 return;
             }
 
             AsyncOperationHandle<GameObject> handle;
             try
             {
-                handle = Addressables.LoadAssetAsync<GameObject>(key);
+                handle = Addressables.LoadAssetAsync<GameObject>(_key);
                 await handle.ToUniTask();
 
                 if (handle.Status != AsyncOperationStatus.Succeeded || handle.Result == null)
                 {
-                    throw new System.Exception($"Failed to load asset: {key}");
+                    throw new System.Exception($"Failed to load asset: {_key}");
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[PoolManager] 어드레서블 로드 실패 '{key}': {e.Message}");
+                Debug.LogError($"[PoolManager] 어드레서블 로드 실패 '{_key}': {e.Message}");
                 return;
             }
 
-            _loadedAssetHandles[key] = handle;
+            _loadedAssetHandles[_key] = handle;
             GameObject prefabToSpawn = handle.Result;
 
-            Stack<GameObject> newPool = new Stack<GameObject>(initialCount);
-            _pool[key] = newPool;
+            Stack<GameObject> newPool = new Stack<GameObject>(_initialCount);
+            _pool[_key] = newPool;
 
-            for (int i = 0; i < initialCount; i++)
+            for (int i = 0; i < _initialCount; i++)
             {
                 GameObject instance = Object.Instantiate(prefabToSpawn, _poolParent);
                 instance.SetActive(false);
                 newPool.Push(instance);
             }
 
-            Debug.Log($"[PoolManager] 풀 생성 완료: '{key}' (개수: {initialCount})");
+            Debug.Log($"[PoolManager] 풀 생성 완료: '{_key}' (개수: {_initialCount})");
         }
 
-        public GameObject Get(string key, Vector3 pos = default, Quaternion rot = default)
+        public GameObject Get(string _key, Vector3 _pos = default, Quaternion _rot = default)
         {
-            GameObject instance = Get(key);
+            GameObject instance = Get(_key);
             if (instance)
             {
-                instance.transform.position = pos;
-                instance.transform.rotation = rot;
+                instance.transform.position = _pos;
+                instance.transform.rotation = _rot;
                 instance.transform.localScale = Vector3.one;
                 instance.SetActive(true);
             }
             return instance;
         }
 
-        public GameObject Get(string key, Transform transform)
+        public GameObject Get(string _key, Transform _transform)
         {
-            GameObject instance = Get(key);
+            GameObject instance = Get(_key);
             if (instance)
             {
-                instance.transform.position = transform.position;
-                instance.transform.rotation = transform.rotation;
+                instance.transform.position = _transform.position;
+                instance.transform.rotation = _transform.rotation;
                 instance.transform.localScale = Vector3.one;
                 instance.SetActive(true);
             }
             return instance;
         }
 
-        private GameObject Get(string key)
+        private GameObject Get(string _key)
         {
-            if (!_pool.TryGetValue(key, out Stack<GameObject> pool))
+            if (!_pool.TryGetValue(_key, out Stack<GameObject> pool))
             {
-                Debug.LogError($"[PoolManager] Get: '{key}'에 해당하는 풀이 없습니다. CreatePoolAsync를 먼저 호출해야 합니다.");
+                Debug.LogError($"[PoolManager] Get: '{_key}'에 해당하는 풀이 없습니다. CreatePoolAsync를 먼저 호출해야 합니다.");
                 return null;
             }
 
@@ -104,9 +104,9 @@ namespace Core
                 return instance;
             }
 
-            if (!_loadedAssetHandles.TryGetValue(key, out var handle))
+            if (!_loadedAssetHandles.TryGetValue(_key, out var handle))
             {
-                Debug.LogError($"[PoolManager] Grow: '{key}'에 대한 핸들을 찾을 수 없어 확장이 불가능합니다.");
+                Debug.LogError($"[PoolManager] Grow: '{_key}'에 대한 핸들을 찾을 수 없어 확장이 불가능합니다.");
                 return null;
             }
 
@@ -114,20 +114,20 @@ namespace Core
             return newInstance;
         }
 
-        public void Return(string key, GameObject instance)
+        public void Return(string _key, GameObject _instance)
         {
-            if (instance == null) return;
+            if (_instance == null) return;
 
-            if (string.IsNullOrEmpty(key) || !_pool.TryGetValue(key, out Stack<GameObject> pool))
+            if (string.IsNullOrEmpty(_key) || !_pool.TryGetValue(_key, out Stack<GameObject> pool))
             {
-                Debug.LogWarning($"[PoolManager] Return: '{key}' 풀을 찾을 수 없습니다. 오브젝트를 파괴합니다.");
-                Object.Destroy(instance);
+                Debug.LogWarning($"[PoolManager] Return: '{_key}' 풀을 찾을 수 없습니다. 오브젝트를 파괴합니다.");
+                Object.Destroy(_instance);
                 return;
             }
 
-            instance.SetActive(false);
-            instance.transform.SetParent(_poolParent);
-            pool.Push(instance);
+            _instance.SetActive(false);
+            _instance.transform.SetParent(_poolParent);
+            pool.Push(_instance);
         }
 
         public void ClearAllPools()

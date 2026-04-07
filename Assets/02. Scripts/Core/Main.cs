@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Core
@@ -12,6 +13,8 @@ namespace Core
         public PlayerManager PlayerManager { get; private set; }
         public MonsterManager MonsterManager { get; private set; }
 
+        public bool IsBootCompleted { get; private set; }
+
         protected override void Awake()
         {
             base.Awake();
@@ -21,7 +24,7 @@ namespace Core
             UIManager = new UIManager();
             UIManager.InitUIManager(transform);
             SoundManager = new SoundManager();
-            
+
             Transform poolContainer = new GameObject("ObjectPool").transform;
             poolContainer.SetParent(transform);
 
@@ -29,6 +32,18 @@ namespace Core
             ObjectPoolManager.InitObjectPoolManager(poolContainer);
             PlayerManager = new PlayerManager();
             MonsterManager = new MonsterManager();
+        }
+
+        private void Start()
+        {
+            BootAsync().Forget();
+        }
+
+        private async UniTaskVoid BootAsync()
+        {
+            await DataManager.SettingData.LoadAllSettingDataAsync();
+            IsBootCompleted = true;
+            Debug.Log("[Main] Boot completed");
         }
     }
 }

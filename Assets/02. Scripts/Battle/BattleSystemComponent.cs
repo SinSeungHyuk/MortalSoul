@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MS.Data;
 using MS.Field;
 using System.Collections.Generic;
 
@@ -7,6 +8,7 @@ namespace MS.Battle
     public class BattleSystemComponent
     {
         public SkillSystemComponent SSC { get; private set; }
+        public WeaponSystemComponent WSC { get; private set; }
         public BaseAttributeSet AttributeSet { get; private set; }
 
         private Dictionary<string, StatusEffect> statusEffectDict;
@@ -19,6 +21,19 @@ namespace MS.Battle
 
             SSC = new SkillSystemComponent();
             SSC.InitSSC(_owner, _attributeSet);
+        }
+
+        public void InitBSC(FieldCharacter _owner, BaseAttributeSet _attributeSet, EWeaponType _weaponType)
+        {
+            InitBSC(_owner, _attributeSet);
+
+            WSC = new WeaponSystemComponent();
+            WSC.InitWSC(_owner, _weaponType);
+        }
+
+        public void TakeDamage(DamageInfo _info)
+        {
+            // TODO: 데미지 계산 + AttributeSet Health 감소 + 이벤트 발행
         }
 
         public async UniTask UseSkill(string _key)

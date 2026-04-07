@@ -10,7 +10,9 @@
       "Bash(grep \"\\\\.cs$\")",
       "Bash(grep -v \"\\\\.meta$\")",
       "Bash(python /tmp/validate_json.py)",
-      "Bash(bash /tmp/comprehensive_check.sh)"
+      "Bash(bash /tmp/comprehensive_check.sh)",
+      "Bash(git mv:*)",
+      "Bash(python -c ':*)"
     ]
   }
 }

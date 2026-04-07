@@ -7,14 +7,14 @@ namespace MS.Battle
 {
     public class TestOneHandAttack : BaseSkill
     {
-        public override async UniTask ActivateSkill(CancellationToken token)
+        public override async UniTask ActivateSkill(CancellationToken _token)
         {
             Debug.Log($"[TestOneHandAttack] 스킬 사용! ATK: {attributeSet.AttackPower.Value}");
 
-            if (owner is PlayerCharacter player && player.SpineComponent != null)
-            {
-                player.SpineComponent.OnAttackOneHand();
-            }
+            // if (owner is PlayerCharacter player && player.SpineComponent != null)
+            // {
+            //     player.SpineComponent.OnAttackOneHand();
+            // }
 
             await UniTask.CompletedTask;
         }

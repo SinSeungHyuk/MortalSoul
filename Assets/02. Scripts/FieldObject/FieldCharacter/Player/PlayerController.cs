@@ -5,12 +5,6 @@ using UnityEngine.InputSystem;
 
 namespace MS.Field
 {
-    /// <summary>
-    /// 플레이어 이동/점프/대시 컨트롤러.
-    /// Dynamic Rigidbody2D + MSStateMachine 기반. 중력은 물리 엔진이 처리하고
-    /// gravityScale만 상황별로 조정(하강 가속, 대시 중 0).
-    /// 공격/캐스트 상태는 BSC 통합 시 추가 예정.
-    /// </summary>
     public class PlayerController : MonoBehaviour
     {
         public enum EMoveState { Idle, Move, Jump, Dash }
@@ -18,6 +12,7 @@ namespace MS.Field
         private Rigidbody2D rb;
         private BoxCollider2D col;
         private SpineController spineController;
+        private PlayerCharacter playerCharacter;
         private MSStateMachine<PlayerController> stateMachine;
 
         private Vector2 moveInput;
@@ -40,6 +35,7 @@ namespace MS.Field
             rb = GetComponent<Rigidbody2D>();
             col = GetComponent<BoxCollider2D>();
             spineController = GetComponent<SpineController>();
+            playerCharacter = GetComponent<PlayerCharacter>();
         }
 
         private void Start()
@@ -111,12 +107,12 @@ namespace MS.Field
             if (moveInput.x > 0.01f && !facingRight)
             {
                 facingRight = true;
-                spineController.SetFacing(true);
+                spineController.SetScaleX(true);
             }
             else if (moveInput.x < -0.01f && facingRight)
             {
                 facingRight = false;
-                spineController.SetFacing(false);
+                spineController.SetScaleX(false);
             }
         }
 
@@ -142,13 +138,13 @@ namespace MS.Field
 
         #region Idle State
 
-        private void OnIdleEnter(int prevState, object[] param)
+        private void OnIdleEnter(int _prevState, object[] _param)
         {
             curVelocityX = 0f;
             spineController.PlayIdle();
         }
 
-        private void OnIdleUpdate(float dt)
+        private void OnIdleUpdate(float _dt)
         {
             if (CheckCurInput()) return;
 
@@ -160,12 +156,12 @@ namespace MS.Field
 
         #region Move State
 
-        private void OnMoveEnter(int prevState, object[] param)
+        private void OnMoveEnter(int _prevState, object[] _param)
         {
             spineController.PlayMove();
         }
 
-        private void OnMoveUpdate(float dt)
+        private void OnMoveUpdate(float _dt)
         {
             UpdateFacing();
             curVelocityX = moveInput.x * Settings.MoveSpeed;
@@ -180,13 +176,13 @@ namespace MS.Field
 
         #region Jump State
 
-        private void OnJumpEnter(int prevState, object[] param)
+        private void OnJumpEnter(int _prevState, object[] _param)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
             spineController.PlayJump();
         }
 
-        private void OnJumpUpdate(float dt)
+        private void OnJumpUpdate(float _dt)
         {
             UpdateFacing();
             curVelocityX = moveInput.x * Settings.MoveSpeed * Settings.AirControlMultiplier;
@@ -216,7 +212,7 @@ namespace MS.Field
 
         #region Dash State
 
-        private void OnDashEnter(int prevState, object[] param)
+        private void OnDashEnter(int _prevState, object[] _param)
         {
             dashTimer = Settings.DashDuration;
             dashCooldownTimer = Settings.DashCooldown;
@@ -231,9 +227,9 @@ namespace MS.Field
             spineController.PlayDash();
         }
 
-        private void OnDashUpdate(float dt)
+        private void OnDashUpdate(float _dt)
         {
-            dashTimer -= dt;
+            dashTimer -= _dt;
 
             // 대시 중 모든 입력 소비 (무시)
             jumpRequested = false;
@@ -256,7 +252,7 @@ namespace MS.Field
             }
         }
 
-        private void OnDashExit(int nextState)
+        private void OnDashExit(int _nextState)
         {
             // 대시 종료 시 중력 복원
             rb.gravityScale = Settings.GravityScale;
@@ -264,11 +260,17 @@ namespace MS.Field
 
         #endregion
 
-        public void OnMove(InputValue value)
+        public void OnMove(InputValue _value)
         {
-            moveInput = value.Get<Vector2>();
+            moveInput = _value.Get<Vector2>();
             moveInput.y = 0f;
             moveInput.x = Mathf.Clamp(moveInput.x, -1f, 1f);
+        }
+
+        public void OnAttack(InputValue _value)
+        {
+            if (!_value.isPressed) return;
+            playerCharacter.BSC?.WSC?.ActivateAttack();
         }
     }
 }
