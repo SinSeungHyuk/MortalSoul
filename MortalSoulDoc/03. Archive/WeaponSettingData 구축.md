@@ -129,12 +129,16 @@ OneHandSword 하나만 등록한다. 콤보는 리소스 한계로 **최대 2개
 
 
 ### 작업 내용
-1. 
-
+1. `Assets/02. Scripts/Data/SettingData/WeaponSettingData.cs`에 `WeaponSettingData`(ComboList 래퍼) 및 `AttackComboData`(AnimKey/DamageMultiplier/HitRange/HitOffset/Knockback) 클래스 추가. `EWeaponType` enum과 동일 파일/네임스페이스(`MS.Data`)에 배치.
+2. `Assets/04. Settings/SettingData/WeaponSettingData.json` 생성 — OneHandSword 2콤보 초기 데이터(Attack_OneHand1/2 플레이스홀더) 등록.
+3. `SettingData.cs`에 `WeaponSettingDict` 프로퍼티 추가 및 `LoadAllSettingDataAsync()`에서 Addressables 키 `"WeaponSettingData"`로 비동기 로드 후 `Dictionary<EWeaponType, WeaponSettingData>` 역직렬화.
+4. Addressables 그룹에 JSON 등록(에디터 수동 작업 완료).
 
 ### 특이사항
-1. 
-
+1. Newtonsoft 기본 동작으로 enum 키가 이름 문자열("OneHandSword")로 직/역직렬화되므로 `StringEnumConverter` 어트리뷰트 불필요.
+2. 타이밍/속성/ComboResetTime 필드는 의도적으로 누락 — 타이밍은 Spine 이벤트(hit/combo_ready/Complete), 속성은 Void 고정(WSC 단계), 콤보 리셋은 Complete 시점 예약 유무로 처리 예정.
+3. WSC가 이 데이터를 실제로 소비하는 로직(히트 판정, 콤보 진행)은 본 작업 범위 외 — 후속 작업에서 진행.
+4. 나머지 4종 무기(GreatSword/Dagger/Bow/Staff) 데이터 및 실제 Spine `AnimKey` 확정도 후속 작업.
 
 ---
-태그 : #태그
+태그 : #데이터 #기본공격 #WeaponSettingData #JSON #Addressables
