@@ -59,7 +59,7 @@ namespace MS.Field
             return curWaitEventTcs.Task;
         }
 
-        public UniTask WaitForCompleteAsync()
+        public UniTask WaitForAnimCompleteAsync()
         {
             curWaitCompleteTcs?.TrySetCanceled();
             curWaitCompleteTcs = new UniTaskCompletionSource();
@@ -108,7 +108,7 @@ namespace MS.Field
             skeleton.SetSlotsToSetupPose();
         }
 
-        // ===== Spine raw 이벤트 =====
+        // ===== Spine 이벤트 =====
         private void OnSpineEvent(TrackEntry _entry, Spine.Event _e)
         {
             if (_entry.TrackIndex != Settings.SpineMainTrack) return;

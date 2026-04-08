@@ -20,7 +20,7 @@ namespace MS.Field
         private Vector2 moveInput;
         private bool isGrounded;
         private bool wasGrounded;
-        private bool facingRight = true;
+        private bool isScaleXRight = true;
 
         private bool jumpRequested;
         private bool dashRequested;
@@ -127,14 +127,14 @@ namespace MS.Field
 
         private void UpdateScaleX()
         {
-            if (moveInput.x > 0.01f && !facingRight)
+            if (moveInput.x > 0.01f && !isScaleXRight)
             {
-                facingRight = true;
+                isScaleXRight = true;
                 spineController.SetScaleX(true);
             }
-            else if (moveInput.x < -0.01f && facingRight)
+            else if (moveInput.x < -0.01f && isScaleXRight)
             {
-                facingRight = false;
+                isScaleXRight = false;
                 spineController.SetScaleX(false);
             }
         }
@@ -243,7 +243,7 @@ namespace MS.Field
             dashFreezeTimer = 0f;
             dashCooldownTimer = Settings.DashCooldown;
 
-            float direction = facingRight ? 1f : -1f;
+            float direction = isScaleXRight ? 1f : -1f;
             curVelocityX = direction * Settings.DashSpeed;
 
             // 대시 중 중력 무시

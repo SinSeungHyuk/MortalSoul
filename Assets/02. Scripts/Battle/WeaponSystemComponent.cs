@@ -82,7 +82,7 @@ namespace MS.Battle
                     // 2) 애니메이션 완료or콤보준비 중 먼저 들어오는 쪽
                     int finishIdx = await UniTask.WhenAny(
                         spine.WaitForAnimEventAsync(Settings.SpineEventComboReady),
-                        spine.WaitForCompleteAsync()
+                        spine.WaitForAnimCompleteAsync()
                     );
                     bool isComboRdy = (finishIdx == 0);
 
@@ -96,7 +96,7 @@ namespace MS.Battle
                     if (!isComboRdy)
                         break;
 
-                    await spine.WaitForCompleteAsync();
+                    await spine.WaitForAnimCompleteAsync();
                     break;
                 }
             }
