@@ -13,7 +13,7 @@ namespace MS.Utils
         // 점프 / 중력
         public static float JumpForce = 12f;
         public static float GravityScale = 3f;
-        public static float FallMultiplier = 2.5f;
+        public static float FallMultiple = 2.5f;
         public static float MaxFallSpeed = -20f;
 
         // 대시

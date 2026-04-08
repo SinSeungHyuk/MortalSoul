@@ -112,7 +112,7 @@ public class TestMoveComponent : MonoBehaviour
     private void UpdateFallGravity()
     {
         if (rb.linearVelocityY < 0f)
-            rb.gravityScale = Settings.GravityScale * Settings.FallMultiplier;
+            rb.gravityScale = Settings.GravityScale * Settings.FallMultiple;
         else
             rb.gravityScale = Settings.GravityScale;
     }

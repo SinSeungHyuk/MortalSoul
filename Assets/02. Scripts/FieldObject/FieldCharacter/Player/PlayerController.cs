@@ -71,17 +71,13 @@ namespace MS.Field
 
         private void OnAttackEndedCallback()
         {
-            if (!isGrounded)
-                stateMachine.TransitState((int)EMoveState.Jump);
-            else if (Mathf.Abs(moveInput.x) > 0.1f)
-                stateMachine.TransitState((int)EMoveState.Move);
-            else
-                stateMachine.TransitState((int)EMoveState.Idle);
+            stateMachine.TransitState((int)EMoveState.Idle);
         }
 
         private void Update()
         {
-            UpdateTimers();
+            if (dashCooldownTimer > 0f)
+                dashCooldownTimer -= Time.deltaTime;
             stateMachine.OnUpdate(Time.deltaTime);
         }
 
@@ -89,7 +85,7 @@ namespace MS.Field
         {
             UpdateGroundCheck();
             UpdateFallGravity();
-            ApplyVelocity();
+            rb.linearVelocity = new Vector2(curVelocityX, rb.linearVelocityY);
         }
 
         private void InitStateMachine()
@@ -124,23 +120,12 @@ namespace MS.Field
             if (stateMachine.IsCurState((int)EMoveState.Dash)) return;
 
             if (rb.linearVelocityY < 0f)
-                rb.gravityScale = Settings.GravityScale * Settings.FallMultiplier;
+                rb.gravityScale = Settings.GravityScale * Settings.FallMultiple;
             else
                 rb.gravityScale = Settings.GravityScale;
         }
 
-        private void ApplyVelocity()
-        {
-            rb.linearVelocity = new Vector2(curVelocityX, rb.linearVelocityY);
-        }
-
-        private void UpdateTimers()
-        {
-            if (dashCooldownTimer > 0f)
-                dashCooldownTimer -= Time.deltaTime;
-        }
-
-        private void UpdateFacing()
+        private void UpdateScaleX()
         {
             if (moveInput.x > 0.01f && !facingRight)
             {
@@ -179,7 +164,7 @@ namespace MS.Field
         private void OnIdleEnter(int _prevState, object[] _param)
         {
             curVelocityX = 0f;
-            spineController.PlayIdle();
+            spineController.PlayLoop(Settings.AnimIdle);
         }
 
         private void OnIdleUpdate(float _dt)
@@ -196,12 +181,12 @@ namespace MS.Field
 
         private void OnMoveEnter(int _prevState, object[] _param)
         {
-            spineController.PlayMove();
+            spineController.PlayLoop(Settings.AnimRun);
         }
 
         private void OnMoveUpdate(float _dt)
         {
-            UpdateFacing();
+            UpdateScaleX();
             curVelocityX = moveInput.x * Settings.MoveSpeed;
 
             if (CheckCurInput()) return;
@@ -219,12 +204,12 @@ namespace MS.Field
             // Dash 종료 후 공중 복귀로 진입한 경우엔 점프력 재적용 금지 (이중 점프 방지)
             if (_prevState != (int)EMoveState.Dash)
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
-            spineController.PlayJump();
+            spineController.PlayLoop(Settings.AnimJump);
         }
 
         private void OnJumpUpdate(float _dt)
         {
-            UpdateFacing();
+            UpdateScaleX();
             curVelocityX = moveInput.x * Settings.MoveSpeed * Settings.AirControlMultiplier;
 
             // 점프 중 대시만 허용
@@ -265,7 +250,7 @@ namespace MS.Field
             rb.gravityScale = 0f;
             rb.linearVelocity = new Vector2(rb.linearVelocityX, 0f);
 
-            spineController.PlayDash();
+            spineController.PlayLoop(Settings.AnimDash);
         }
 
         private void OnDashUpdate(float _dt)

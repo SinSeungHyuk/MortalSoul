@@ -29,7 +29,7 @@ namespace MS.Field
             state.Event += OnSpineEvent;
             state.Complete += OnSpineComplete;
 
-            PlayIdle();
+            PlayLoop(Settings.AnimIdle);
         }
 
         private void OnDestroy()
@@ -44,12 +44,7 @@ namespace MS.Field
         }
 
         // ===== 루프 재생 =====
-        public void PlayIdle() => PlayLoop(Settings.AnimIdle);
-        public void PlayMove() => PlayLoop(Settings.AnimRun);
-        public void PlayJump() => PlayLoop(Settings.AnimJump);
-        public void PlayDash() => PlayLoop(Settings.AnimDash);
-
-        private void PlayLoop(string _animationName)
+        public void PlayLoop(string _animationName)
         {
             CancelAllWaitTcs();
             skeletonAnimation.AnimationState.SetAnimation(Settings.SpineMainTrack, _animationName, true);
