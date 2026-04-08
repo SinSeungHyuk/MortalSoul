@@ -327,6 +327,18 @@ namespace MS.Field
             moveInput.x = Mathf.Clamp(moveInput.x, -1f, 1f);
         }
 
+        public void OnJump(InputValue _value)
+        {
+            if (_value.isPressed)
+                jumpRequested = true;
+        }
+
+        public void OnSprint(InputValue _value)
+        {
+            if (_value.isPressed)
+                dashRequested = true;
+        }
+
         public void OnAttack(InputValue _value)
         {
             if (!_value.isPressed) return;
