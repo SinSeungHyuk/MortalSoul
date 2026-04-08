@@ -27,6 +27,7 @@ namespace MS.Field
 
         private float dashTimer;
         private float dashCooldownTimer;
+        private float dashFreezeTimer;
 
         // 현재 속도
         private float curVelocityX;
@@ -249,6 +250,7 @@ namespace MS.Field
         private void OnDashEnter(int _prevState, object[] _param)
         {
             dashTimer = Settings.DashDuration;
+            dashFreezeTimer = 0f;
             dashCooldownTimer = Settings.DashCooldown;
 
             float direction = facingRight ? 1f : -1f;
@@ -263,33 +265,47 @@ namespace MS.Field
 
         private void OnDashUpdate(float _dt)
         {
-            dashTimer -= _dt;
-
             // 대시 중 모든 입력 소비 (무시)
             jumpRequested = false;
             dashRequested = false;
 
-            if (dashTimer <= 0f)
+            // 1) 이동 단계
+            if (dashTimer > 0f)
             {
-                curVelocityX = 0f;
-
-                // 공중 대시 종료 → 수직 낙하 (수평 속도 제거)
-                if (!isGrounded)
+                dashTimer -= _dt;
+                if (dashTimer <= 0f)
                 {
-                    rb.linearVelocity = new Vector2(0f, rb.linearVelocityY);
-                    stateMachine.TransitState((int)EMoveState.Jump);
+                    // 이동 끝 → 프리즈 진입. 수평/수직 모두 정지, 중력은 계속 0 유지(공중도 멈춤)
+                    curVelocityX = 0f;
+                    rb.linearVelocity = Vector2.zero;
+                    dashFreezeTimer = Settings.DashEndFreezeDuration;
                 }
-                else if (Mathf.Abs(moveInput.x) > 0.1f)
-                    stateMachine.TransitState((int)EMoveState.Move);
-                else
-                    stateMachine.TransitState((int)EMoveState.Idle);
+                return;
             }
+
+            // 2) 프리즈 단계
+            if (dashFreezeTimer > 0f)
+            {
+                dashFreezeTimer -= _dt;
+                curVelocityX = 0f;
+                rb.linearVelocity = Vector2.zero;
+                if (dashFreezeTimer > 0f) return;
+            }
+
+            // 3) 종료 → 다음 상태
+            if (!isGrounded)
+                stateMachine.TransitState((int)EMoveState.Jump);
+            else if (Mathf.Abs(moveInput.x) > 0.1f)
+                stateMachine.TransitState((int)EMoveState.Move);
+            else
+                stateMachine.TransitState((int)EMoveState.Idle);
         }
 
         private void OnDashExit(int _nextState)
         {
             // 대시 종료 시 중력 복원
             rb.gravityScale = Settings.GravityScale;
+            dashFreezeTimer = 0f;
         }
 
         #endregion
