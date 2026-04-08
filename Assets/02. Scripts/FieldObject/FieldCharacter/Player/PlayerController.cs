@@ -120,6 +120,9 @@ namespace MS.Field
 
         private void UpdateFallGravity()
         {
+            // Dash 상태에서는 중력 0을 유지해야 하므로 덮어쓰지 않음
+            if (stateMachine.IsCurState((int)EMoveState.Dash)) return;
+
             if (rb.linearVelocityY < 0f)
                 rb.gravityScale = Settings.GravityScale * Settings.FallMultiplier;
             else
@@ -213,7 +216,9 @@ namespace MS.Field
 
         private void OnJumpEnter(int _prevState, object[] _param)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
+            // Dash 종료 후 공중 복귀로 진입한 경우엔 점프력 재적용 금지 (이중 점프 방지)
+            if (_prevState != (int)EMoveState.Dash)
+                rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
             spineController.PlayJump();
         }
 
