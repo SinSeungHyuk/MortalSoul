@@ -12,6 +12,7 @@ namespace MS.Battle
     {
         public event Action OnAttackStarted;
         public event Action OnAttackEnded;
+        public event Action OnComboStepStarted;
 
         public bool IsAttacking => isAttacking;
         public EWeaponType CurWeaponType => curWeaponType;
@@ -73,6 +74,7 @@ namespace MS.Battle
                 while (true)
                 {
                     var comboData = curWeaponData.ComboList[comboIndex];
+                    OnComboStepStarted?.Invoke();
                     spine.PlayAnimation(comboData.AnimKey, false);
 
                     // 1) 히트 타이밍 대기 → 공격판정

@@ -28,6 +28,11 @@ namespace MS.Field
         private float dashTimer;
         private float dashCooldownTimer;
 
+        // TODO: 공격 전진 임시 하드코딩. 추후 WeaponSettingData.AttackComboData에 ForwardDistance/Duration 추가하여 콤보별로 데이터화 필요
+        private float attackForwardTimer;
+        private const float AttackForwardSpeed = 4f;
+        private const float AttackForwardDuration = 0.12f;
+
         // 현재 속도
         private float curVelocityX;
 
@@ -52,6 +57,7 @@ namespace MS.Field
             wsc = _wsc;
             wsc.OnAttackStarted += OnAttackStartedCallback;
             wsc.OnAttackEnded += OnAttackEndedCallback;
+            wsc.OnComboStepStarted += OnComboStepStartedCallback;
         }
 
         private void OnDestroy()
@@ -60,6 +66,7 @@ namespace MS.Field
             {
                 wsc.OnAttackStarted -= OnAttackStartedCallback;
                 wsc.OnAttackEnded -= OnAttackEndedCallback;
+                wsc.OnComboStepStarted -= OnComboStepStartedCallback;
             }
         }
 
@@ -68,8 +75,14 @@ namespace MS.Field
             stateMachine.TransitState((int)EMoveState.Attack);
         }
 
+        private void OnComboStepStartedCallback()
+        {
+            attackForwardTimer = AttackForwardDuration;
+        }
+
         private void OnAttackEndedCallback()
         {
+            attackForwardTimer = 0f;
             if (!isGrounded)
                 stateMachine.TransitState((int)EMoveState.Jump);
             else if (Mathf.Abs(moveInput.x) > 0.1f)
@@ -127,6 +140,13 @@ namespace MS.Field
 
         private void ApplyVelocity()
         {
+            // TODO: 공격 전진 임시 처리. 콤보 데이터 기반으로 이관 예정
+            if (attackForwardTimer > 0f && stateMachine.IsCurState((int)EMoveState.Attack))
+            {
+                attackForwardTimer -= Time.fixedDeltaTime;
+                curVelocityX = (facingRight ? 1f : -1f) * AttackForwardSpeed;
+            }
+
             rb.linearVelocity = new Vector2(curVelocityX, rb.linearVelocityY);
         }
 
