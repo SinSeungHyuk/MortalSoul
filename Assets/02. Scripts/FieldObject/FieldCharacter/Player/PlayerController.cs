@@ -164,7 +164,7 @@ namespace MS.Field
         private void OnIdleEnter(int _prevState, object[] _param)
         {
             curVelocityX = 0f;
-            spineController.PlayLoop(Settings.AnimIdle);
+            spineController.PlayAnimation(Settings.AnimIdle, true);
         }
 
         private void OnIdleUpdate(float _dt)
@@ -181,7 +181,7 @@ namespace MS.Field
 
         private void OnMoveEnter(int _prevState, object[] _param)
         {
-            spineController.PlayLoop(Settings.AnimRun);
+            spineController.PlayAnimation(Settings.AnimRun, true);
         }
 
         private void OnMoveUpdate(float _dt)
@@ -204,7 +204,7 @@ namespace MS.Field
             // Dash 종료 후 공중 복귀로 진입한 경우엔 점프력 재적용 금지 (이중 점프 방지)
             if (_prevState != (int)EMoveState.Dash)
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
-            spineController.PlayLoop(Settings.AnimJump);
+            spineController.PlayAnimation(Settings.AnimJump, true);
         }
 
         private void OnJumpUpdate(float _dt)
@@ -250,7 +250,7 @@ namespace MS.Field
             rb.gravityScale = 0f;
             rb.linearVelocity = new Vector2(rb.linearVelocityX, 0f);
 
-            spineController.PlayLoop(Settings.AnimDash);
+            spineController.PlayAnimation(Settings.AnimDash, true);
         }
 
         private void OnDashUpdate(float _dt)
