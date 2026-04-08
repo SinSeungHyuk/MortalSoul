@@ -1,5 +1,6 @@
 
 작성일 2026-04-07 (재정리)
+완료일 2026-04-08
 
 ### 작업 요청
 
@@ -188,3 +189,48 @@ private async UniTaskVoid RunComboLoopAsync()
 - 구독 수명 관리 · 핸들러 함수 · pending 필드는 모두 SpineController 내부로 일원화.
 - 같은 패턴을 추후 `BaseSkill` 구현체에서도 그대로 사용 → SSC/WSC 모두 일관된 비동기 흐름.
 - 애니메이션 클립은 자기가 왜 재생되는지 모름. `hit` 이벤트는 단일 의미만 가지며, 의미 분기는 호출자(WSC vs Skill)가 자기 컨텍스트에서 해석.
+
+---
+
+### 작업 내용
+
+1. **SpineController await 헬퍼 도입** (`Assets/02. Scripts/FieldObject/FieldCharacter/SpineController.cs`)
+   - 외부 노출 Action 이벤트(`OnAttackEvent`/`OnComboReadyEvent`/`OnActionCompleted`) 전부 제거
+   - `WaitForAnimEventAsync(string)` / `WaitForCompleteAsync()` 두 개의 await 헬퍼 추가
+   - 내부 `curWaitEventTcs` / `curWaitCompleteTcs` 단일 TCS 필드로 처리 (게임상 동시 대기자 없음 가정)
+   - Spine `Event` 콜백에서 키 매칭 시 TCS resolve, `Complete` 콜백에서 비루프 트랙일 때 resolve
+   - `PlayLoop`/`PlayAnimation` 호출 시 `CancelAllWaitTcs`로 미해결 TCS 일괄 캔슬 (안전망)
+   - `OnDestroy`에서 이벤트 해제 + TCS 정리
+   - 기존 `PlayIdle`/`PlayMove`/`PlayJump`/`PlayDash` 루프 헬퍼는 그대로 유지
+
+2. **WeaponSystemComponent 신규 작성** (`Assets/02. Scripts/Battle/WeaponSystemComponent.cs`)
+   - 내부 상태: `owner` / `curWeaponType` / `curWeaponData` / `comboIndex` / `isReserveNextCombo` / `isAttacking`
+   - 공개 API: `InitWSC` / `ActivateAttack` / `ChangeWeaponType` / `IsAttacking` / `CurWeaponType`
+   - `ActivateAttack`: 무기 데이터 검증 → 공격 중이면 예약 플래그만 ON, 아니면 `ActivateAttackAsync` Forget 실행
+   - `ActivateAttackAsync` 콤보 루프: `Play(combo.AnimKey)` → `WaitForAnimEventAsync("attack")` → `DoAttack` (placeholder) → `WhenAny(comboReady, complete)` → 예약 분기 처리
+   - 콤보 종료/캔슬 시 `finally`에서 인덱스/예약/`isAttacking` 리셋
+   - `OperationCanceledException` 캐치로 외부 Play 호출 시 안전 종료
+   - `OnUpdate`/`CancelAttack` API 미구현 (await 기반 + cancel-on-Play 안전망으로 불필요)
+
+3. **BattleSystemComponent 보완** (`Assets/02. Scripts/Battle/BattleSystemComponent.cs`)
+   - `WSC { get; private set; }` 프로퍼티 추가 (몬스터는 null)
+   - 플레이어용 오버로드 `InitBSC(owner, attrSet, weaponType)` 추가 → 기존 몬스터용 시그니처 위에서 호출 후 WSC 생성/`InitWSC`
+   - `TakeDamage(DamageInfo)` 골격 추가 (placeholder)
+   - `OnUpdate`에서 WSC 호출하지 않음 (await 기반)
+
+4. **PlayerCharacter ↔ BSC 연결** (`Assets/02. Scripts/FieldObject/FieldCharacter/Player/PlayerCharacter.cs`)
+   - `TestSpineComponent` 의존 제거
+   - `Main.IsBootCompleted` 대기 후 `PlayerAttributeSet` 생성 + 임시 스탯 세팅
+   - `BSC.InitBSC(this, attrSet, EWeaponType.OneHandSword)` 호출
+
+### 특이사항
+
+- 문서의 `WaitForAnimEvent` → 실제 구현은 `WaitForAnimEventAsync` (Async 접미사 일관성 유지)
+- 문서의 `RequestAttack`/`ChangeWeapon` → 실제 `ActivateAttack`/`ChangeWeaponType`로 명명
+- 문서에서는 `Dictionary<string, TCS> pendingEventWaits`로 설계했으나, "동시 대기자 없음" 가정에 따라 단일 TCS 필드로 단순화 (기능 동일)
+- `DoAttack`은 placeholder (로그 출력만). 실제 OverlapBox 히트 판정 + `BSC.TakeDamage` 연동은 별도 작업
+- PlayerController 상태머신과 공격 통합, UI 공격 버튼 연결, 소울 시스템 연결, 몬스터 측 SpineController 부착, `ISpineController` 추상화는 비범위 그대로 유지
+
+### 태그
+
+#BSC #WSC #SSC #SpineController #UniTask #콤보 #기본공격 #PlayerCharacter #await패턴 #이벤트구독폐기

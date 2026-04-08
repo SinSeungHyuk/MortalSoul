@@ -60,25 +60,28 @@ namespace MS.Core.StateMachine
 
                 int curStateId = -1;
 
-                // 1. ÇöÀç »óÅÂ Á¾·á
+                // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 if (curState != null)
                 {
                     curStateId = curState.StateId;
                     curState.OnStateExit(nextState.StateId);
                 }
 
-                // 2. »óÅÂ ±³Ã¼
+                // 2. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼
                 curState = nextState;
 
-                // 3. »õ »óÅÂ ÁøÀÔ
+                // 3. ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 curState.OnStateEnter(curStateId, connectionParams);
             }
 
-            // ÇöÀç »óÅÂ ¾÷µ¥ÀÌÆ®
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
             curState?.OnStateUpdate(_deltaTime);
         }
 
-        public int GetCurrentStateId() 
+        public int GetCurrentStateId()
             => curState != null ? curState.StateId : -1;
+
+        public bool IsCurState(int _stateId)
+            => curState != null && curState.StateId == _stateId;
     }
 }

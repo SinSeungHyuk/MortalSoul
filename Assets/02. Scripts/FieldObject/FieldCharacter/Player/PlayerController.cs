@@ -1,3 +1,4 @@
+using MS.Battle;
 using MS.Core.StateMachine;
 using MS.Utils;
 using UnityEngine;
@@ -7,13 +8,14 @@ namespace MS.Field
 {
     public class PlayerController : MonoBehaviour
     {
-        public enum EMoveState { Idle, Move, Jump, Dash }
+        public enum EMoveState { Idle, Move, Jump, Dash, Attack }
 
         private Rigidbody2D rb;
         private BoxCollider2D col;
         private SpineController spineController;
         private PlayerCharacter playerCharacter;
         private MSStateMachine<PlayerController> stateMachine;
+        private WeaponSystemComponent wsc;
 
         private Vector2 moveInput;
         private bool isGrounded;
@@ -45,6 +47,37 @@ namespace MS.Field
             InitStateMachine();
         }
 
+        public void InitController(WeaponSystemComponent _wsc)
+        {
+            wsc = _wsc;
+            wsc.OnAttackStarted += OnAttackStartedCallback;
+            wsc.OnAttackEnded += OnAttackEndedCallback;
+        }
+
+        private void OnDestroy()
+        {
+            if (wsc != null)
+            {
+                wsc.OnAttackStarted -= OnAttackStartedCallback;
+                wsc.OnAttackEnded -= OnAttackEndedCallback;
+            }
+        }
+
+        private void OnAttackStartedCallback()
+        {
+            stateMachine.TransitState((int)EMoveState.Attack);
+        }
+
+        private void OnAttackEndedCallback()
+        {
+            if (!isGrounded)
+                stateMachine.TransitState((int)EMoveState.Jump);
+            else if (Mathf.Abs(moveInput.x) > 0.1f)
+                stateMachine.TransitState((int)EMoveState.Move);
+            else
+                stateMachine.TransitState((int)EMoveState.Idle);
+        }
+
         private void Update()
         {
             UpdateTimers();
@@ -66,6 +99,7 @@ namespace MS.Field
             stateMachine.RegisterState((int)EMoveState.Move, OnMoveEnter, OnMoveUpdate, null);
             stateMachine.RegisterState((int)EMoveState.Jump, OnJumpEnter, OnJumpUpdate, null);
             stateMachine.RegisterState((int)EMoveState.Dash, OnDashEnter, OnDashUpdate, OnDashExit);
+            stateMachine.RegisterState((int)EMoveState.Attack, OnAttackEnter, null, null);
 
             stateMachine.TransitState((int)EMoveState.Idle);
         }
@@ -260,6 +294,16 @@ namespace MS.Field
 
         #endregion
 
+        #region Attack State
+
+        private void OnAttackEnter(int _prevState, object[] _param)
+        {
+            curVelocityX = 0f;
+            // 애니메이션은 WSC가 재생함
+        }
+
+        #endregion
+
         public void OnMove(InputValue _value)
         {
             moveInput = _value.Get<Vector2>();
@@ -270,7 +314,12 @@ namespace MS.Field
         public void OnAttack(InputValue _value)
         {
             if (!_value.isPressed) return;
-            playerCharacter.BSC?.WSC?.ActivateAttack();
+            if (wsc == null) return;
+            if (!stateMachine.IsCurState((int)EMoveState.Idle) &&
+                !stateMachine.IsCurState((int)EMoveState.Move) &&
+                !stateMachine.IsCurState((int)EMoveState.Attack)) return;
+
+            wsc.ActivateAttack();
         }
     }
 }

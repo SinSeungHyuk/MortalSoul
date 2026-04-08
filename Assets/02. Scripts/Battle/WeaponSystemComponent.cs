@@ -10,6 +10,9 @@ namespace MS.Battle
 {
     public class WeaponSystemComponent
     {
+        public event Action OnAttackStarted;
+        public event Action OnAttackEnded;
+
         public bool IsAttacking => isAttacking;
         public EWeaponType CurWeaponType => curWeaponType;
 
@@ -62,6 +65,7 @@ namespace MS.Battle
         {
             isAttacking = true;
             comboIndex = 0;
+            OnAttackStarted?.Invoke();
             var spine = owner.SpineController;
 
             try
@@ -106,6 +110,7 @@ namespace MS.Battle
                 comboIndex = 0;
                 isReserveNextCombo = false;
                 isAttacking = false;
+                OnAttackEnded?.Invoke();
             }
         }
 

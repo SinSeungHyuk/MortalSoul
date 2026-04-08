@@ -21,7 +21,17 @@ namespace MS.Field
         private async UniTaskVoid InitTestAsync()
         {
             await UniTask.WaitUntil(() => Main.Instance.IsBootCompleted);
+            InitPlayer("test");
+        }
 
+        protected override void Update()
+        {
+            base.Update();
+        }
+
+        public void InitPlayer(string _characKey)
+        {
+            // TODO: _characKey로 CharacterSettingData 조회하여 attrSet/weapon 구성
             var attrSet = new PlayerAttributeSet();
             attrSet.InitBaseAttributeSet(new Dictionary<EStatType, float>
             {
@@ -33,16 +43,8 @@ namespace MS.Field
 
             BSC = new BattleSystemComponent();
             BSC.InitBSC(this, attrSet, EWeaponType.OneHandSword);
-        }
 
-        protected override void Update()
-        {
-            base.Update();
-        }
-
-        public void InitPlayer(string _characKey)
-        {
-
+            GetComponent<PlayerController>().InitController(BSC.WSC);
         }
     }
 }
