@@ -20,6 +20,7 @@ namespace MS.Utils
         public static float DashSpeed = 30f;
         public static float DashDuration = 0.3f;
         public static float DashCooldown = 0.8f;
+        public static float DashEndFreezeDuration = 0.25f;
 
         // 지면 판정
         public static Vector2 GroundCheckSize = new Vector2(0.4f, 0.05f);

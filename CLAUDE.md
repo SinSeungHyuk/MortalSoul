@@ -29,8 +29,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 경험치 / 레벨업 시스템
 
 - **경험치/레벨은 공용**: 소울이 바뀌어도 경험치와 레벨은 하나. 캐릭터(육체)는 한 명이고 영혼만 교체되는 컨셉
-- **레벨업 보상 타이밍**: 전투 중 레벨업해도 즉시 보상 없음. **방 클리어 후 휴무 상태**에 진입하면 그때 레벨업 보상 선택지 팝업
-- **다회 레벨업**: 방 안에서 여러 번 레벨업 시 보상 횟수를 누적 → 휴무 진입 시 연속으로 선택지 팝업
+- **레벨업 보상 타이밍**: 전투 중 레벨업해도 즉시 보상 없음. 방의 모든 몬스터 처치 후 열리는 **다음 던전 입구 트리거**에 도달하는 시점에 누적된 레벨업 보상 선택지가 일괄 발동된다.
+- **다회 레벨업**: 방 안에서 여러 번 레벨업 시 보상 횟수를 누적 → 입구 트리거 도달 시 연속으로 선택지 팝업
 - **보상 방식**: 랜덤 스탯 선택지
 - **레벨업 스탯 저장**: `Stat.baseValue`는 소울 고유 전용. 레벨업 보상은 `bonusStat`에 "levelup" 키(Flat)로 누적 합산값을 덮어써서 관리. 별도 `Dictionary<EStatType, float> levelUpGrowth`로 누적량 추적
 
@@ -72,6 +72,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 조이스틱을 사용하여 좌,우 이동을 진행하며 이동시 해당 방향을 바라본다. 이동 애니메이션은 항상 'Run1'을 사용한다.
 - 점프 사용 시 'Wait1' 애니메이션을 재생하며 점프를 수행하는 동안에는 다른 애니메이션을 재생할 수 없으며 공중에 있는 동안 좌,우 방향 전환 및 이동과 '대시'가 가능하다.
 - 대시는 'Wait1' 애니메이션을 재생하며 빠른 속도로 현재 바라보고 있는 방향을 향해 이동한다. 대시를 수행하는 동안 다른 애니메이션 및 동작을 할 수 없다.
+- **대시 종료 후 정지(Freeze)**: 대시가 끝나면 `Settings.DashEndFreezeDuration`(기본 0.25초) 동안 속도가 0으로 고정된다. 지상에서는 그 자리 정지, 공중에서는 그 시간만큼 공중에 떠 있다가 이후 중력에 의해 낙하한다. (스컬 원본 동일)
 - **공격**은 버튼클릭을 통해 사용하며 공격을 수행하는 동안에는 다른 조작(이동,대시,점프,스킬)을 모두 할 수 없다. 공격 중 피격당해도 공격이 취소되지 않음(슈퍼아머). 공격 중 방향 전환 불가 — 콤보 종료 후에만 가능.
 - 스킬 캐스팅은 이동,점프,대시,공격 등으로 즉시 취소 가능.
 
@@ -246,7 +247,7 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 
 | 파일 | 설명 |
 |------|------|
-| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, JumpForce=12, DashSpeed=30, DashDuration=0.3, DashCooldown=0.8, GravityScale=3, FallMultiplier=2.5, AirControlMultiplier=0.8), 애니메이션 키(AnimIdle="Wait1", AnimRun="Run1", AnimJump="Wait4", AnimDash="Run3"), Spine 트랙(`SpineMainTrack=0`), Spine 이벤트 키(`SpineEventAttack="attack"`, `SpineEventComboReady="combo_ready"`), 레이어마스크(Monster/Player/Ground), 색상 팔레트 |
+| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, JumpForce=12, DashSpeed=30, DashDuration=0.3, DashCooldown=0.8, DashEndFreezeDuration=0.25, GravityScale=3, FallMultiplier=2.5, AirControlMultiplier=0.8), 애니메이션 키(AnimIdle="Wait1", AnimRun="Run1", AnimJump="Wait4", AnimDash="Run3"), Spine 트랙(`SpineMainTrack=0`), Spine 이벤트 키(`SpineEventAttack="attack"`, `SpineEventComboReady="combo_ready"`), 레이어마스크(Monster/Player/Ground), 색상 팔레트 |
 | `MathUtils.cs` | 수학 유틸 |
 | `TransformExtensions.cs` | Transform 확장 (`FindChildDeep` 등) |
 
