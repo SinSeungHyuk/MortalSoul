@@ -19,13 +19,40 @@
         "CooltimeAccel": 0,
         "AttackSpeed": 100
       },
-      "SkinKeys": {
-        "body": "BODY/base",
-        "head": "HEAD/headA",
-        "hair": "HAIR/hairA_a",
-        "righthand": "RIGHTHAND/Sword_OneHand_Common1"
-      },
+      "SkinKeys": [
+        "BODY/base",
+        "HEAD/headA",
+        "HAIR/hairA_a",
+        "RIGHTHAND/Sword_OneHand_Common1"
+      ],
       "WeaponType": "OneHandSword",
+      "BasicAttackKey": "",
+      "SkillKeys": [ "TestOneHandAttack" ],
+      "SwitchingEffectKey": "",
+      "SubPassiveKey": ""
+    },
+    "test2": {
+      "Grade": "Rare",
+      "AttributeSetSettingData": {
+        "MaxHealth": 70,
+        "BaseAttackPower": 15,
+        "SkillAttackPower": 15,
+        "Defense": 3,
+        "MoveSpeed": 100,
+        "CriticChance": 10,
+        "CriticMultiple": 150,
+        "Evasion": 0,
+        "LifeSteal": 0,
+        "CooltimeAccel": 0,
+        "AttackSpeed": 100
+      },
+      "SkinKeys": [
+        "BODY/base",
+        "HEAD/headB",
+        "HAIR/hairB_a",
+        "RIGHTHAND/Sword_TwoHand_Common1"
+      ],
+      "WeaponType": "GreatSword",
       "BasicAttackKey": "",
       "SkillKeys": [ "TestOneHandAttack" ],
       "SwitchingEffectKey": "",

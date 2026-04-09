@@ -1,16 +1,23 @@
+using Core;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Debug.Log("워크플로우 테스트 - Test.cs 로그 출력 성공");
+        InitTestSoulAsync().Forget();
     }
 
-    // Update is called once per frame
-    void Update()
+    private async UniTaskVoid InitTestSoulAsync()
     {
-        
+        await UniTask.WaitUntil(() => Main.Instance.IsBootCompleted);
+        await UniTask.DelayFrame(1);
+
+        var player = Main.Instance.PlayerManager.CurPlayer;
+        if (player == null) return;
+
+        player.AcquireSoul("test2");
+        Debug.Log("[Test] 서브 소울 'test2' 지급 완료");
     }
 }
