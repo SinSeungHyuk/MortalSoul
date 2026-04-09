@@ -12,7 +12,7 @@ namespace MS.Battle
         public Stat CooltimeAccel { get; private set; }
         public Stat AttackSpeed { get; private set; }
 
-        public void InitAttributeSet(AttributeSetSettingData _data)
+        public void InitPlayerAttributeSet(PlayerAttributeSetSettingData _data)
         {
             MaxHealth = new Stat(_data.MaxHealth);
             BaseAttackPower = new Stat(_data.BaseAttackPower);
@@ -39,6 +39,21 @@ namespace MS.Battle
             statDict.Add(EStatType.AttackSpeed, AttackSpeed);
 
             Health = MaxHealth.Value;
+        }
+
+        public void SwapBaseValues(PlayerAttributeSetSettingData _data)
+        {
+            MaxHealth.SetBaseValue(_data.MaxHealth);
+            BaseAttackPower.SetBaseValue(_data.BaseAttackPower);
+            SkillAttackPower.SetBaseValue(_data.SkillAttackPower);
+            Defense.SetBaseValue(_data.Defense);
+            MoveSpeed.SetBaseValue(_data.MoveSpeed);
+            CriticChance.SetBaseValue(_data.CriticChance);
+            CriticMultiple.SetBaseValue(_data.CriticMultiple);
+            Evasion.SetBaseValue(_data.Evasion);
+            LifeSteal.SetBaseValue(_data.LifeSteal);
+            CooltimeAccel.SetBaseValue(_data.CooltimeAccel);
+            AttackSpeed.SetBaseValue(_data.AttackSpeed);
         }
     }
 }
