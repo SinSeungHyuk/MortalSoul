@@ -22,8 +22,6 @@ namespace MS.Field
 
         private void Start()
         {
-            SetCombinedSkin();
-
             var state = skeletonAnimation.AnimationState;
             state.Data.DefaultMix = 0.2f;
             state.Event += OnSpineEvent;
@@ -88,20 +86,10 @@ namespace MS.Field
             var skeleton = skeletonAnimation.Skeleton;
             var combinedSkin = new Skin("combined");
 
-            if (_skinKeys == null || _skinKeys.Length == 0)
+            for (int i = 0; i < _skinKeys.Length; i++)
             {
-                combinedSkin.AddSkin(skeleton.Data.FindSkin("BODY/base"));
-                combinedSkin.AddSkin(skeleton.Data.FindSkin("HEAD/headA"));
-                combinedSkin.AddSkin(skeleton.Data.FindSkin("HAIR/hairA_a"));
-                combinedSkin.AddSkin(skeleton.Data.FindSkin("RIGHTHAND/Sword_OneHand_Common1"));
-            }
-            else
-            {
-                for (int i = 0; i < _skinKeys.Length; i++)
-                {
-                    var skin = skeleton.Data.FindSkin(_skinKeys[i]);
-                    if (skin != null) combinedSkin.AddSkin(skin);
-                }
+                var skin = skeleton.Data.FindSkin(_skinKeys[i]);
+                if (skin != null) combinedSkin.AddSkin(skin);
             }
 
             skeleton.SetSkin(combinedSkin);

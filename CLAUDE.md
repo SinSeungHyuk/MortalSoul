@@ -255,7 +255,7 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 | `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC + AttributeSet 보유, StatusEffect dict 관리(Apply/Update/End), TakeDamage. `InitBSC(owner, attrSet)` = 몬스터, `InitBSC(owner, attrSet, weaponType)` = 플레이어. `UseSkill(key)` 래퍼 |
 | `SkillSystemComponent.cs` | 스킬 관리 전담. 리플렉션으로 스킬 생성(`GiveSkill` — `MS.Battle.{skillKey}` 타입 검색), 쿨타임 체크, UniTask 비동기 실행, CancellationToken 취소(`CancelSkill`/`CancelAllSkills`), `runningSkillDict`로 중복 실행 차단 |
 | `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). 콤보 인덱스/예약 플래그/IsAttacking 관리. `ActivateAttack` → `ActivateAttackAsync` 코루틴이 `SpineController.WaitForAnimEventAsync(SpineEventAttack)` → `WhenAny(SpineEventComboReady, Complete)` 흐름으로 콤보 진행. 외부에서 다른 애니로 끊으면 OperationCanceledException으로 안전 종료 |
-| `AttributeSet/BaseAttributeSet.cs` | 스탯 딕셔너리(`EStatType` → `Stat`). Health 관리, OnHealthChanged 이벤트 |
+| `AttributeSet/BaseAttributeSet.cs` | 공통 스탯 필드(MaxHealth/BaseAttackPower/Defense/MoveSpeed) + statDict + Health 관리 + OnHealthChanged 이벤트. 실제 Init은 서브클래스가 각자의 SettingData를 받아 직접 수행 |
 | `AttributeSet/PlayerAttributeSet.cs` | 플레이어 전용 스탯(SkillAttackPower, CriticChance, CriticMultiple, Evasion, LifeSteal, CooltimeAccel, AttackSpeed) |
 | `AttributeSet/MonsterAttributeSet.cs` | 몬스터 전용 스탯(AttackRange) |
 | `DamageInfo.cs` | 데미지 정보 구조체. Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce. 기본공격 속성은 Void(무속성) 고정 |
