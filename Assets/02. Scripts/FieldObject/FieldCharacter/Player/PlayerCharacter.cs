@@ -31,6 +31,7 @@ namespace MS.Field
         {
             await UniTask.WaitUntil(() => Main.Instance.IsBootCompleted);
             InitPlayer("test");
+            GainSoul("test2");
         }
 
         public void InitPlayer(string _mainSoulKey)
@@ -38,38 +39,39 @@ namespace MS.Field
             psc = new PlayerSoulController();
             psc.InitPSC(this, _mainSoulKey);
 
-            var mainData = psc.GetMainSoulData();
-            if (mainData == null)
+            var soulSettingData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(_mainSoulKey);
+            if (soulSettingData == null)
             {
                 Debug.LogError($"[PlayerCharacter] CharacterSettingData 없음: {_mainSoulKey}");
                 return;
             }
 
             var playerAttributeSet = new PlayerAttributeSet();
-            playerAttributeSet.InitPlayerAttributeSet(mainData.AttributeSetSettingData);
+            playerAttributeSet.InitPlayerAttributeSet(soulSettingData.AttributeSetSettingData);
 
             BSC = new BattleSystemComponent();
-            BSC.InitBSC(this, playerAttributeSet, mainData.WeaponType);
+            BSC.InitBSC(this, playerAttributeSet);
+            BSC.WSC.ChangeWeaponType(soulSettingData.WeaponType);
 
-            if (mainData.SkillKeys != null)
+            if (soulSettingData.SkillKeys != null)
             {
-                foreach (var skillKey in mainData.SkillKeys)
+                foreach (var skillKey in soulSettingData.SkillKeys)
                     BSC.SSC.GiveSkill(skillKey);
             }
 
-            if (mainData.SkinKeys != null && mainData.SkinKeys.Count > 0)
-                SpineController.SetCombinedSkin(mainData.SkinKeys);
+            if (soulSettingData.SkinKeys != null && soulSettingData.SkinKeys.Count > 0)
+                SpineController.SetCombinedSkin(soulSettingData.SkinKeys);
 
             pmc.InitController(BSC.WSC);
         }
 
-        public void AcquireSoul(string _soulKey)
+        public void GainSoul(string _soulKey)
         {
-            if (psc.SubSoulKey != null) return;
+            if (psc.SubSoulKey != null) return; // todo :: 영혼 교체 구현
 
             psc.SetSubSoul(_soulKey);
 
-            var subData = psc.GetSubSoulData();
+            var subData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(_soulKey);
             if (subData == null) return;
 
             if (subData.SkillKeys != null)
@@ -87,13 +89,13 @@ namespace MS.Field
 
             BSC.SSC.CancelAllSkills();
 
-            var attrSet = (PlayerAttributeSet)BSC.AttributeSet;
-            float restoredHealth = psc.SwapSlots(attrSet.Health);
+            var playerAttributeSet = (PlayerAttributeSet)BSC.AttributeSet;
+            float restoredHealth = psc.SwapSlots(playerAttributeSet.Health);
 
-            var newSoulData = psc.GetMainSoulData();
+            var newSoulData = psc.GetMainSoulSettingData();
 
-            attrSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
-            attrSet.Health = Mathf.Min(restoredHealth, attrSet.MaxHealth.Value);
+            playerAttributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
+            playerAttributeSet.Health = Mathf.Min(restoredHealth, playerAttributeSet.MaxHealth.Value);
 
             BSC.WSC.ChangeWeaponType(newSoulData.WeaponType);
             SpineController.SetCombinedSkin(newSoulData.SkinKeys);

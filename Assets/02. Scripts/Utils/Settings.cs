@@ -11,16 +11,16 @@ namespace MS.Utils
         public static float AirControlMultiplier = 0.8f;
 
         // 점프 / 중력
-        public static float JumpForce = 12f;
+        public static float JumpForce = 18f;
         public static float GravityScale = 3f;
         public static float FallMultiple = 2.5f;
         public static float MaxFallSpeed = -20f;
 
         // 대시
-        public static float DashSpeed = 30f;
-        public static float DashDuration = 0.3f;
+        public static float DashSpeed = 20f;
+        public static float DashDuration = 0.2f;
         public static float DashCooldown = 0.8f;
-        public static float DashEndFreezeDuration = 0.25f;
+        public static float DashEndFreezeDuration = 0.2f;
 
         // 지면 판정
         public static Vector2 GroundCheckSize = new Vector2(0.4f, 0.05f);

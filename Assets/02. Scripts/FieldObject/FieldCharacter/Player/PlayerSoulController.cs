@@ -2,6 +2,7 @@ using Core;
 using MS.Data;
 using System;
 using System.Collections.Generic;
+using UnityEditor.Rendering;
 
 namespace MS.Field
 {
@@ -13,14 +14,14 @@ namespace MS.Field
         public event Action OnSoulSwapped;
 
         private PlayerCharacter owner;
-        private float subSoulHealth;
+        private float curSubSoulHealth;
 
         public void InitPSC(PlayerCharacter _owner, string _mainSoulKey)
         {
             owner = _owner;
             MainSoulKey = _mainSoulKey;
             SubSoulKey = null;
-            subSoulHealth = 0f;
+            curSubSoulHealth = 0f;
         }
 
         public bool CanSwap()
@@ -32,10 +33,12 @@ namespace MS.Field
 
         public float SwapSlots(float _curHealth)
         {
-            (MainSoulKey, SubSoulKey) = (SubSoulKey, MainSoulKey);
+            string tempSoulKey = MainSoulKey;
+            MainSoulKey = SubSoulKey;
+            SubSoulKey = tempSoulKey;
 
-            float restoredHealth = subSoulHealth;
-            subSoulHealth = _curHealth;
+            float restoredHealth = curSubSoulHealth;
+            curSubSoulHealth = _curHealth;
 
             return restoredHealth;
         }
@@ -47,27 +50,12 @@ namespace MS.Field
 
         public void InitSubSoulHealth(float _maxHealth)
         {
-            subSoulHealth = _maxHealth;
-        }
-
-        public CharacterSettingData GetMainSoulData()
-        {
-            var dict = Main.Instance.DataManager.SettingData.CharacterSettingData.CharacterSettingDataDict;
-            dict.TryGetValue(MainSoulKey, out CharacterSettingData data);
-            return data;
-        }
-
-        public CharacterSettingData GetSubSoulData()
-        {
-            if (SubSoulKey == null) return null;
-            var dict = Main.Instance.DataManager.SettingData.CharacterSettingData.CharacterSettingDataDict;
-            dict.TryGetValue(SubSoulKey, out CharacterSettingData data);
-            return data;
+            curSubSoulHealth = _maxHealth;
         }
 
         public List<string> GetActiveSkillKeys()
         {
-            var data = GetMainSoulData();
+            var data = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(MainSoulKey);
             if (data?.SkillKeys == null) return new List<string>();
             return new List<string>(data.SkillKeys);
         }

@@ -8,6 +8,13 @@ namespace MS.Data
     {
         public LevelSettingData LevelSettingData { get; set; }
         public Dictionary<string, CharacterSettingData> CharacterSettingDataDict { get; set; }
+
+
+        public CharacterSettingData GetSoulSettingData(string _soulKey)
+        {
+            CharacterSettingDataDict.TryGetValue(_soulKey, out CharacterSettingData data);
+            return data;
+        }
     }
 
     [Serializable]
@@ -21,17 +28,16 @@ namespace MS.Data
     public class CharacterSettingData
     {
         public EGrade Grade { get; set; }
-        public AttributeSetSettingData AttributeSetSettingData { get; set; }
-        public Dictionary<string, string> SkinKeys { get; set; }
+        public PlayerAttributeSetSettingData AttributeSetSettingData { get; set; }
+        public List<string> SkinKeys { get; set; }
         public EWeaponType WeaponType { get; set; }
-        public string BasicAttackKey { get; set; }
-        public string[] SkillKeys { get; set; }
+        public List<string> SkillKeys { get; set; }
         public string SwitchingEffectKey { get; set; }
         public string SubPassiveKey { get; set; }
     }
 
     [Serializable]
-    public class AttributeSetSettingData
+    public class PlayerAttributeSetSettingData
     {
         public float MaxHealth { get; set; }
         public float BaseAttackPower { get; set; }

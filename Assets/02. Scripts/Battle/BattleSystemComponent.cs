@@ -21,14 +21,8 @@ namespace MS.Battle
 
             SSC = new SkillSystemComponent();
             SSC.InitSSC(_owner, _attributeSet);
-        }
-
-        public void InitBSC(FieldCharacter _owner, BaseAttributeSet _attributeSet, EWeaponType _weaponType)
-        {
-            InitBSC(_owner, _attributeSet);
-
             WSC = new WeaponSystemComponent();
-            WSC.InitWSC(_owner, _weaponType);
+            WSC.InitWSC(_owner);
         }
 
         public void TakeDamage(DamageInfo _info)

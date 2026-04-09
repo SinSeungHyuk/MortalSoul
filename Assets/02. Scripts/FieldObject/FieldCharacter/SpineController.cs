@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using MS.Utils;
 using Spine;
@@ -81,12 +82,12 @@ namespace MS.Field
         }
 
         // ===== 스킨 =====
-        public void SetCombinedSkin(params string[] _skinKeys)
+        public void SetCombinedSkin(List<string> _skinKeys)
         {
             var skeleton = skeletonAnimation.Skeleton;
             var combinedSkin = new Skin("combined");
 
-            for (int i = 0; i < _skinKeys.Length; i++)
+            for (int i = 0; i < _skinKeys.Count; i++)
             {
                 var skin = skeleton.Data.FindSkin(_skinKeys[i]);
                 if (skin != null) combinedSkin.AddSkin(skin);

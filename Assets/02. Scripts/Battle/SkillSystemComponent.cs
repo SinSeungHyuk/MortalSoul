@@ -29,6 +29,14 @@ namespace MS.Battle
             runningSkillDict = new Dictionary<string, CancellationTokenSource>();
         }
 
+        public void OnUpdate(float _deltaTime)
+        {
+            foreach (var skill in ownedSkillDict.Values)
+            {
+                skill.OnUpdate(_deltaTime);
+            }
+        }
+
         public void GiveSkill(string _skillKey)
         {
             if (ownedSkillDict.ContainsKey(_skillKey))
@@ -132,14 +140,6 @@ namespace MS.Battle
                 cts.Dispose();
             runningSkillDict.Clear();
             ownedSkillDict.Clear();
-        }
-
-        public void OnUpdate(float _deltaTime)
-        {
-            foreach (var skill in ownedSkillDict.Values)
-            {
-                skill.OnUpdate(_deltaTime);
-            }
         }
     }
 }

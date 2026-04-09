@@ -12,7 +12,11 @@
       "Bash(python /tmp/validate_json.py)",
       "Bash(bash /tmp/comprehensive_check.sh)",
       "Bash(git mv:*)",
-      "Bash(python -c ':*)"
+      "Bash(python -c ':*)",
+      "Bash(git -C \"c:/Users/syjsh/UnityProjects/MortalSoul\" mv \"MortalSoulDoc/01. WorkReq/플레이어 공격 중 액션 허용.md\" \"MortalSoulDoc/02. InProgress/플레이어 공격 중 액션 허용.md\")",
+      "Bash(cp \"MortalSoulDoc/01. WorkReq/플레이어 공격 중 액션 허용.md\" \"MortalSoulDoc/02. InProgress/플레이어 공격 중 액션 허용.md\")",
+      "Bash(rm \"MortalSoulDoc/01. WorkReq/플레이어 공격 중 액션 허용.md\")",
+      "Bash(xargs grep:*)"
     ]
   }
 }

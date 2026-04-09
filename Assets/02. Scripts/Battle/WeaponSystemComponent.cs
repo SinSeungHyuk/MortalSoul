@@ -13,7 +13,6 @@ namespace MS.Battle
         public event Action OnAttackStarted;
         public event Action OnAttackEnded;
 
-        public bool IsAttacking => isAttacking;
         public EWeaponType CurWeaponType => curWeaponType;
 
         private FieldCharacter owner;
@@ -25,10 +24,9 @@ namespace MS.Battle
         private bool isAttacking;
 
 
-        public void InitWSC(FieldCharacter _owner, EWeaponType _weaponType)
+        public void InitWSC(FieldCharacter _owner)
         {
             owner = _owner;
-            ChangeWeaponType(_weaponType);
         }
 
         public void ChangeWeaponType(EWeaponType _weaponType)
