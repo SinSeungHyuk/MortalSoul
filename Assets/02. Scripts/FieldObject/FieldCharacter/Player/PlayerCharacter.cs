@@ -36,9 +36,9 @@ namespace MS.Field
             attrSet.InitBaseAttributeSet(new Dictionary<EStatType, float>
             {
                 { EStatType.MaxHealth, 100f },
-                { EStatType.AttackPower, 10f },
+                { EStatType.BaseAttackPower, 10f },
                 { EStatType.Defense, 5f },
-                { EStatType.MoveSpeed, 5f }
+                { EStatType.MoveSpeed, 100f }
             });
 
             BSC = new BattleSystemComponent();

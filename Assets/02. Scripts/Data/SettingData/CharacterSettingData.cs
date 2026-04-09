@@ -34,17 +34,15 @@ namespace MS.Data
     public class AttributeSetSettingData
     {
         public float MaxHealth { get; set; }
-        public float AttackPower { get; set; }
+        public float BaseAttackPower { get; set; }
+        public float SkillAttackPower { get; set; }
         public float Defense { get; set; }
-        public float Evasion { get; set; }
         public float MoveSpeed { get; set; }
         public float CriticChance { get; set; }
         public float CriticMultiple { get; set; }
+        public float Evasion { get; set; }
         public float LifeSteal { get; set; }
         public float CooltimeAccel { get; set; }
-        public float ProjectileCount { get; set; }
-        public float AreaRangeMultiple { get; set; }
-        public float KnockbackMultiple { get; set; }
-        public float CoinMultiple { get; set; }
+        public float AttackSpeed { get; set; }
     }
 }

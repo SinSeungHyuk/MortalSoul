@@ -7,18 +7,16 @@ namespace MS.Battle
     public enum EStatType
     {
         MaxHealth,
-        AttackPower,
+        BaseAttackPower,
+        SkillAttackPower,
         Defense,
         MoveSpeed,
-        Evasion,
         CriticChance,
         CriticMultiple,
+        Evasion,
         LifeSteal,
         CooltimeAccel,
-        ProjectileCount,
-        AreaRangeMultiple,
-        KnockbackMultiple,
-        CoinMultiple,
+        AttackSpeed,
         AttackRange
     }
 

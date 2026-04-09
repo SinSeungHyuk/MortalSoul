@@ -12,7 +12,7 @@ namespace MS.Battle
         protected Dictionary<EStatType, Stat> statDict = new Dictionary<EStatType, Stat>();
 
         public Stat MaxHealth { get; protected set; }
-        public Stat AttackPower { get; protected set; }
+        public Stat BaseAttackPower { get; protected set; }
         public Stat Defense { get; protected set; }
         public Stat MoveSpeed { get; protected set; }
         public EDamageAttributeType WeaknessAttributeType { get; set; }
@@ -41,12 +41,12 @@ namespace MS.Battle
 
             // 1. 공통 스탯 생성
             MaxHealth = new Stat(0);
-            AttackPower = new Stat(0);
+            BaseAttackPower = new Stat(0);
             Defense = new Stat(0);
             MoveSpeed = new Stat(0);
 
             statDict.Add(EStatType.MaxHealth, MaxHealth);
-            statDict.Add(EStatType.AttackPower, AttackPower);
+            statDict.Add(EStatType.BaseAttackPower, BaseAttackPower);
             statDict.Add(EStatType.Defense, Defense);
             statDict.Add(EStatType.MoveSpeed, MoveSpeed);
 

@@ -57,6 +57,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **체력 보존**: 소울별로 마지막 체력(lastHealth)을 저장. 교체 시 해당 소울의 마지막 체력 상태로 복원
 - **스탯 계층**: baseValue(소울 고유, 교체됨) + bonusStat "levelup" 키(레벨업 누적, 유지) + 기타 bonusStat(버프, 유지)
 
+### 플레이어 스탯 체계 (11종)
+
+모든 값은 정수형. `PlayerAttributeSet`에서 관리.
+
+| # | 스탯 | 설명 | 기본값/단위 |
+|---|------|------|-----------|
+| 1 | `MaxHealth` | 최대 체력 | - |
+| 2 | `BaseAttackPower` | 기본공격 피해량 (WSC) | - |
+| 3 | `SkillAttackPower` | 스킬 공격 피해량 (SSC) | - |
+| 4 | `Defense` | 방어력. 수치가 올라갈수록 효율 감소 커브 | - |
+| 5 | `MoveSpeed` | 이동속도 % 가중치. `Settings.MoveSpeed` * (값/100) | 기본 100 (%) |
+| 6 | `CriticChance` | 치명타 확률 (%) | 0 (%) |
+| 7 | `CriticMultiple` | 치명타 피해 배율 (%) | 기본 150 (%) |
+| 8 | `Evasion` | 회피율. Defense와 동일한 커브 | - |
+| 9 | `LifeSteal` | 공격 시 체력 회복 확률 (%), 발동 시 +1 HP | 0 (%) |
+| 10 | `CooltimeAccel` | 쿨타임 감소. Defense와 동일한 커브 | - |
+| 11 | `AttackSpeed` | 공격속도 %. 값만큼 애니메이션 재생속도 + 공격/스킬 쿨타임 감소 | 기본 100 (%) |
+
+> 몬스터 전용 `AttackRange`는 `MonsterAttributeSet`에서 별도로 관리.
+
 **소울 구성 요소**: 각 소울은 다음을 포함
 - 부위별 Spine 스킨 키값 (head, body, weapon 등)
 - 무기 타입 (대검, 한손검, 단도, 활, 지팡이 중 1개 — 소울에 종속)
@@ -199,7 +219,7 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 |------|------|
 | `GlobalDefine.cs` | `EGrade`(Normal/Rare/Unique/Legendary), `EZoneType`(Battle/Shop/Event/Boss), `ESkillValueType` 등 전역 enum |
 | `SettingData/SettingData.cs` | JSON 비동기 로드 진입점. CharacterSettingDict, MonsterSettingDict, SkillSettingDict, SoundSettingDict, WeaponSettingDict 보유. `LoadAllSettingDataAsync()` |
-| `SettingData/CharacterSettingData.cs` | 캐릭터(소울) 설정. Grade, AttributeSet(13개 스탯), SkinKeys, WeaponType, SkillKeys[], SwitchingEffectKey, SubPassiveKey |
+| `SettingData/CharacterSettingData.cs` | 캐릭터(소울) 설정. Grade, AttributeSet(11개 스탯), SkinKeys, WeaponType, SkillKeys[], SwitchingEffectKey, SubPassiveKey |
 | `SettingData/WeaponSettingData.cs` | 무기별 기본공격 데이터. `EWeaponType`(GreatSword/OneHandSword/Dagger/Bow/Staff) 키. `AttackComboData`(AnimKey, DamageMultiplier, HitRange, HitOffset, Knockback) |
 | `SettingData/SkillSettingData.cs` | 스킬 설정. OwnerType, 속성, 쿨타임, SkillValueDict |
 | `SettingData/MonsterSettingData.cs` | 몬스터 설정. 6개 스탯 + 약점속성 + 스킬리스트 |
@@ -231,12 +251,12 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 
 | 파일 | 설명 |
 |------|------|
-| `Stat.cs` | 스탯 시스템(`MS.Battle` 네임스페이스). `EStatType`(13종) + baseValue + bonusStatDict(Flat/Percentage). `OnValueChanged` 이벤트. 계산: `base * (1 + %합/100) + flat합` |
+| `Stat.cs` | 스탯 시스템(`MS.Battle` 네임스페이스). `EStatType`(12종, 플레이어 11 + 몬스터 AttackRange) + baseValue + bonusStatDict(Flat/Percentage). `OnValueChanged` 이벤트. 계산: `base * (1 + %합/100) + flat합` |
 | `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC + AttributeSet 보유, StatusEffect dict 관리(Apply/Update/End), TakeDamage. `InitBSC(owner, attrSet)` = 몬스터, `InitBSC(owner, attrSet, weaponType)` = 플레이어. `UseSkill(key)` 래퍼 |
 | `SkillSystemComponent.cs` | 스킬 관리 전담. 리플렉션으로 스킬 생성(`GiveSkill` — `MS.Battle.{skillKey}` 타입 검색), 쿨타임 체크, UniTask 비동기 실행, CancellationToken 취소(`CancelSkill`/`CancelAllSkills`), `runningSkillDict`로 중복 실행 차단 |
 | `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). 콤보 인덱스/예약 플래그/IsAttacking 관리. `ActivateAttack` → `ActivateAttackAsync` 코루틴이 `SpineController.WaitForAnimEventAsync(SpineEventAttack)` → `WhenAny(SpineEventComboReady, Complete)` 흐름으로 콤보 진행. 외부에서 다른 애니로 끊으면 OperationCanceledException으로 안전 종료 |
 | `AttributeSet/BaseAttributeSet.cs` | 스탯 딕셔너리(`EStatType` → `Stat`). Health 관리, OnHealthChanged 이벤트 |
-| `AttributeSet/PlayerAttributeSet.cs` | 플레이어 전용 스탯(CriticChance, Evasion, LifeSteal 등) |
+| `AttributeSet/PlayerAttributeSet.cs` | 플레이어 전용 스탯(SkillAttackPower, CriticChance, CriticMultiple, Evasion, LifeSteal, CooltimeAccel, AttackSpeed) |
 | `AttributeSet/MonsterAttributeSet.cs` | 몬스터 전용 스탯(AttackRange) |
 | `DamageInfo.cs` | 데미지 정보 구조체. Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce. 기본공격 속성은 Void(무속성) 고정 |
 | `Skill/BaseSkill.cs` | 스킬 추상 기반. 쿨타임, `ActivateSkill(CancellationToken)` 비동기. `IsPostUseCooltime` 옵션 |
