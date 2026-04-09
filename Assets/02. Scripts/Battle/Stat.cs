@@ -58,6 +58,12 @@ namespace MS.Battle
             OnValueChanged?.Invoke(Value);
         }
 
+        public void SetBaseValue(float _value)
+        {
+            baseValue = _value;
+            OnValueChanged?.Invoke(Value);
+        }
+
         public void AddBonusStat(string _key, EBonusType _bonusType, float _value)
         {
             BonusStat newBonusStat = new BonusStat { Type = _bonusType, Value = _value };
