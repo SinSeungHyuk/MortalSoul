@@ -95,7 +95,7 @@ namespace MS.Field
             playerAttributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
             BSC.WSC.ChangeWeaponType(newSoulData.WeaponType);
             SpineController.SetCombinedSkin(newSoulData.SkinKeys);
-            pmc.TransitToIdle();
+            pmc.SetPlayerState(EMoveState.Idle);
 
             float restoredHealth = psc.SwapSlots(playerAttributeSet.Health);
             playerAttributeSet.Health = Mathf.Min(restoredHealth, playerAttributeSet.MaxHealth.Value);

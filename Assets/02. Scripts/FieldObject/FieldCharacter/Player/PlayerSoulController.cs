@@ -37,12 +37,12 @@ namespace MS.Field
             MainSoulKey = SubSoulKey;
             SubSoulKey = tempSoulKey;
 
-            float restoredHealth = curSubSoulHealth;
+            float curSoulHealth = curSubSoulHealth;
             curSubSoulHealth = _curHealth;
 
             OnSoulSwapped?.Invoke();
 
-            return restoredHealth;
+            return curSoulHealth;
         }
 
         public void SetSubSoul(string _soulKey)
@@ -61,6 +61,5 @@ namespace MS.Field
             if (data?.SkillKeys == null) return new List<string>();
             return new List<string>(data.SkillKeys);
         }
-
     }
 }

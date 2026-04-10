@@ -6,10 +6,10 @@ using UnityEngine.InputSystem;
 
 namespace MS.Field
 {
+    public enum EMoveState { Idle, Move, Jump, Dash, Attack }
+
     public class PlayerMovementController : MonoBehaviour
     {
-        public enum EMoveState { Idle, Move, Jump, Dash, Attack }
-
         private Rigidbody2D rb;
         private BoxCollider2D col;
         private SpineController spineController;
@@ -78,9 +78,9 @@ namespace MS.Field
                 stateMachine.TransitState((int)EMoveState.Idle);
         }
 
-        public void TransitToIdle()
+        public void SetPlayerState(EMoveState _state)
         {
-            stateMachine.TransitState((int)EMoveState.Idle);
+            stateMachine.TransitState((int)_state);
         }
 
         private void Update()

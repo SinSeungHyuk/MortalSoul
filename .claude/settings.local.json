@@ -16,7 +16,27 @@
       "Bash(git -C \"c:/Users/syjsh/UnityProjects/MortalSoul\" mv \"MortalSoulDoc/01. WorkReq/플레이어 공격 중 액션 허용.md\" \"MortalSoulDoc/02. InProgress/플레이어 공격 중 액션 허용.md\")",
       "Bash(cp \"MortalSoulDoc/01. WorkReq/플레이어 공격 중 액션 허용.md\" \"MortalSoulDoc/02. InProgress/플레이어 공격 중 액션 허용.md\")",
       "Bash(rm \"MortalSoulDoc/01. WorkReq/플레이어 공격 중 액션 허용.md\")",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(claude mcp:*)",
+      "mcp__UnityMCP__manage_asset",
+      "mcp__UnityMCP__execute_code",
+      "mcp__UnityMCP__batch_execute",
+      "Bash(mv '__TRACKED_VAR__/Simple Spine Character Sample.prefab' __TRACKED_VAR__/SpineSample.prefab)",
+      "Bash(mv '__TRACKED_VAR__/Simple Spine Character Sample.prefab.meta' __TRACKED_VAR__/SpineSample.prefab.meta)",
+      "Bash(mv '__TRACKED_VAR__/Simple Spine Character Sample Variant 1.prefab' __TRACKED_VAR__/SpineSampleV1.prefab)",
+      "Bash(mv '__TRACKED_VAR__/Simple Spine Character Sample Variant 1.prefab.meta' __TRACKED_VAR__/SpineSampleV1.prefab.meta)",
+      "Bash(mv '__TRACKED_VAR__/Simple Spine Character Sample Variant 2.prefab' __TRACKED_VAR__/SpineSampleV2.prefab)",
+      "Bash(mv __TRACKED_VAR__/SimpleSpineSkinAssigner.cs __TRACKED_VAR__/SimpleSpineSkinAssigner.cs)",
+      "Bash(mv __TRACKED_VAR__/SimpleSpineSkinAssigner.cs.meta __TRACKED_VAR__/SimpleSpineSkinAssigner.cs.meta)",
+      "Bash(mv __TRACKED_VAR__/SpineAnimationPreview.cs __TRACKED_VAR__/SpineAnimationPreview.cs)",
+      "Bash(mv __TRACKED_VAR__/SpineAnimationPreview.cs.meta __TRACKED_VAR__/SpineAnimationPreview.cs.meta)",
+      "Bash(mv __TRACKED_VAR__/SpineCombineSkins.cs __TRACKED_VAR__/SpineCombineSkins.cs)",
+      "mcp__UnityMCP__refresh_unity",
+      "mcp__UnityMCP__read_console",
+      "Bash(find \"c:/Users/syjsh/UnityProjects/MortalSoul/Assets/05. ExternalAssets/Shinabro\" -type d -empty -delete)",
+      "Bash(find \"c:/Users/syjsh/UnityProjects/MortalSoul/Assets/05. ExternalAssets/Shinabro\" -name \"*.meta\" -delete)",
+      "mcp__UnityMCP__manage_prefabs",
+      "mcp__UnityMCP__manage_material"
     ]
   }
 }
