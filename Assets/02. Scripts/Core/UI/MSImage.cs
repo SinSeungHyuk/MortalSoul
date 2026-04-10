@@ -16,13 +16,13 @@ namespace Core
             originalColor = color;
         }
 
-        public void Show(float _duration)
+        public void ShowFade(float _duration)
         {
             KillTween();
             curTween = this.DOFade(1f, _duration);
         }
 
-        public void Hide(float _duration, Action _onComplete = null)
+        public void HideFade(float _duration, Action _onComplete = null)
         {
             KillTween();
             curTween = this.DOFade(0f, _duration);
