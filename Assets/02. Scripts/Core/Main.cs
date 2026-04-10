@@ -12,6 +12,7 @@ namespace Core
         public ObjectPoolManager ObjectPoolManager { get; private set; }
         public PlayerManager PlayerManager { get; private set; }
         public MonsterManager MonsterManager { get; private set; }
+        public BattleObjectManager BattleObjectManager { get; private set; }
 
         public bool IsBootCompleted { get; private set; }
 
@@ -32,6 +33,7 @@ namespace Core
             ObjectPoolManager.InitObjectPoolManager(poolContainer);
             PlayerManager = new PlayerManager();
             MonsterManager = new MonsterManager();
+            BattleObjectManager = new BattleObjectManager();
         }
 
         private void Start()
