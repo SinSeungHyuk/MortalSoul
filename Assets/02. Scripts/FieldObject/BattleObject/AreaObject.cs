@@ -1,4 +1,3 @@
-using MS.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,17 +32,14 @@ namespace MS.Field
 
         private void OnTriggerEnter2D(Collider2D _other)
         {
-            if (IsValidTarget(_other, out BattleSystemComponent _bsc))
-            {
-                if (_other.TryGetComponent(out FieldCharacter fieldChar))
-                    attackTargetList.Add(fieldChar);
-            }
+            if (IsValidTarget(_other, out FieldCharacter _fieldChar))
+                attackTargetList.Add(_fieldChar);
         }
 
         private void OnTriggerExit2D(Collider2D _other)
         {
-            if (_other.TryGetComponent(out FieldCharacter fieldChar))
-                attackTargetList.Remove(fieldChar);
+            if (IsValidTarget(_other, out FieldCharacter _fieldChar))
+                attackTargetList.Remove(_fieldChar);
         }
 
         public override void OnUpdate(float _deltaTime)

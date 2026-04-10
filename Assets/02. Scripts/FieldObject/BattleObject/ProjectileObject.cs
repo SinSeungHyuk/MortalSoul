@@ -1,4 +1,3 @@
-using MS.Battle;
 using UnityEngine;
 
 namespace MS.Field
@@ -28,11 +27,11 @@ namespace MS.Field
 
         private void OnTriggerEnter2D(Collider2D _other)
         {
-            if (IsValidTarget(_other, out BattleSystemComponent _bsc))
+            if (IsValidTarget(_other, out FieldCharacter _fieldChar))
             {
                 for (int i = 0; i < hitCountPerAttack; i++)
                 {
-                    onHitCallback?.Invoke(this, _bsc);
+                    onHitCallback?.Invoke(this, _fieldChar.BSC);
                 }
                 maxAttackCount--;
 

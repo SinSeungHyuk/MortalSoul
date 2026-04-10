@@ -37,7 +37,7 @@ namespace MS.Field
         public void InitBattleObject(string _battleObjectKey, FieldCharacter _owner, LayerMask _targetLayer)
         {
             ObjectLifeState = FieldObjectLifeState.Live;
-            ObjectType = FieldObjectType.SkillObject;
+            ObjectType = FieldObjectType.BattleObject;
 
             battleObjectKey = _battleObjectKey;
             owner = _owner;
@@ -67,16 +67,13 @@ namespace MS.Field
         public void ClearTraceTarget()
             => traceTarget = null;
 
-        protected bool IsValidTarget(Collider2D _other, out BattleSystemComponent _bsc)
+        protected bool IsValidTarget(Collider2D _other, out FieldCharacter _fieldChar)
         {
-            _bsc = null;
+            _fieldChar = null;
             if (((1 << _other.gameObject.layer) & targetLayer) == 0)
                 return false;
-            if (_other.TryGetComponent(out FieldCharacter fieldChar))
-            {
-                _bsc = fieldChar.BSC;
-                return _bsc != null;
-            }
+            if (_other.TryGetComponent(out _fieldChar))
+                return _fieldChar.BSC != null;
             return false;
         }
     }
