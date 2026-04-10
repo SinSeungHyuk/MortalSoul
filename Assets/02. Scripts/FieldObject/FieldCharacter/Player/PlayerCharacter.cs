@@ -89,19 +89,16 @@ namespace MS.Field
 
             BSC.SSC.CancelAllSkills();
 
+            var newSoulData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(psc.SubSoulKey);
             var playerAttributeSet = (PlayerAttributeSet)BSC.AttributeSet;
-            float restoredHealth = psc.SwapSlots(playerAttributeSet.Health);
-
-            var newSoulData = psc.GetMainSoulSettingData();
 
             playerAttributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
-            playerAttributeSet.Health = Mathf.Min(restoredHealth, playerAttributeSet.MaxHealth.Value);
-
             BSC.WSC.ChangeWeaponType(newSoulData.WeaponType);
             SpineController.SetCombinedSkin(newSoulData.SkinKeys);
-
             pmc.TransitToIdle();
-            psc.InvokeOnSoulSwapped();
+
+            float restoredHealth = psc.SwapSlots(playerAttributeSet.Health);
+            playerAttributeSet.Health = Mathf.Min(restoredHealth, playerAttributeSet.MaxHealth.Value);
         }
     }
 }

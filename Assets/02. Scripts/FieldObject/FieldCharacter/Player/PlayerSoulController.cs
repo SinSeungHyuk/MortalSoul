@@ -40,6 +40,8 @@ namespace MS.Field
             float restoredHealth = curSubSoulHealth;
             curSubSoulHealth = _curHealth;
 
+            OnSoulSwapped?.Invoke();
+
             return restoredHealth;
         }
 
@@ -60,9 +62,5 @@ namespace MS.Field
             return new List<string>(data.SkillKeys);
         }
 
-        public void InvokeOnSoulSwapped()
-        {
-            OnSoulSwapped?.Invoke();
-        }
     }
 }
