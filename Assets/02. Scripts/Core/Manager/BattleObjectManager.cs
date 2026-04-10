@@ -45,7 +45,13 @@ namespace Core
 
         public void ClearBattleObject()
         {
+            foreach (BattleObject battleObject in battleObjectList)
+            {
+                Main.Instance.ObjectPoolManager.Return(
+                    battleObject.BattleObjectKey, battleObject.gameObject);
+            }
             battleObjectList.Clear();
+            releaseBattleObjectList.Clear();
         }
 
         public async UniTask LoadAllBattleObjectAsync()

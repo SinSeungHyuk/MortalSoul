@@ -36,6 +36,11 @@ namespace Core
             BattleObjectManager = new BattleObjectManager();
         }
 
+        private void Update()
+        {
+            BattleObjectManager.OnUpdate(Time.deltaTime);
+        }
+
         private void Start()
         {
             BootAsync().Forget();

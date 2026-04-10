@@ -35,10 +35,10 @@ namespace MS.Field
                     onHitCallback?.Invoke(this, _bsc);
                 }
                 maxAttackCount--;
-            }
 
-            if (maxAttackCount <= 0)
-                ObjectLifeState = FieldObjectLifeState.Death;
+                if (maxAttackCount <= 0)
+                    ObjectLifeState = FieldObjectLifeState.Death;
+            }
         }
 
         public override void OnUpdate(float _deltaTime)

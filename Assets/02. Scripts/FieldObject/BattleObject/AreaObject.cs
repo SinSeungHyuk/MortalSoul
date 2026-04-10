@@ -33,9 +33,9 @@ namespace MS.Field
 
         private void OnTriggerEnter2D(Collider2D _other)
         {
-            if (_other.TryGetComponent(out FieldCharacter fieldChar))
+            if (IsValidTarget(_other, out BattleSystemComponent _bsc))
             {
-                if (((1 << _other.gameObject.layer) & targetLayer) != 0)
+                if (_other.TryGetComponent(out FieldCharacter fieldChar))
                     attackTargetList.Add(fieldChar);
             }
         }
