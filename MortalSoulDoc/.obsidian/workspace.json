@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "04. Assets/애니메이션 이벤트.md",
+                "file": "04. Assets/CodeReview_2026-04-11.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "애니메이션 이벤트"
+              "title": "CodeReview_2026-04-11"
             }
           }
         ]
@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "1cd22fe1bb7f412b",
@@ -188,6 +187,8 @@
   "active": "afe49770bdd00e47",
   "lastOpenFiles": [
     "04. Assets/Monster 설계.md",
+    "04. Assets/Note.md",
+    "04. Assets/CodeReview_2026-04-11.md",
     "04. Assets/애니메이션 이벤트.md",
     "04. Assets/RVD UI 시스템 분석.md",
     "04. Assets/히트판정 및 스킬 구현 설계.md",
@@ -221,7 +222,6 @@
     "01. WorkReq/테스트 작업요청.md",
     "02. InProgress/테스트 작업요청.md",
     "05. Template/무제.md",
-    "무제.md",
-    "환영합니다!.md"
+    "무제.md"
   ]
 }

@@ -11,18 +11,18 @@ namespace MS.Battle
         public bool IsAttacking => isAttacking;
 
         protected FieldCharacter owner;
-        protected PlayerAttributeSet attrSet;
+        protected BaseAttributeSet attributeSet;
         protected SpineController spine;
         protected bool isAttacking;
 
-        public virtual void InitWeaponAttack(FieldCharacter _owner, PlayerAttributeSet _attrSet)
+        public virtual void InitBaseWeaponAttack(FieldCharacter _owner, BaseAttributeSet _attrSet)
         {
             owner = _owner;
-            attrSet = _attrSet;
+            attributeSet = _attrSet;
             spine = _owner.SpineController;
         }
 
-        public abstract void OnAttackInput();
+        public abstract void ActivateAttack();
 
         protected void InvokeAttackStarted() => OnAttackStarted?.Invoke();
         protected void InvokeAttackEnded() => OnAttackEnded?.Invoke();

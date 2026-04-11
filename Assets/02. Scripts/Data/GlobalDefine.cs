@@ -31,7 +31,7 @@ namespace MS.Data
 
     public enum EWeaponType
     {
-        GreatSword,
+        TwoHandSword,
         OneHandSword,
         Dagger,
         Bow,

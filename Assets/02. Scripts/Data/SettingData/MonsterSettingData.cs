@@ -28,7 +28,5 @@ namespace MS.Data
     {
         public string SkillKey { get; set; }
         public int SkillActivateRate { get; set; }
-        public string AnimTriggerKey { get; set; }
-        public float SkillDuration { get; set; }
     }
 }

@@ -11,18 +11,18 @@ namespace MS.Battle
         public event Action OnAttackEnded;
 
         public EWeaponType CurWeaponType => curWeaponType;
-        public bool IsAttacking => curAttack?.IsAttacking ?? false;
 
         private FieldCharacter owner;
-        private PlayerAttributeSet attrSet;
+        private BaseAttributeSet attrSet;
         private EWeaponType curWeaponType;
         private BaseWeaponAttack curAttack;
 
 
-        public void InitWSC(FieldCharacter _owner, PlayerAttributeSet _attrSet)
+        public void InitWSC(FieldCharacter _owner, BaseAttributeSet _attrSet, EWeaponType _weaponType)
         {
             owner = _owner;
             attrSet = _attrSet;
+            ChangeWeaponType(_weaponType);
         }
 
         public void ChangeWeaponType(EWeaponType _weaponType)
@@ -34,12 +34,10 @@ namespace MS.Battle
             }
 
             curWeaponType = _weaponType;
-
-            string typeName = $"MS.Battle.{_weaponType}Attack";
-            Type attackType = Type.GetType(typeName);
+            Type attackType = Type.GetType($"MS.Battle.{_weaponType}Attack");
             if (attackType == null)
             {
-                Debug.LogError($"[WSC] 무기 공격 클래스를 찾을 수 없음: {typeName}");
+                Debug.LogError($"[WSC] 무기 공격 클래스를 찾을 수 없음: {_weaponType}");
                 curAttack = null;
                 return;
             }
@@ -47,16 +45,16 @@ namespace MS.Battle
             curAttack = Activator.CreateInstance(attackType) as BaseWeaponAttack;
             if (curAttack == null)
             {
-                Debug.LogError($"[WSC] 무기 공격 인스턴스 생성 실패: {typeName}");
+                Debug.LogError($"[WSC] 무기 공격 인스턴스 생성 실패: {_weaponType}");
                 return;
             }
 
-            curAttack.InitWeaponAttack(owner, attrSet);
+            curAttack.InitBaseWeaponAttack(owner, attrSet);
             curAttack.OnAttackStarted += OnAttackStartedCallback;
             curAttack.OnAttackEnded += OnAttackEndedCallback;
         }
 
-        public void ActivateAttack() => curAttack?.OnAttackInput();
+        public void ActivateAttack() => curAttack?.ActivateAttack();
 
         private void OnAttackStartedCallback() => OnAttackStarted?.Invoke();
         private void OnAttackEndedCallback() => OnAttackEnded?.Invoke();

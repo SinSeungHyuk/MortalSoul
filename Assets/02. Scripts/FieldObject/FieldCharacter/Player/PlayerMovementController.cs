@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 namespace MS.Field
 {
-    public enum EMoveState { Idle, Move, Jump, Dash, Attack }
+    public enum EPlayerState { Idle, Move, Jump, Dash, Attack }
 
     public class PlayerMovementController : MonoBehaviour
     {
@@ -46,12 +46,12 @@ namespace MS.Field
             rb.gravityScale = Settings.GravityScale;
 
             stateMachine = new MSStateMachine<PlayerMovementController>(this);
-            stateMachine.RegisterState((int)EMoveState.Idle, OnIdleEnter, OnIdleUpdate, null);
-            stateMachine.RegisterState((int)EMoveState.Move, OnMoveEnter, OnMoveUpdate, null);
-            stateMachine.RegisterState((int)EMoveState.Jump, OnJumpEnter, OnJumpUpdate, null);
-            stateMachine.RegisterState((int)EMoveState.Dash, OnDashEnter, OnDashUpdate, OnDashExit);
-            stateMachine.RegisterState((int)EMoveState.Attack, OnAttackEnter, OnAttackUpdate, null);
-            stateMachine.TransitState((int)EMoveState.Idle);
+            stateMachine.RegisterState((int)EPlayerState.Idle, OnIdleEnter, OnIdleUpdate, null);
+            stateMachine.RegisterState((int)EPlayerState.Move, OnMoveEnter, OnMoveUpdate, null);
+            stateMachine.RegisterState((int)EPlayerState.Jump, OnJumpEnter, OnJumpUpdate, null);
+            stateMachine.RegisterState((int)EPlayerState.Dash, OnDashEnter, OnDashUpdate, OnDashExit);
+            stateMachine.RegisterState((int)EPlayerState.Attack, OnAttackEnter, OnAttackUpdate, null);
+            stateMachine.TransitState((int)EPlayerState.Idle);
 
             wsc = _wsc;
             wsc.OnAttackStarted += OnAttackStartedCallback;
@@ -67,22 +67,6 @@ namespace MS.Field
             }
         }
 
-        private void OnAttackStartedCallback()
-        {
-            stateMachine.TransitState((int)EMoveState.Attack);
-        }
-
-        private void OnAttackEndedCallback()
-        {
-            if (stateMachine.IsCurState((int)EMoveState.Attack))
-                stateMachine.TransitState((int)EMoveState.Idle);
-        }
-
-        public void SetPlayerState(EMoveState _state)
-        {
-            stateMachine.TransitState((int)_state);
-        }
-
         public void OnUpdate(float _dt)
         {
             if (dashCooldownTimer > 0f)
@@ -95,6 +79,22 @@ namespace MS.Field
             UpdateGroundCheck();
             UpdateFallGravity();
             rb.linearVelocity = new Vector2(curVelocityX, rb.linearVelocityY);
+        }
+
+        private void OnAttackStartedCallback()
+        {
+            stateMachine.TransitState((int)EPlayerState.Attack);
+        }
+
+        private void OnAttackEndedCallback()
+        {
+            if (stateMachine.IsCurState((int)EPlayerState.Attack))
+                stateMachine.TransitState((int)EPlayerState.Idle);
+        }
+
+        public void SetPlayerState(EPlayerState _state)
+        {
+            stateMachine.TransitState((int)_state);
         }
 
         private void UpdateGroundCheck()
@@ -112,7 +112,7 @@ namespace MS.Field
         private void UpdateFallGravity()
         {
             // Dash 상태에서는 중력 0을 유지해야 하므로 덮어쓰지 않음
-            if (stateMachine.IsCurState((int)EMoveState.Dash)) return;
+            if (stateMachine.IsCurState((int)EPlayerState.Dash)) return;
 
             if (rb.linearVelocityY < 0f)
                 rb.gravityScale = Settings.GravityScale * Settings.FallMultiple;
@@ -140,14 +140,14 @@ namespace MS.Field
             if (dashRequested && dashCooldownTimer <= 0f)
             {
                 dashRequested = false;
-                stateMachine.TransitState((int)EMoveState.Dash);
+                stateMachine.TransitState((int)EPlayerState.Dash);
                 return true;
             }
 
             if (jumpRequested && isGrounded)
             {
                 jumpRequested = false;
-                stateMachine.TransitState((int)EMoveState.Jump);
+                stateMachine.TransitState((int)EPlayerState.Jump);
                 return true;
             }
 
@@ -167,7 +167,7 @@ namespace MS.Field
             if (CheckCurInput()) return;
 
             if (Mathf.Abs(moveInput.x) > 0.1f)
-                stateMachine.TransitState((int)EMoveState.Move);
+                stateMachine.TransitState((int)EPlayerState.Move);
         }
 
         #endregion
@@ -187,7 +187,7 @@ namespace MS.Field
             if (CheckCurInput()) return;
 
             if (Mathf.Abs(moveInput.x) <= 0.1f)
-                stateMachine.TransitState((int)EMoveState.Idle);
+                stateMachine.TransitState((int)EPlayerState.Idle);
         }
 
         #endregion
@@ -196,7 +196,7 @@ namespace MS.Field
 
         private void OnJumpEnter(int _prevState, object[] _param)
         {
-            if (_prevState != (int)EMoveState.Dash)
+            if (_prevState != (int)EPlayerState.Dash)
                 rb.linearVelocity = new Vector2(rb.linearVelocityX, Settings.JumpForce);
             spineController.PlayAnimation(Settings.AnimJump, true);
         }
@@ -210,7 +210,7 @@ namespace MS.Field
             if (dashRequested && dashCooldownTimer <= 0f)
             {
                 dashRequested = false;
-                stateMachine.TransitState((int)EMoveState.Dash);
+                stateMachine.TransitState((int)EPlayerState.Dash);
                 return;
             }
 
@@ -218,9 +218,9 @@ namespace MS.Field
             if (isGrounded && !wasGrounded && rb.linearVelocityY <= 0f)
             {
                 if (Mathf.Abs(moveInput.x) > 0.1f)
-                    stateMachine.TransitState((int)EMoveState.Move);
+                    stateMachine.TransitState((int)EPlayerState.Move);
                 else
-                    stateMachine.TransitState((int)EMoveState.Idle);
+                    stateMachine.TransitState((int)EPlayerState.Idle);
             }
 
             // 나머지 입력 소비 (무시)
@@ -276,13 +276,7 @@ namespace MS.Field
                 if (dashFreezeTimer > 0f) return;
             }
 
-            // 3) 종료 → 다음 상태
-            // if (!isGrounded)
-            //     stateMachine.TransitState((int)EMoveState.Jump);
-            // else if (Mathf.Abs(moveInput.x) > 0.1f)
-            //     stateMachine.TransitState((int)EMoveState.Move);
-            // else
-                stateMachine.TransitState((int)EMoveState.Idle);
+            stateMachine.TransitState((int)EPlayerState.Idle);
         }
 
         private void OnDashExit(int _nextState)
@@ -306,14 +300,14 @@ namespace MS.Field
             if (dashRequested && dashCooldownTimer <= 0f)
             {
                 dashRequested = false;
-                stateMachine.TransitState((int)EMoveState.Dash);
+                stateMachine.TransitState((int)EPlayerState.Dash);
                 return;
             }
 
             if (jumpRequested && isGrounded)
             {
                 jumpRequested = false;
-                stateMachine.TransitState((int)EMoveState.Jump);
+                stateMachine.TransitState((int)EPlayerState.Jump);
                 return;
             }
         }

@@ -14,24 +14,15 @@ namespace MS.Battle
         private Dictionary<string, StatusEffect> statusEffectDict;
 
 
-        public void InitBSC(FieldCharacter _owner, BaseAttributeSet _attributeSet, EWeaponType? _weaponType = null)
+        public void InitBSC(FieldCharacter _owner, BaseAttributeSet _attributeSet)
         {
-            AttributeSet = _attributeSet;
             statusEffectDict = new Dictionary<string, StatusEffect>();
+            AttributeSet = _attributeSet;
 
             SSC = new SkillSystemComponent();
             SSC.InitSSC(_owner, _attributeSet);
 
-            if (_weaponType.HasValue && _attributeSet is PlayerAttributeSet playerAttrSet)
-            {
-                WSC = new WeaponSystemComponent();
-                WSC.InitWSC(_owner, playerAttrSet);
-                WSC.ChangeWeaponType(_weaponType.Value);
-            }
-            else
-            {
-                WSC = null;
-            }
+            WSC = new WeaponSystemComponent();
         }
 
         public void TakeDamage(DamageInfo _info)

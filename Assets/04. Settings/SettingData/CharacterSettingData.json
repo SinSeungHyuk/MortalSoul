@@ -17,7 +17,7 @@
         "Evasion": 0,
         "LifeSteal": 0,
         "CooltimeAccel": 0,
-        "AttackSpeed": 100
+        "AttackSpeed": 150
       },
       "SkinKeys": [
         "BODY/base",
@@ -52,7 +52,7 @@
         "HAIR/hairB_a",
         "RIGHTHAND/Sword_TwoHand_Common1"
       ],
-      "WeaponType": "GreatSword",
+      "WeaponType": "TwoHandSword",
       "BasicAttackKey": "",
       "SkillKeys": [ "TestOneHandAttack" ],
       "SwitchingEffectKey": "",

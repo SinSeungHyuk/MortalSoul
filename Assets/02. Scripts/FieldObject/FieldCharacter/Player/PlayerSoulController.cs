@@ -30,7 +30,14 @@ namespace MS.Field
             return true;
         }
 
-        public float SwapSlots(float _curHealth)
+        public void GainSubSoul(string _soulKey)
+        {
+            SubSoulKey = _soulKey;
+            var subData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(_soulKey);
+            curSubSoulHealth = subData.AttributeSetSettingData.MaxHealth;
+        }
+
+        public float SwapSoul(float _curHealth)
         {
             string tempSoulKey = MainSoulKey;
             MainSoulKey = SubSoulKey;
@@ -44,17 +51,7 @@ namespace MS.Field
             return curSoulHealth;
         }
 
-        public void SetSubSoul(string _soulKey)
-        {
-            SubSoulKey = _soulKey;
-        }
-
-        public void InitSubSoulHealth(float _maxHealth)
-        {
-            curSubSoulHealth = _maxHealth;
-        }
-
-        public List<string> GetActiveSkillKeys()
+        public List<string> GetMainSoulSkill()
         {
             var data = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(MainSoulKey);
             if (data?.SkillKeys == null) return new List<string>();

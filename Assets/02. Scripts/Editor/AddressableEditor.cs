@@ -38,7 +38,7 @@ public class AddressableEditor
         var settings = AddressableAssetSettingsDefaultObject.Settings;
         if (settings == null)
         {
-            Debug.LogError("[Addressable] AddressableAssetSettings�� ã�� �� �����ϴ�.");
+            Debug.LogError("[Addressable] AddressableAssetSettings.");
             return;
         }
 

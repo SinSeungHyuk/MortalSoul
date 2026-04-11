@@ -13,6 +13,7 @@ namespace MS.Battle
 
         public Stat MaxHealth { get; protected set; }
         public Stat BaseAttackPower { get; protected set; }
+        public Stat SkillAttackPower { get; protected set; }
         public Stat Defense { get; protected set; }
         public Stat MoveSpeed { get; protected set; }
         public EDamageAttributeType WeaknessAttributeType { get; set; }

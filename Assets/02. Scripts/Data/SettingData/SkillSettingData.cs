@@ -7,7 +7,6 @@ namespace MS.Data
     [Serializable]
     public class SkillSettingData
     {
-        public string OwnerType { get; set; }
         public string IconKey { get; set; }
         public List<string> CategoryKeyList { get; set; }
         public EDamageAttributeType AttributeType { get; set; }

@@ -8,9 +8,9 @@ namespace MS.Battle
         public float ElapsedTime { get; private set; }
         public bool IsFinished => Duration > 0 && ElapsedTime >= Duration;
 
-        public Action OnStatusStartCallback;
-        public Action<float> OnStatusUpdateCallback;
-        public Action OnStatusEndCallback;
+        public event Action OnStatusStartCallback;
+        public event Action<float> OnStatusUpdateCallback;
+        public event Action OnStatusEndCallback;
 
         public StatusEffect(float _duration)
         {

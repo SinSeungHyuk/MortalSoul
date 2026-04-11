@@ -4,7 +4,6 @@ namespace MS.Battle
 {
     public class PlayerAttributeSet : BaseAttributeSet
     {
-        public Stat SkillAttackPower { get; private set; }
         public Stat CriticChance { get; private set; }
         public Stat CriticMultiple { get; private set; }
         public Stat Evasion { get; private set; }

@@ -6,9 +6,6 @@ namespace MS.Field
 {
     public abstract class BattleObject : FieldObject
     {
-        private const int INFINITE_ATTACK = int.MaxValue;
-        private const float INFINITE_DURATION = float.MaxValue;
-
         protected Action<BattleObject, BattleSystemComponent> onHitCallback;
 
         protected FieldCharacter owner;
@@ -45,8 +42,8 @@ namespace MS.Field
 
             traceTarget = null;
             elapsedTime = 0;
-            duration = INFINITE_DURATION;
-            maxAttackCount = INFINITE_ATTACK;
+            duration = float.MaxValue;
+            maxAttackCount = int.MaxValue;
             hitCountPerAttack = 1;
         }
 

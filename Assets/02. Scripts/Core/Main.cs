@@ -10,10 +10,11 @@ namespace Core
         public UIManager UIManager { get; private set; }
         public SoundManager SoundManager { get; private set; }
         public ObjectPoolManager ObjectPoolManager { get; private set; }
-        public PlayerManager PlayerManager { get; private set; }
         public MonsterManager MonsterManager { get; private set; }
         public BattleObjectManager BattleObjectManager { get; private set; }
 
+
+        // TODO :: TEST
         public bool IsBootCompleted { get; private set; }
 
         protected override void Awake()
@@ -31,7 +32,6 @@ namespace Core
 
             ObjectPoolManager = new ObjectPoolManager();
             ObjectPoolManager.InitObjectPoolManager(poolContainer);
-            PlayerManager = new PlayerManager();
             MonsterManager = new MonsterManager();
             BattleObjectManager = new BattleObjectManager();
         }
@@ -43,10 +43,10 @@ namespace Core
 
         private void Start()
         {
-            BootAsync().Forget();
+            TESTBootAsync().Forget();
         }
 
-        private async UniTaskVoid BootAsync()
+        private async UniTaskVoid TESTBootAsync()
         {
             await DataManager.SettingData.LoadAllSettingDataAsync();
             IsBootCompleted = true;

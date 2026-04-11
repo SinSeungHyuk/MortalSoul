@@ -4,7 +4,7 @@ namespace MS.Battle
 {
     public class GreatSwordAttack : BaseWeaponAttack
     {
-        public override void OnAttackInput()
+        public override void ActivateAttack()
         {
             Debug.LogWarning("[GreatSwordAttack] Not implemented yet.");
         }

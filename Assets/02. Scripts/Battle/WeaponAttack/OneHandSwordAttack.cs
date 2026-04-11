@@ -8,14 +8,21 @@ namespace MS.Battle
 {
     public class OneHandSwordAttack : BaseWeaponAttack
     {
-        private int comboIndex;
-        private bool isReserveNext;
+        private int curComboCnt;
+        private bool isNextCombo;
+        private PlayerAttributeSet playerAttributeSet;
 
-        public override void OnAttackInput()
+        public override void InitBaseWeaponAttack(FieldCharacter _owner, BaseAttributeSet _attrSet)
+        {
+            base.InitBaseWeaponAttack(_owner, _attrSet);
+            playerAttributeSet = (PlayerAttributeSet)_attrSet;
+        }
+
+        public override void ActivateAttack()
         {
             if (isAttacking)
             {
-                isReserveNext = true;
+                isNextCombo = true;
                 return;
             }
             ActivateAsync().Forget();
@@ -24,16 +31,16 @@ namespace MS.Battle
         private async UniTaskVoid ActivateAsync()
         {
             isAttacking = true;
-            comboIndex = 0;
+            curComboCnt = 0;
             InvokeAttackStarted();
 
             try
             {
                 while (true)
                 {
-                    float timeScale = attrSet.AttackSpeed.Value / 100f;
+                    float timeScale = playerAttributeSet.AttackSpeed.Value / 100f;
 
-                    if (comboIndex == 0)
+                    if (curComboCnt == 0)
                     {
                         spine.PlayAnimation("Attack_OneHand1", false, timeScale);
                         await spine.WaitForAnimEventAsync("attack1");
@@ -47,19 +54,18 @@ namespace MS.Battle
                     }
 
                     int finishIdx = await UniTask.WhenAny(
-                        spine.WaitForAnimEventAsync(Settings.SpineEventComboReady),
+                        spine.WaitForAnimEventAsync(Settings.AnimComboRdyEvent),
                         spine.WaitForAnimCompleteAsync()
                     );
-                    bool comboReady = (finishIdx == 0);
+                    bool isComboReady = (finishIdx == 0);
 
-                    if (isReserveNext)
+                    if (isNextCombo)
                     {
-                        isReserveNext = false;
-                        comboIndex = (comboIndex + 1) % 2;
+                        isNextCombo = false;
+                        curComboCnt = (curComboCnt + 1) % 2;
                         continue;
                     }
-
-                    if (!comboReady) break;
+                    if (!isComboReady) break;
 
                     await spine.WaitForAnimCompleteAsync();
                     break;
@@ -68,8 +74,8 @@ namespace MS.Battle
             catch (OperationCanceledException) { }
             finally
             {
-                comboIndex = 0;
-                isReserveNext = false;
+                curComboCnt = 0;
+                isNextCombo = false;
                 isAttacking = false;
                 InvokeAttackEnded();
             }
@@ -77,31 +83,32 @@ namespace MS.Battle
 
         private void DoHit(float _range, float _offset, float _damageMul)
         {
-            float facingSign = spine.IsFacingRight ? 1f : -1f;
-            Vector2 center = (Vector2)owner.transform.position + new Vector2(_offset * facingSign, 0f);
-            var colliders = DebugDraw.OverlapCircleAll(center, _range, Settings.MonsterLayer);
+            float dir = spine.IsScaleXRight ? 1f : -1f;
+            Vector2 center = (Vector2)owner.Position + new Vector2(_offset * dir, 0f);
+            var hits = DebugDraw.OverlapCircleAll(center, _range, Settings.MonsterLayer);
 
-            foreach (var col in colliders)
+            foreach (var hit in hits)
             {
-                var target = col.GetComponent<FieldCharacter>();
-                if (target == null) continue;
+                if (hit.TryGetComponent<FieldCharacter>(out var target) == false) 
+                    continue;
 
-                bool isCritic = UnityEngine.Random.value * 100f < attrSet.CriticChance.Value;
-                float damage = _damageMul * attrSet.BaseAttackPower.Value;
-                if (isCritic) damage *= attrSet.CriticMultiple.Value / 100f;
+                // TODO :: BattleUtils를 통해 데미지 계산하여 넘겨주기
+                // bool isCritic = UnityEngine.Random.value * 100f < attributeSet.CriticChance.Value;
+                // float damage = _damageMul * attributeSet.BaseAttackPower.Value;
+                // if (isCritic) damage *= attributeSet.CriticMultiple.Value / 100f;
 
-                var info = new DamageInfo
-                {
-                    Attacker = owner,
-                    Target = target,
-                    AttributeType = EDamageAttributeType.None,
-                    Damage = damage,
-                    IsCritic = isCritic,
-                    KnockbackForce = Settings.BasicAttackKnockback,
-                    SourceSkill = null
-                };
+                // var info = new DamageInfo
+                // {
+                //     Attacker = owner,
+                //     Target = target,
+                //     AttributeType = EDamageAttributeType.None,
+                //     Damage = damage,
+                //     IsCritic = isCritic,
+                //     KnockbackForce = Settings.BasicAttackKnockback,
+                //     SourceSkill = null
+                // };
 
-                target.BSC.TakeDamage(info);
+                // target.BSC.TakeDamage(info);
             }
         }
     }

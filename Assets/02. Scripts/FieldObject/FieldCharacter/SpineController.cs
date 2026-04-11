@@ -9,6 +9,8 @@ namespace MS.Field
 {
     public class SpineController : MonoBehaviour
     {
+        public bool IsScaleXRight => skeletonAnimation.Skeleton.ScaleX > 0f;
+
         private SkeletonAnimation skeletonAnimation;
 
         private string curWaitEventKey;
@@ -24,11 +26,8 @@ namespace MS.Field
         private void Start()
         {
             var state = skeletonAnimation.AnimationState;
-            state.Data.DefaultMix = 0.2f;
             state.Event += OnSpineEvent;
             state.Complete += OnSpineComplete;
-
-            PlayAnimation(Settings.AnimIdle, true);
         }
 
         private void OnDestroy()
@@ -75,9 +74,6 @@ namespace MS.Field
             curWaitCompleteTcs?.TrySetCanceled();
             curWaitCompleteTcs = null;
         }
-
-        // ===== 방향 =====
-        public bool IsFacingRight => skeletonAnimation.Skeleton.ScaleX > 0f;
 
         public void SetScaleX(bool _right)
         {

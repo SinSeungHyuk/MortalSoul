@@ -80,7 +80,7 @@ namespace MS.Battle
             try
             {
                 if (!skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
-                await skillToUse.ActivateSkill(cts.Token);
+                await skillToUse.ActivateSkillAsync(cts.Token);
                 OnSkillUsed?.Invoke(_skillKey);
             }
             catch (OperationCanceledException)

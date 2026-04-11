@@ -35,7 +35,7 @@ namespace MS.Field
         {
             await UniTask.WaitUntil(() => Main.Instance.IsBootCompleted);
             InitPlayer("test");
-            GainSoul("test2");
+            GainSubSoul("test2");
         }
 
         public void InitPlayer(string _mainSoulKey)
@@ -55,7 +55,8 @@ namespace MS.Field
             playerAttributeSet.InitPlayerAttributeSet(soulSettingData.AttributeSetSettingData);
 
             BSC = new BattleSystemComponent();
-            BSC.InitBSC(this, playerAttributeSet, soulSettingData.WeaponType);
+            BSC.InitBSC(this, playerAttributeSet);
+            BSC.WSC.InitWSC(this, playerAttributeSet, soulSettingData.WeaponType);
 
             if (soulSettingData.SkillKeys != null)
             {
@@ -69,22 +70,20 @@ namespace MS.Field
             pmc.InitController(BSC.WSC);
         }
 
-        public void GainSoul(string _soulKey)
+        public void GainSubSoul(string _soulKey)
         {
             if (psc.SubSoulKey != null) return; // todo :: 영혼 교체 구현
 
-            psc.SetSubSoul(_soulKey);
+            var soulSettingData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(_soulKey);
+            if (soulSettingData == null) return;
 
-            var subData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(_soulKey);
-            if (subData == null) return;
-
-            if (subData.SkillKeys != null)
+            if (soulSettingData.SkillKeys != null)
             {
-                foreach (var skillKey in subData.SkillKeys)
+                foreach (var skillKey in soulSettingData.SkillKeys)
                     BSC.SSC.GiveSkill(skillKey);
             }
 
-            psc.InitSubSoulHealth(subData.AttributeSetSettingData.MaxHealth);
+            psc.GainSubSoul(_soulKey);
         }
 
         public void SwapSoul()
@@ -99,10 +98,10 @@ namespace MS.Field
             playerAttributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
             BSC.WSC.ChangeWeaponType(newSoulData.WeaponType);
             SpineController.SetCombinedSkin(newSoulData.SkinKeys);
-            pmc.SetPlayerState(EMoveState.Idle);
+            pmc.SetPlayerState(EPlayerState.Idle);
 
-            float restoredHealth = psc.SwapSlots(playerAttributeSet.Health);
-            playerAttributeSet.Health = Mathf.Min(restoredHealth, playerAttributeSet.MaxHealth.Value);
+            float swapSoulHealth = psc.SwapSoul(playerAttributeSet.Health);
+            playerAttributeSet.Health = swapSoulHealth;
         }
     }
 }
