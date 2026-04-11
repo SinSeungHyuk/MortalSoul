@@ -38,12 +38,12 @@ namespace MS.Utils
         public const int SpineMainTrack = 0;
 
         // Spine user data event 이름
-        public const string SpineEventAttack = "attack";
         public const string SpineEventComboReady = "combo_ready";
         #endregion
 
         #region BATTLE SETTING
         public static int BattleScalingConstant = 100;
+        public static float BasicAttackKnockback = 2f;
         #endregion
 
         #region LAYERMASK SETTING

@@ -97,7 +97,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **소울 구성 요소**: 각 소울은 다음을 포함
 - 부위별 Spine 스킨 키값 (head, body, weapon 등)
 - 무기 타입 (대검, 한손검, 단도, 활, 지팡이 중 1개 — 소울에 종속)
-- **기본공격**: WSC(WeaponSystemComponent)가 직접 실행. 스킬이 아님. 무기 종류별로 WeaponSettingData를 참조하는 데이터 드리븐 방식. AttackSpeed에 비례해 애니메이션 재생 속도 + 공격 주기 빨라짐
+- **기본공격**: WSC(WeaponSystemComponent)가 무기 타입별 `BaseWeaponAttack` 서브클래스 핸들러를 리플렉션으로 생성/보유하고 입력을 위임. 코드 드리븐(무기당 1 클래스, 수치/애니키 인라인). AttackSpeed에 비례해 애니메이션 재생속도 + 공격 주기 빨라짐
 - 고유 스킬 2개 (소울에 종속, SSC로 관리)
 - 스위칭 효과 (소울 고유)
 - 서브슬롯 패시브 효과 (소울 고유)
@@ -116,16 +116,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### 기본공격 콤보 시스템
 
-**WeaponSettingData** 기반 데이터 드리븐. WSC가 대리인+실행자 역할을 겸함.
+**코드 드리븐 구조**: WSC는 "공격 로직 슬롯" 역할만 하고, 실제 공격 로직은 무기 타입별 `BaseWeaponAttack` 서브클래스(`OneHandSwordAttack` 등)가 통째로 소유한다. 베이스에 콤보 루프/히트 판정 헬퍼를 두지 않고 각 무기가 자기 로직을 인라인으로 작성해 "한 파일 = 한 무기의 전부"라는 가독성을 우선한다. 스킬(`BaseSkill`) 상속 구조와 대칭.
+
+**캔슬 메커니즘의 의도적 비대칭**: 스킬(SSC/BaseSkill)은 명시적 `CancellationToken`을 사용하지만, 기본공격(WSC/BaseWeaponAttack)은 `SpineController`의 TCS 자동 캔슬만 사용한다. 이유: 기본공격은 실행 흐름이 순수하게 Spine 이벤트에만 의존하고(비애니 `await` 없음) 모든 캔슬 경로(대시/점프/스킬/소울스위칭)가 새 애니메이션 재생을 동반하기 때문에 토큰이 불필요하다. 스킬은 `UniTask.Delay`, 외부 조건 대기, 침묵 디버프 등 비애니 캔슬 시나리오가 존재하여 토큰이 필요하다.
 
 **Spine 이벤트 기반 타이밍 제어**:
-- `hit` 이벤트: 무기가 휘둘러지는 타이밍 → 히트판정 실행
+- `attack` 이벤트: 무기가 휘둘러지는 타이밍 → 히트판정 실행
 - `combo_ready` 이벤트: 조기 캔슬 허용 시점 → 예약 ON이면 회수 동작 스킵 후 즉시 다음 콤보로 전환
 - `Complete` (Spine 기본): 예약 있으면 다음 콤보, 없으면 종료 및 콤보인덱스 리셋
 
 **선입력(버퍼링)**: 공격 진행 중 아무 때나 공격 버튼을 누르면 예약 플래그 ON. 예약은 한 번만 ON (중복 입력 무시).
 
-**WSC 내부 상태**: 현재 WeaponType, 콤보 인덱스, 다음 콤보 예약 플래그, 공격 진행 중 여부
+**공격속도 반영**: `SpineController.PlayAnimation`에 `_timeScale` 옵셔널 파라미터 — 공격 애니 재생 시 `AttackSpeed.Value / 100f`를 전달하면 트랙 TimeScale만 스케일되어 콤보 주기 전체가 비례 단축된다. 기본공격은 전 흐름이 Spine 이벤트에 gated 되어 있어 별도 쿨타임 계산 불필요.
+
+**상태 소유**: 콤보 인덱스, 예약 플래그, `isAttacking` 등의 공격 상태는 각 `BaseWeaponAttack` 서브클래스가 소유(콤보 개념이 없는 Bow/Staff는 콤보 필드 미보유). WSC는 현재 `BaseWeaponAttack` 핸들러 인스턴스만 들고 있음.
 
 ### 애니메이션
 
@@ -235,10 +239,9 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 
 | 파일 | 설명 |
 |------|------|
-| `GlobalDefine.cs` | `EGrade`(Normal/Rare/Unique/Legendary), `EZoneType`(Battle/Shop/Event/Boss), `ESkillValueType` 등 전역 enum |
-| `SettingData/SettingData.cs` | JSON 비동기 로드 진입점. CharacterSettingDict, MonsterSettingDict, SkillSettingDict, SoundSettingDict, WeaponSettingDict 보유. `LoadAllSettingDataAsync()` |
+| `GlobalDefine.cs` | `EGrade`(Normal/Rare/Unique/Legendary), `EZoneType`(Battle/Shop/Event/Boss), `ESkillValueType`, `EWeaponType`(GreatSword/OneHandSword/Dagger/Bow/Staff) 등 전역 enum |
+| `SettingData/SettingData.cs` | JSON 비동기 로드 진입점. CharacterSettingData, MonsterSettingDict, SkillSettingDict, SoundSettingDict 보유. `LoadAllSettingDataAsync()` |
 | `SettingData/CharacterSettingData.cs` | 캐릭터(소울) 설정. Grade, AttributeSet(11개 스탯), SkinKeys, WeaponType, SkillKeys[], SwitchingEffectKey, SubPassiveKey |
-| `SettingData/WeaponSettingData.cs` | 무기별 기본공격 데이터. `EWeaponType`(GreatSword/OneHandSword/Dagger/Bow/Staff) 키. `AttackComboData`(AnimKey, DamageMultiplier, HitRange, HitOffset, Knockback) |
 | `SettingData/SkillSettingData.cs` | 스킬 설정. OwnerType, 속성, 쿨타임, SkillValueDict |
 | `SettingData/MonsterSettingData.cs` | 몬스터 설정. 6개 스탯 + 약점속성 + 스킬리스트 |
 | `SettingData/SoundSettingData.cs` | 사운드 키 / 클립 매핑 |
@@ -261,7 +264,7 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 |------|------|
 | `FieldObject.cs` | 필드 오브젝트 베이스 |
 | `FieldCharacter/FieldCharacter.cs` | `BSC`, `SpineController` 보유. `Update()`에서 `BSC.OnUpdate(dt)` 호출 |
-| `FieldCharacter/SpineController.cs` | Spine 애니메이션 관리(플레이어/몬스터 공용). Idle/Move/Jump/Dash 루프 재생, 방향 전환(ScaleX), 스킨 합성(SetCombinedSkin), `WaitForAnimEventAsync` / `WaitForCompleteAsync` 비동기 헬퍼 제공. `PlayAnimation` 호출 시 진행중인 wait TCS 자동 캔슬 |
+| `FieldCharacter/SpineController.cs` | Spine 애니메이션 관리(플레이어/몬스터 공용). Idle/Move/Jump/Dash 루프 재생, 방향 전환(`SetScaleX` / `IsFacingRight` getter), 스킨 합성(SetCombinedSkin), `WaitForAnimEventAsync` / `WaitForAnimCompleteAsync` 비동기 헬퍼 제공. `PlayAnimation(animName, loop, timeScale = 1f)` — 옵셔널 `_timeScale` 파라미터로 트랙 재생속도 설정(공격속도 반영). `PlayAnimation` 호출 시 진행중인 wait TCS 자동 캔슬 |
 | `FieldCharacter/Player/PlayerCharacter.cs` | 플레이어 최상위. BSC 초기화 |
 | `FieldCharacter/Player/PlayerController.cs` | Rigidbody2D 기반 이동. 상태머신(Idle/Move/Jump/Dash). 지면 판정(BoxCast), 중력/낙하 가속, 에어컨트롤. Input System Send Messages 방식(`OnMove`, `OnAttack`) — `OnAttack`은 `BSC.WSC.ActivateAttack()` 호출 |
 
@@ -270,13 +273,16 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 | 파일 | 설명 |
 |------|------|
 | `Stat.cs` | 스탯 시스템(`MS.Battle` 네임스페이스). `EStatType`(12종, 플레이어 11 + 몬스터 AttackRange) + baseValue + bonusStatDict(Flat/Percentage). `OnValueChanged` 이벤트. 계산: `base * (1 + %합/100) + flat합` |
-| `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC + AttributeSet 보유, StatusEffect dict 관리(Apply/Update/End), TakeDamage. `InitBSC(owner, attrSet)` = 몬스터, `InitBSC(owner, attrSet, weaponType)` = 플레이어. `UseSkill(key)` 래퍼 |
+| `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC + AttributeSet 보유, StatusEffect dict 관리(Apply/Update/End), TakeDamage. `InitBSC(owner, attrSet, weaponType = null)` — 단일 시그니처 + 옵셔널 `EWeaponType?`. 플레이어는 3번째 인자 전달(WSC 생성), 몬스터는 생략(WSC = null). `UseSkill(key)` 래퍼 |
 | `SkillSystemComponent.cs` | 스킬 관리 전담. 리플렉션으로 스킬 생성(`GiveSkill` — `MS.Battle.{skillKey}` 타입 검색), 쿨타임 체크, UniTask 비동기 실행, CancellationToken 취소(`CancelSkill`/`CancelAllSkills`), `runningSkillDict`로 중복 실행 차단 |
-| `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). 콤보 인덱스/예약 플래그/IsAttacking 관리. `ActivateAttack` → `ActivateAttackAsync` 코루틴이 `SpineController.WaitForAnimEventAsync(SpineEventAttack)` → `WhenAny(SpineEventComboReady, Complete)` 흐름으로 콤보 진행. 외부에서 다른 애니로 끊으면 OperationCanceledException으로 안전 종료 |
+| `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). 무기 타입별 `BaseWeaponAttack` 핸들러를 리플렉션으로 생성/보유하고 입력을 위임. `ChangeWeaponType(weaponType)`으로 핸들러 교체(`MS.Battle.{WeaponType}Attack` 타입 탐색), `ActivateAttack()`으로 입력 포워딩. 핸들러의 `OnAttackStarted`/`OnAttackEnded` 이벤트를 외부로 프록시 |
+| `WeaponAttack/BaseWeaponAttack.cs` | 무기 공격 로직 베이스 추상 클래스. `owner/attrSet/spine/isAttacking` 필드 + `OnAttackStarted/OnAttackEnded` 이벤트 + `OnAttackInput` abstract + Invoke 프록시. 각 무기별 서브클래스(`OneHandSwordAttack` 등)가 자기 콤보 루프/히트 판정/공격속도 처리를 통째로 소유(공용 헬퍼 없음). 스킬(`BaseSkill`) 상속 구조와 대칭 |
+| `WeaponAttack/OneHandSwordAttack.cs` | 한손검 기본공격 구현. 2콤보(`Attack_OneHand1`/`Attack_OneHand2`), 단타, `OverlapCircleAll` 히트 판정, 크리티컬 굴림, `Settings.BasicAttackKnockback` 사용 |
+| `WeaponAttack/{GreatSword,Dagger,Bow,Staff}Attack.cs` | 나머지 4종 무기 스텁 — 리플렉션 팩토리가 인식할 수 있도록 클래스 파일만 존재. `Debug.LogWarning`만 출력. 후속 작업에서 실제 구현 |
 | `AttributeSet/BaseAttributeSet.cs` | 공통 스탯 필드(MaxHealth/BaseAttackPower/Defense/MoveSpeed) + statDict + Health 관리 + OnHealthChanged 이벤트. 실제 Init은 서브클래스가 각자의 SettingData를 받아 직접 수행 |
 | `AttributeSet/PlayerAttributeSet.cs` | 플레이어 전용 스탯(SkillAttackPower, CriticChance, CriticMultiple, Evasion, LifeSteal, CooltimeAccel, AttackSpeed) |
 | `AttributeSet/MonsterAttributeSet.cs` | 몬스터 전용 스탯(AttackRange) |
-| `DamageInfo.cs` | 데미지 정보 구조체. Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce. 기본공격 속성은 Void(무속성) 고정 |
+| `DamageInfo.cs` | 데미지 정보 구조체. Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce/SourceSkill. object initializer 구문으로 생성. 기본공격 속성은 `EDamageAttributeType.None`(무속성) 고정 |
 | `Skill/BaseSkill.cs` | 스킬 추상 기반. 쿨타임, `ActivateSkill(CancellationToken)` 비동기. `IsPostUseCooltime` 옵션 |
 | `Skill/TestOneHandAttack.cs` | 테스트용 한손검 스킬 구현체 |
 | `StatusEffect/StatusEffect.cs` | 상태이상. duration/elapsed + Start/Update/End 콜백 |
@@ -285,7 +291,7 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 
 | 파일 | 설명 |
 |------|------|
-| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, JumpForce=12, DashSpeed=30, DashDuration=0.3, DashCooldown=0.8, DashEndFreezeDuration=0.25, GravityScale=3, FallMultiplier=2.5, AirControlMultiplier=0.8), 애니메이션 키(AnimIdle="Wait1", AnimRun="Run1", AnimJump="Wait4", AnimDash="Run3"), Spine 트랙(`SpineMainTrack=0`), Spine 이벤트 키(`SpineEventAttack="attack"`, `SpineEventComboReady="combo_ready"`), 레이어마스크(Monster/Player/Ground), 색상 팔레트 |
+| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, JumpForce=12, DashSpeed=30, DashDuration=0.3, DashCooldown=0.8, DashEndFreezeDuration=0.25, GravityScale=3, FallMultiplier=2.5, AirControlMultiplier=0.8), 애니메이션 키(AnimIdle="Wait1", AnimRun="Run1", AnimJump="Wait4", AnimDash="Run3"), Spine 트랙(`SpineMainTrack=0`), Spine 이벤트 키(`SpineEventAttack="attack"`, `SpineEventComboReady="combo_ready"`), 전투(`BattleScalingConstant=100`, `BasicAttackKnockback=2f`), 레이어마스크(Monster/Player/Ground), 색상 팔레트 |
 | `MathUtils.cs` | 수학 유틸 |
 | `TransformExtensions.cs` | Transform 확장 (`FindChildDeep` 등) |
 

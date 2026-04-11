@@ -28,4 +28,13 @@ namespace MS.Data
         Duration,
         Casting
     }
+
+    public enum EWeaponType
+    {
+        GreatSword,
+        OneHandSword,
+        Dagger,
+        Bow,
+        Staff
+    }
 }

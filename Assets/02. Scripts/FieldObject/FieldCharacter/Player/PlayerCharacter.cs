@@ -1,4 +1,3 @@
-using System;
 using Core;
 using Cysharp.Threading.Tasks;
 using MS.Battle;
@@ -16,15 +15,20 @@ namespace MS.Field
         public PlayerSoulController PSC => psc;
 
 
-        protected override void Awake()
-        {
-            base.Awake();
-            pmc = GetComponent<PlayerMovementController>();
-        }
-
         private void Start()
         {
             InitTestAsync().Forget();
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+            if (pmc != null) pmc.OnUpdate(Time.deltaTime);
+        }
+
+        private void FixedUpdate()
+        {
+            if (pmc != null) pmc.OnFixedUpdate();
         }
 
         private async UniTaskVoid InitTestAsync()
@@ -35,7 +39,8 @@ namespace MS.Field
         }
 
         public void InitPlayer(string _mainSoulKey)
-        {
+        { 
+            pmc = GetComponent<PlayerMovementController>();
             psc = new PlayerSoulController();
             psc.InitPSC(this, _mainSoulKey);
 
@@ -50,8 +55,7 @@ namespace MS.Field
             playerAttributeSet.InitPlayerAttributeSet(soulSettingData.AttributeSetSettingData);
 
             BSC = new BattleSystemComponent();
-            BSC.InitBSC(this, playerAttributeSet);
-            BSC.WSC.ChangeWeaponType(soulSettingData.WeaponType);
+            BSC.InitBSC(this, playerAttributeSet, soulSettingData.WeaponType);
 
             if (soulSettingData.SkillKeys != null)
             {

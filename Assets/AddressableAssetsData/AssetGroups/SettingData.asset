@@ -20,11 +20,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8af6f283f73fd1b4eb9e600ea0036918
-    m_Address: WeaponSettingData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 97de0fc68fdd4f7428c267fbbecb5fc1
     m_Address: CharacterSettingData
     m_ReadOnly: 0

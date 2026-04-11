@@ -1,9 +1,6 @@
 using System;
-using Core;
-using Cysharp.Threading.Tasks;
 using MS.Data;
 using MS.Field;
-using MS.Utils;
 using UnityEngine;
 
 namespace MS.Battle
@@ -14,108 +11,54 @@ namespace MS.Battle
         public event Action OnAttackEnded;
 
         public EWeaponType CurWeaponType => curWeaponType;
+        public bool IsAttacking => curAttack?.IsAttacking ?? false;
 
         private FieldCharacter owner;
+        private PlayerAttributeSet attrSet;
         private EWeaponType curWeaponType;
-        private WeaponSettingData curWeaponData;
-
-        private int comboIndex;
-        private bool isReserveNextCombo;
-        private bool isAttacking;
+        private BaseWeaponAttack curAttack;
 
 
-        public void InitWSC(FieldCharacter _owner)
+        public void InitWSC(FieldCharacter _owner, PlayerAttributeSet _attrSet)
         {
             owner = _owner;
+            attrSet = _attrSet;
         }
 
         public void ChangeWeaponType(EWeaponType _weaponType)
         {
-            if (!Main.Instance.DataManager.SettingData.WeaponSettingDict.TryGetValue(_weaponType, out var data))
+            if (curAttack != null)
             {
-                Debug.LogError($"[WSC] WeaponSettingData를 찾을 수 없음: {_weaponType}");
-                return;
+                curAttack.OnAttackStarted -= OnAttackStartedCallback;
+                curAttack.OnAttackEnded -= OnAttackEndedCallback;
             }
 
             curWeaponType = _weaponType;
-            curWeaponData = data;
-            comboIndex = 0;
-        }
 
-        public void ActivateAttack()
-        {
-            if (curWeaponData == null || curWeaponData.ComboList == null || curWeaponData.ComboList.Count == 0)
+            string typeName = $"MS.Battle.{_weaponType}Attack";
+            Type attackType = Type.GetType(typeName);
+            if (attackType == null)
             {
-                Debug.LogError($"[WSC] 장착 무기 데이터가 없거나 콤보 리스트가 비어있음");
+                Debug.LogError($"[WSC] 무기 공격 클래스를 찾을 수 없음: {typeName}");
+                curAttack = null;
                 return;
             }
 
-            if (isAttacking) // 공격중일때 공격을 시도하면 콤보공격 예약
+            curAttack = Activator.CreateInstance(attackType) as BaseWeaponAttack;
+            if (curAttack == null)
             {
-                isReserveNextCombo = true;
+                Debug.LogError($"[WSC] 무기 공격 인스턴스 생성 실패: {typeName}");
                 return;
             }
 
-            ActivateAttackAsync().Forget();
+            curAttack.InitWeaponAttack(owner, attrSet);
+            curAttack.OnAttackStarted += OnAttackStartedCallback;
+            curAttack.OnAttackEnded += OnAttackEndedCallback;
         }
 
-        private async UniTaskVoid ActivateAttackAsync()
-        {
-            isAttacking = true;
-            comboIndex = 0;
-            OnAttackStarted?.Invoke();
-            var spine = owner.SpineController;
+        public void ActivateAttack() => curAttack?.OnAttackInput();
 
-            try
-            {
-                while (true)
-                {
-                    var comboData = curWeaponData.ComboList[comboIndex];
-                    spine.PlayAnimation(comboData.AnimKey, false);
-
-                    // 1) 히트 타이밍 대기 → 공격판정
-                    await spine.WaitForAnimEventAsync(Settings.SpineEventAttack);
-                    DoAttack(comboData);
-
-                    // 2) 애니메이션 완료or콤보준비 중 먼저 들어오는 쪽
-                    int finishIdx = await UniTask.WhenAny(
-                        spine.WaitForAnimEventAsync(Settings.SpineEventComboReady),
-                        spine.WaitForAnimCompleteAsync()
-                    );
-                    bool isComboRdy = (finishIdx == 0);
-
-                    if (isReserveNextCombo) // 다음 콤보 예약이 들어왔다면
-                    {
-                        isReserveNextCombo = false;
-                        comboIndex = (comboIndex + 1) % curWeaponData.ComboList.Count;
-                        continue;
-                    }
-
-                    if (!isComboRdy)
-                        break;
-
-                    await spine.WaitForAnimCompleteAsync();
-                    break;
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // 외부 Play 호출로 SpineController가 캔슬한 경우 (안전망) — 정상 종료
-                Debug.Log("WSC::ActivateAttackAsync - 외부에서 공격 취소");
-            }
-            finally
-            {
-                comboIndex = 0;
-                isReserveNextCombo = false;
-                isAttacking = false;
-                OnAttackEnded?.Invoke();
-            }
-        }
-
-        private void DoAttack(AttackComboData _combo)
-        {
-            // TODO: OverlapBox 히트 판정 + BSC.TakeDamage 호출
-            Debug.Log("Attack!!");
-        }
+        private void OnAttackStartedCallback() => OnAttackStarted?.Invoke();
+        private void OnAttackEndedCallback() => OnAttackEnded?.Invoke();
     }
 }

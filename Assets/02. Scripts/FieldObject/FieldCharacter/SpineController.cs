@@ -42,10 +42,11 @@ namespace MS.Field
             CancelAllWaitTcs();
         }
 
-        public void PlayAnimation(string _animationName, bool _loop)
+        public void PlayAnimation(string _animationName, bool _loop, float _timeScale = 1f)
         {
             CancelAllWaitTcs();
-            skeletonAnimation.AnimationState.SetAnimation(Settings.SpineMainTrack, _animationName, _loop);
+            var entry = skeletonAnimation.AnimationState.SetAnimation(Settings.SpineMainTrack, _animationName, _loop);
+            if (entry != null) entry.TimeScale = _timeScale;
         }
 
         // ===== 비동기 대기 헬퍼 =====
@@ -76,9 +77,11 @@ namespace MS.Field
         }
 
         // ===== 방향 =====
+        public bool IsFacingRight => skeletonAnimation.Skeleton.ScaleX > 0f;
+
         public void SetScaleX(bool _right)
         {
-            skeletonAnimation.Skeleton.ScaleX = _right ? -1f : 1f;
+            skeletonAnimation.Skeleton.ScaleX = _right ? 1f : -1f;
         }
 
         // ===== 스킨 =====
