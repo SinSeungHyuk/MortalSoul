@@ -83,14 +83,14 @@ namespace MS.Field
             stateMachine.TransitState((int)_state);
         }
 
-        private void Update()
+        public void OnUpdate(float _dt)
         {
             if (dashCooldownTimer > 0f)
-                dashCooldownTimer -= Time.deltaTime;
-            stateMachine.OnUpdate(Time.deltaTime);
+                dashCooldownTimer -= _dt;
+            stateMachine.OnUpdate(_dt);
         }
 
-        private void FixedUpdate()
+        public void OnFixedUpdate()
         {
             UpdateGroundCheck();
             UpdateFallGravity();
