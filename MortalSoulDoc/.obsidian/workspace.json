@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "04. Assets/소울 코어 스왑 시스템 설계.md",
+                "file": "04. Assets/애니메이션 이벤트.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "소울 코어 스왑 시스템 설계"
+              "title": "애니메이션 이벤트"
             }
           }
         ]
@@ -188,6 +188,9 @@
   "active": "afe49770bdd00e47",
   "lastOpenFiles": [
     "04. Assets/Monster 설계.md",
+    "04. Assets/애니메이션 이벤트.md",
+    "04. Assets/RVD UI 시스템 분석.md",
+    "04. Assets/히트판정 및 스킬 구현 설계.md",
     "04. Assets/소울 코어 스왑 시스템 설계.md",
     "01. WorkReq/몬스터 3단계 - MonsterManager 및 스폰 통합.md",
     "01. WorkReq/몬스터 3단계 - MonsterManager 및 스폰 통합.md.tmp.20280.1775736431851",
