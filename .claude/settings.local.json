@@ -38,5 +38,8 @@
       "mcp__UnityMCP__manage_prefabs",
       "mcp__UnityMCP__manage_material"
     ]
-  }
+  },
+  "disabledMcpjsonServers": [
+    "UnityMCP"
+  ]
 }
