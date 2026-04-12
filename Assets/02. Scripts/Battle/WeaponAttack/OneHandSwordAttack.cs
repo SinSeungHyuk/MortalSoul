@@ -46,10 +46,11 @@ namespace MS.Battle
                         DoHit(_range: 1.8f, _offset: 1.4f, _damageMul: 1.5f);
                     }
 
-                    int finishIdx = await UniTask.WhenAny(
-                        spine.WaitForAnimEventAsync(Settings.AnimComboRdyEvent),
-                        spine.WaitForAnimCompleteAsync()
-                    );
+                    // 버그방지: combo_ready로 빠져나온 후에도 같은 completeTask를 재사용
+                    var readyTask = spine.WaitForAnimEventAsync(Settings.AnimComboRdyEvent);
+                    var completeTask = spine.WaitForAnimCompleteAsync();
+
+                    int finishIdx = await UniTask.WhenAny(readyTask, completeTask);
                     bool isComboReady = (finishIdx == 0);
 
                     if (isNextCombo)
@@ -60,7 +61,7 @@ namespace MS.Battle
                     }
                     if (!isComboReady) break;
 
-                    await spine.WaitForAnimCompleteAsync();
+                    await completeTask;
                     break;
                 }
             }

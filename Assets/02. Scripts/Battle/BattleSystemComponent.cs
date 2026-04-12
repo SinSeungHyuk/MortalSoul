@@ -52,7 +52,6 @@ namespace MS.Battle
             }
 
             float finalDamage = _info.Damage;
-
             // 2. 치명타 (공격자 스탯 기반)
             if (_info.Attacker != null && _info.Attacker.BSC != null && _info.Attacker.BSC.AttributeSet != null)
             {
@@ -63,13 +62,10 @@ namespace MS.Battle
                     _info.IsCritic = true;
                 }
             }
-
             // 3. 속성 약점
             finalDamage = BattleUtils.CalcWeaknessAttribute(finalDamage, _info.AttributeType, AttributeSet.WeaknessAttributeType);
-
             // 4. 방어력
             finalDamage = BattleUtils.CalcDefenseStat(finalDamage, AttributeSet.Defense.Value);
-
             // 5. 체력 감소
             AttributeSet.Health -= finalDamage;
 
