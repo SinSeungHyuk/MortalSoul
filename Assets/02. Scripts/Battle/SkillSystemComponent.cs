@@ -76,12 +76,13 @@ namespace MS.Battle
 
             CancellationTokenSource cts = new CancellationTokenSource();
             runningSkillDict[_skillKey] = cts;
+            if (!skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
 
             try
             {
-                if (!skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
                 await skillToUse.ActivateSkillAsync(cts.Token);
                 OnSkillUsed?.Invoke(_skillKey);
+                if (skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
             }
             catch (OperationCanceledException)
             {
@@ -90,28 +91,30 @@ namespace MS.Battle
             catch (Exception e)
             {
                 Debug.LogError($"[SSC] {_skillKey} 스킬 사용 중 에러: {e.Message}");
+                if (!skillToUse.IsPostUseCooltime) skillToUse.ResetCooltime();
             }
             finally
             {
-                if (skillToUse.IsPostUseCooltime) skillToUse.SetCooltime();
-
-                if (runningSkillDict.ContainsKey(_skillKey))
-                {
+                // 동일 키로 새로운 UseSkill이 이미 진입했으면 해당 엔트리를 건드리지 않기 위한 동일성 체크
+                if (runningSkillDict.TryGetValue(_skillKey, out var current) && ReferenceEquals(current, cts))
                     runningSkillDict.Remove(_skillKey);
-                    cts.Dispose();
-                }
+                cts.Dispose();
             }
         }
 
         public void CancelSkill(string _skillKey)
         {
             if (runningSkillDict.TryGetValue(_skillKey, out CancellationTokenSource cts))
+            {
                 cts.Cancel();
+                runningSkillDict.Remove(_skillKey);
+            }
         }
 
         public void CancelAllSkills()
         {
             var ctsList = new List<CancellationTokenSource>(runningSkillDict.Values);
+            runningSkillDict.Clear();
             foreach (var cts in ctsList)
                 cts.Cancel();
         }
@@ -135,10 +138,8 @@ namespace MS.Battle
 
         public void ClearSSC()
         {
+            // ClearSSC는 Cancel만
             CancelAllSkills();
-            foreach (var cts in runningSkillDict.Values)
-                cts.Dispose();
-            runningSkillDict.Clear();
             ownedSkillDict.Clear();
         }
     }

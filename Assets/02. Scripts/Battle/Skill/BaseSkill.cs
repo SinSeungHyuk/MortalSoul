@@ -15,10 +15,10 @@ namespace MS.Battle
         protected SkillSettingData skillData;
 
         private float curCooltime;
-        private float elapsedCooltime;
+        private float remainCooltime;
 
-        public bool IsCooltime => elapsedCooltime > 0;
-        public float CooltimeRatio => curCooltime > 0 ? elapsedCooltime / curCooltime : 0f;
+        public bool IsCooltime => remainCooltime > 0;
+        public float CooltimeRemainRatio => curCooltime > 0 ? remainCooltime / curCooltime : 0f;
         public bool IsPostUseCooltime => skillData.IsPostUseCooltime;
 
 
@@ -30,7 +30,7 @@ namespace MS.Battle
             skillData = _skillData;
 
             curCooltime = _skillData.Cooltime;
-            elapsedCooltime = 0;
+            remainCooltime = 0;
         }
 
         public abstract UniTask ActivateSkillAsync(CancellationToken _token);
@@ -48,7 +48,12 @@ namespace MS.Battle
             }
 
             curCooltime = cooltime;
-            elapsedCooltime = cooltime;
+            remainCooltime = cooltime;
+        }
+
+        public void ResetCooltime()
+        {
+            remainCooltime = 0f;
         }
 
         public async UniTask SkillCastingAsync(CancellationToken _token)
@@ -59,8 +64,8 @@ namespace MS.Battle
 
         public void OnUpdate(float _deltaTime)
         {
-            if (elapsedCooltime > 0)
-                elapsedCooltime -= _deltaTime;
+            if (remainCooltime > 0)
+                remainCooltime -= _deltaTime;
         }
     }
 }
