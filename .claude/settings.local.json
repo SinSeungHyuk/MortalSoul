@@ -39,8 +39,5 @@
       "mcp__UnityMCP__manage_material",
       "Bash(python3 -c \"import uuid; print\\(uuid.uuid4\\(\\).hex\\)\")"
     ]
-  },
-  "disabledMcpjsonServers": [
-    "UnityMCP"
-  ]
+  }
 }
