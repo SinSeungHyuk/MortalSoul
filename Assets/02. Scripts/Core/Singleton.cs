@@ -19,20 +19,24 @@ namespace Core
     public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         protected static T _instance;
-        public static T Instance
-        {
-            get
-            {
-                return _instance;
-            }
-        }
+        public static T Instance => _instance;
 
         protected virtual void Awake()
         {
             if (_instance == null)
-                _instance = GetComponent<T>();
-            else
-                DestroyImmediate(this);
+            {
+                _instance = this as T;
+            }
+            else if (_instance != this)
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (_instance == this)
+                _instance = null;
         }
     }
 }
