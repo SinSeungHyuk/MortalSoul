@@ -64,7 +64,7 @@ namespace MS.Field
             }
 
             if (soulSettingData.SkinKeys != null && soulSettingData.SkinKeys.Count > 0)
-                SpineController.SetCombinedSkin(soulSettingData.SkinKeys);
+                SpineController.SetSkin(soulSettingData.SkinKeys);
 
             pmc.InitController(this, BSC.WSC);
         }
@@ -96,7 +96,7 @@ namespace MS.Field
             BSC.WSC.ChangeWeaponType(newSoulData.WeaponType);
 
             attributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
-            SpineController.SetCombinedSkin(newSoulData.SkinKeys);
+            SpineController.SetSkin(newSoulData.SkinKeys);
             pmc.SetPlayerState(EPlayerState.Idle);
 
             float swapSoulHealth = psc.SwapSoul(attributeSet.Health);

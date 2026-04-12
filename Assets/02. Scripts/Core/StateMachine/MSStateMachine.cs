@@ -60,21 +60,17 @@ namespace MS.Core.StateMachine
 
                 int curStateId = -1;
 
-                // 1. ���� ���� ����
                 if (curState != null)
                 {
                     curStateId = curState.StateId;
                     curState.OnStateExit(nextState.StateId);
                 }
 
-                // 2. ���� ��ü
                 curState = nextState;
 
-                // 3. �� ���� ����
                 curState.OnStateEnter(curStateId, connectionParams);
             }
 
-            // ���� ���� ������Ʈ
             curState?.OnStateUpdate(_deltaTime);
         }
 

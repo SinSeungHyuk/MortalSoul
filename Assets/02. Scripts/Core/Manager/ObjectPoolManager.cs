@@ -64,7 +64,7 @@ namespace Core
             Debug.Log($"[PoolManager] 풀 생성 완료: '{_key}' (개수: {_initialCount})");
         }
 
-        public GameObject Get(string _key, Vector3 _pos = default, Quaternion _rot = default)
+        public GameObject Get(string _key, Vector3 _pos, Quaternion _rot)
         {
             GameObject instance = Get(_key);
             if (instance)
@@ -75,6 +75,11 @@ namespace Core
                 instance.SetActive(true);
             }
             return instance;
+        }
+
+        public GameObject Get(string _key, Vector3 _pos)
+        {
+            return Get(_key, _pos, Quaternion.identity);
         }
 
         public GameObject Get(string _key, Transform _transform)

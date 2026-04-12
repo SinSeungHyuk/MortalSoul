@@ -44,19 +44,19 @@ namespace MS.Utils
         #endregion
 
         #region LAYERMASK SETTING
-        public static LayerMask MonsterLayer = LayerMask.GetMask("Monster"); // ���� ���̾�
-        public static LayerMask PlayerLayer = LayerMask.GetMask("Player"); // �÷��̾� ���̾�
-        public static LayerMask GroundLayer = LayerMask.GetMask("Ground"); // 지면 레이어
+        public static LayerMask MonsterLayer = LayerMask.GetMask("Monster");
+        public static LayerMask PlayerLayer = LayerMask.GetMask("Player");
+        public static LayerMask GroundLayer = LayerMask.GetMask("Ground");
         #endregion
 
         #region COLOR SETTING
         public static Color32 Green = new Color32(22, 135, 24, 255);
         public static Color32 Beige = new Color32(207, 182, 151, 255);
-        public static Color32 Rare = new Color32(11, 110, 204, 255); // �Ķ�
-        public static Color32 Unique = new Color32(155, 61, 217, 255); // ����
-        public static Color32 Legend = new Color32(255, 112, 120, 255); // ����
-        public static Color32 Critical = new Color32(255, 102, 2, 255); // ��Ȳ
-        public static Color32 Magnet = new Color32(255, 191, 0, 255); // Ȳ��
+        public static Color32 Rare = new Color32(11, 110, 204, 255);
+        public static Color32 Unique = new Color32(155, 61, 217, 255);
+        public static Color32 Legend = new Color32(255, 112, 120, 255);
+        public static Color32 Critical = new Color32(255, 102, 2, 255);
+        public static Color32 Magnet = new Color32(255, 191, 0, 255);
         #endregion
     }
 }

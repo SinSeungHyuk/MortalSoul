@@ -22,7 +22,6 @@ namespace MS.Field
         private Vector2 moveInput;
         private bool isGrounded;
         private bool wasGrounded;
-        private bool isScaleXRight = true;
 
         private bool jumpRequested;
         private bool dashRequested;
@@ -103,8 +102,6 @@ namespace MS.Field
         {
             wasGrounded = isGrounded;
 
-            if (col == null) return;
-
             Vector2 origin = (Vector2)transform.position + col.offset + Vector2.down * (col.size.y * 0.5f);
             RaycastHit2D hit = Physics2D.BoxCast(origin, Settings.GroundCheckSize, 0f, Vector2.down,
                 Settings.GroundCheckDistance, Settings.GroundLayer);
@@ -124,16 +121,10 @@ namespace MS.Field
 
         private void UpdateScaleX()
         {
-            if (moveInput.x > 0.01f && !isScaleXRight)
-            {
-                isScaleXRight = true;
+            if (moveInput.x > 0.01f && !spineController.IsScaleXRight)
                 spineController.SetScaleX(true);
-            }
-            else if (moveInput.x < -0.01f && isScaleXRight)
-            {
-                isScaleXRight = false;
+            else if (moveInput.x < -0.01f && spineController.IsScaleXRight)
                 spineController.SetScaleX(false);
-            }
         }
 
         // 입력 체크
@@ -239,7 +230,7 @@ namespace MS.Field
             dashFreezeTimer = 0f;
             dashCooldownTimer = Settings.DashCooldown;
 
-            float direction = isScaleXRight ? 1f : -1f;
+            float direction = spineController.IsScaleXRight ? 1f : -1f;
             curVelocityX = direction * Settings.DashSpeed;
 
             // 대시 중 중력 무시
@@ -299,19 +290,7 @@ namespace MS.Field
 
         private void OnAttackUpdate(float _dt)
         {
-            if (dashRequested && dashCooldownTimer <= 0f)
-            {
-                dashRequested = false;
-                stateMachine.TransitState((int)EPlayerState.Dash);
-                return;
-            }
-
-            if (jumpRequested && isGrounded)
-            {
-                jumpRequested = false;
-                stateMachine.TransitState((int)EPlayerState.Jump);
-                return;
-            }
+            CheckCurInput();
         }
 
         #endregion

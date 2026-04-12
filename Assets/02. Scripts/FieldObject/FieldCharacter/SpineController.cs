@@ -12,6 +12,7 @@ namespace MS.Field
         public bool IsScaleXRight => skeletonAnimation.Skeleton.ScaleX > 0f;
 
         private SkeletonAnimation skeletonAnimation;
+        private Skin curSkin;
 
         private string curWaitEventKey;
         private UniTaskCompletionSource curWaitEventTcs;
@@ -39,6 +40,26 @@ namespace MS.Field
             }
 
             CancelAllWaitTcs();
+        }
+
+        // ===== 스킨 =====
+        public void SetSkin(List<string> _skinKeys)
+        {
+            var skeleton = skeletonAnimation.Skeleton;
+
+            if (curSkin == null)
+                curSkin = new Skin("combined");
+            else
+                curSkin.Clear();
+
+            for (int i = 0; i < _skinKeys.Count; i++)
+            {
+                var skin = skeleton.Data.FindSkin(_skinKeys[i]);
+                if (skin != null) curSkin.AddSkin(skin);
+            }
+
+            skeleton.SetSkin(curSkin);
+            skeleton.SetSlotsToSetupPose();
         }
 
         public void PlayAnimation(string _animationName, bool _loop, float _timeScale = 1f)
@@ -78,22 +99,6 @@ namespace MS.Field
         public void SetScaleX(bool _right)
         {
             skeletonAnimation.Skeleton.ScaleX = _right ? 1f : -1f;
-        }
-
-        // ===== 스킨 =====
-        public void SetCombinedSkin(List<string> _skinKeys)
-        {
-            var skeleton = skeletonAnimation.Skeleton;
-            var combinedSkin = new Skin("combined");
-
-            for (int i = 0; i < _skinKeys.Count; i++)
-            {
-                var skin = skeleton.Data.FindSkin(_skinKeys[i]);
-                if (skin != null) combinedSkin.AddSkin(skin);
-            }
-
-            skeleton.SetSkin(combinedSkin);
-            skeleton.SetSlotsToSetupPose();
         }
 
         // ===== Spine 이벤트 =====
