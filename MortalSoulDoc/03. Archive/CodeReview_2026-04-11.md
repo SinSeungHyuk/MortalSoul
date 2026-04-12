@@ -1,8 +1,95 @@
 # MortalSoul 전체 코드 리뷰 리포트
 
 **작성일**: 2026-04-11
+**작업 완료일**: 2026-04-12
 **리뷰 방식**: 4개 도메인 병렬 (`superpowers:code-reviewer` 에이전트)
 **리뷰 범위**: `Assets/02. Scripts/` 전체
+
+---
+
+## 작업 완료 기록 (2026-04-12)
+
+리뷰 문서에서 도출된 16개 이슈를 6개 Phase로 나눠 단계별 처리. 각 Phase는 독립 커밋으로 분리하여 리그레션 격리 가능하도록 구성.
+
+### Phase별 커밋 요약
+
+| Phase | 커밋 | 내용 |
+|---|---|---|
+| 1 | `5c40057` | **전투 데미지 파이프라인 복구 + AttributeSet 통합** (빌드 복구 최우선) |
+| 2 | `d012659` | **콤보 레이스 버그 + 벽 끼임 해결** |
+| 3 | `8b7bc3f` | **SkillSystem 수명주기/네이밍 정리** |
+| 4 | `f1aa220` | **Core 수명주기 정비** (Singleton/Main/DataManager) |
+| 5 | `4012788` | **BSC/WSC 대칭 Clear + 구조 정리** |
+| 6 | `59824c7` | **Quality/Nit 일괄 정리** |
+
+### Phase 1 상세
+- `BSC.InitBSC(owner, attrSet, EWeaponType?)` 단일 시그니처. 플레이어는 3번째 인자 전달(WSC 생성), 몬스터는 생략(WSC = null)
+- `BSC.TakeDamage` 구현: 회피 → 치명타 → 약점 → 방어 커브 → 체력 감소 → LifeSteal → OnHit/OnDodged/OnDead 이벤트
+- `BattleUtils` 신규 작성 (CalcDefenseStat / CalcEvasionStat / CalcWeaknessAttribute / CalcCriticDamage)
+- 크리티컬 공식: `base * CriticMultiple / 100` — CriticMultiple 기본값 150 = 1.5배 (ARPG 표준 컨벤션)
+- `OneHandSwordAttack.DoHit` 본체 복구 — `DamageInfo` 생성 후 `target.BSC.TakeDamage` 호출. 크리 굴림은 호출처가 아닌 BSC 내부에서 처리
+- `GreatSwordAttack` → `TwoHandSwordAttack` 클래스명 정렬 (enum `EWeaponType.TwoHandSword`와 일치)
+- **AttributeSet 통합 리팩터** (보너스 작업): `BaseAttributeSet` / `PlayerAttributeSet` / `MonsterAttributeSet` 3개 클래스를 단일 `AttributeSet`으로 합침. `PlayerAttributeSetSettingData` / `MonsterAttributeSetSettingData`도 단일 `AttributeSetSettingData`로 통합. TakeDamage에서 PlayerAttributeSet 캐스팅 분기 제거, 깔끔한 파이프라인 확보
+
+### Phase 2 상세
+- **콤보 WhenAny 레이스 수정**: `WhenAny(combo_ready, Complete)` 호출 전에 두 Task를 변수에 저장 → `combo_ready`로 빠져나온 경우 저장해둔 `completeTask`를 재활용. 기존에는 두 번째 `WaitForAnimCompleteAsync()` 호출이 새 TCS를 만들어, Complete가 그 틈에 이미 지나갔다면 영원히 await가 풀리지 않는 hang 가능성 존재
+- **Dash/Jump 상태 전환 레이스 검증**: 현재 구조가 사용자 요구("즉시 공격")와 정합. `OnDashExit`에서 중력 복원, `OnAttackEnter`에서 X 속도 0, Spine `PlayAnimation` 자동 캔슬로 공격 중 대시도 깔끔하게 정리됨 — **수정 불필요**
+- **X축 벽 끼임**: 코드 수정이 아닌 `PM_PlayerCharacter.physicsMaterial2D` (Friction=0) 에셋을 플레이어 collider에 적용하는 Unity 표준 방식으로 해결
+
+### Phase 3 상세
+- **CancelSkill/CancelAllSkills**가 Cancel 직후 `runningSkillDict`에서도 제거 → 취소 후 동일 프레임 재사용 가능
+- **UseSkill.finally 동일성 체크**: `ReferenceEquals(current, cts)` — 새 UseSkill 호출이 같은 키로 이미 새 cts를 꽂았다면 건드리지 않음 (재진입 안전)
+- **ClearSSC 이중 Dispose 방어**: Cancel만 트리거, CTS Dispose는 각 `UseSkill.finally`가 전담
+- **Pre-use 쿨타임 롤백**: `catch (Exception)` 경로에서 `ResetCooltime()` 호출. `OperationCanceledException`은 롤백 안 함(의도적 캔슬은 쿨타임 유지)
+- **BaseSkill 네이밍**: `elapsedCooltime` → `remainCooltime`, `CooltimeRatio` → `CooltimeRemainRatio`. `ResetCooltime()` 추가
+
+### Phase 4 상세
+- **MonoSingleton.Awake**: `GetComponent<T>()` → `this as T`. 중복 오브젝트는 `Destroy(gameObject)`로 처리. `OnDestroy`에서 `_instance == this`면 nullify
+- **Main.OnDestroy 정리 훅 체인**: `BattleObjectManager.ClearBattleObject` → `ObjectPoolManager.ClearAllPools` → `SoundManager.ClearAllSounds` → `AddressableManager.ReleaseAll` → `DataManager.ReleaseGameData` 순으로 호출
+- **DataManager.InitGameData 호출 지점 연결**: 던전 입장 로직이 아직 없으므로 임시로 부팅 직후 호출 + TODO 주석
+
+### Phase 5 상세
+- `BSC.ClearBSC` 추가 — SSC/WSC 일괄 정리 + 상태이상 End + 이벤트 구독 해제. `FieldCharacter.OnDestroy`에서 연결
+- `WSC.ClearWSC` 추가 — `curAttack` 이벤트 해제 + 리스너 nullify
+- `BSC.UpdateStatusEffects` GC 제거 — 매 프레임 `new List<string>()` 할당을 `removeStatusEffectList` 필드 재사용으로 변경
+- **PMC ↔ PlayerCharacter 양방향 GetComponent 해소**: PMC가 `GetComponent<PlayerCharacter>()` 제거, `InitController(player, wsc)` 주입 방식으로 단방향화
+
+### Phase 6 상세
+- `ObjectPoolManager.Get` Quaternion default 버그 수정 — 오버로드 분리 (명시형 / pos만 / key만)
+- `SpineController.SetSkin`: `combinedSkin` 필드 캐시 + `Clear()` 재사용 (매 소울 교체마다 `new Skin()` 할당 제거). 이름도 `SetCombinedSkin` → `SetSkin`으로 간결화
+- PMC `isScaleXRight` 로컬 필드 제거, `spineController.IsScaleXRight`로 단일화
+- `OnAttackUpdate` dash/jump 체크 중복 → `CheckCurInput()` 재사용
+- `TestOneHandAttack`: 불필요한 `async` + `await UniTask.CompletedTask` 제거
+- `MathUtils` `/// <summary>` 3개 제거 (CLAUDE.md 규칙 9)
+- `Settings.cs` / `MSStateMachine.cs` 인코딩 손상된 한글 주석 정리
+
+### 특이사항
+
+1. **AttributeSet 통합 범위 확대**: 원래 Phase 1 계획은 `BSC.TakeDamage` 내부에서 `as PlayerAttributeSet` 캐스팅으로 플레이어/몬스터 분기할 예정이었으나, 작업 도중 사용자 제안으로 `BaseAttributeSet`/`PlayerAttributeSet`/`MonsterAttributeSet` 3개 클래스를 단일 `AttributeSet`으로 통합하는 쪽으로 확장. SettingData도 `AttributeSetSettingData` 하나로 합치고, JSON에서 필요한 필드만 채우고 나머지는 Newtonsoft 기본값으로 처리. TakeDamage 파이프라인에서 캐스팅 분기가 완전히 제거되어 훨씬 깔끔해짐
+
+2. **BSC 내부 WSC 생성 방식 결정**: 사용자가 "WSC는 BSC 내부 컴포넌트이므로 항상 생성하되 사용할 곳에서만 초기화" vs "몬스터는 WSC=null로 명시" 두 안 중 후자를 선택. CLAUDE.md 규격에 맞게 `InitBSC(owner, attrSet, EWeaponType? = null)` 단일 시그니처 + 옵셔널 weaponType 분기
+
+3. **크리티컬 공식 네이밍 결정**: CriticMultiple=150이 "1.5배"인지 "150% 추가 = 2.5배"인지 논의 후 표준 ARPG 컨벤션(`base * CriticMultiple / 100`)으로 확정. 150 = 1.5배, 100 = 원본 그대로. Diablo/PoE 등과 동일
+
+4. **EWeaponType.TwoHandSword vs GreatSword 네이밍**: 원래 리뷰는 enum이 `TwoHandSword`인데 클래스가 `GreatSwordAttack`이라 리플렉션 실패를 지적. 사용자가 `TwoHandSword`를 정석으로 유지하고 클래스 쪽을 `TwoHandSwordAttack`으로 변경하는 방향 결정. CLAUDE.md 본문의 `GreatSword` 언급은 향후 업데이트 필요
+
+5. **벽 끼임 해결 — 코드 아닌 에디터 설정**: 원래 계획은 `Rigidbody2D.Cast`로 벽 접촉 판정 코드를 추가할 예정이었으나, 사용자 제안으로 `PhysicsMaterial2D`(Friction=0)를 플레이어 collider에 적용하는 Unity 표준 방식으로 전환. 코드 수정 0줄로 해결
+
+6. **Phase 2-2 (Dash/Jump 중 공격 상태 게이트)**: 리뷰는 "상태 게이트 복구"를 권장했으나, 실제 코드 트레이싱 결과 사용자 요구사항("즉시 공격 = Dash/Jump 캔슬")과 정합하며 `OnDashExit`/`OnAttackEnter`/`Spine PlayAnimation` 자동 캔슬로 깔끔하게 정리됨이 확인됨 → **수정 불필요** 판정
+
+7. **스킵된 이슈 2건**:
+   - **Phase 4-4 (SettingData 로드 실패 전파 + 주석 dict 복구)**: 사용자 결정으로 스킵. `MonsterSettingData.json` / `SoundSettingData.json` 파일이 아직 준비되지 않아 지금은 실익 없음
+   - **Phase 6-2 (SkillSettingData.TryGetValue 버전 추가)**: 사용자 판단 — "휴먼 에러의 영역" (데이터 작성 시점에 확인할 수 있는 것이지 런타임 API 레벨에서 방어할 필요 없음)
+
+8. **`removeStatusEffectList` 네이밍**: 처음 `removeEffectKeyBuffer`로 제안했으나 사용자가 프로젝트 다른 곳(이전 레퍼런스 코드)과의 일관성을 위해 `removeStatusEffectList`로 변경 요청. `readonly`는 제거
+
+9. **SpineController.SetCombinedSkin → SetSkin 이름 단순화**: 6-3 작업 도중 사용자가 메서드명을 `SetSkin`으로 변경. "combined"는 구현 디테일이지 인터페이스 의미가 아님
+
+10. **IDE 컴파일 캐시 지연**: 작업 도중 `AttributeSet.cs` 신규 생성 직후 PlayerCharacter.cs 쪽에 "형식을 찾을 수 없음" 일시 에러. Unity Editor가 C# 프로젝트 파일 재생성을 아직 안 한 시점. `.meta` GUID를 기존 `BaseAttributeSet.cs.meta`와 동일하게 유지해 에셋 참조 호환성 보장
+
+### 태그
+
+#코드리뷰 #전투시스템 #데미지파이프라인 #AttributeSet통합 #BSC #WSC #SSC #콤보레이스 #벽끼임 #PhysicsMaterial2D #MonoSingleton #수명주기 #ClearBSC #SkillSystem #쿨타임롤백 #리팩터 #Nit정리
 
 ---
 
