@@ -37,4 +37,11 @@ namespace MS.Data
         Bow,
         Staff
     }
+
+    public enum EGameState
+    {
+        Title,
+        Village,
+        Dungeon
+    }
 }
