@@ -39,6 +39,8 @@ namespace MS.Utils
         #region BATTLE SETTING
         public static int BattleScalingConstant = 100;
         public static float BasicAttackKnockback = 2f;
+        public static float WeaknessAttributeMultiple = 1.5f;
+        public static float LifeStealValue = 1f;
         #endregion
 
         #region LAYERMASK SETTING

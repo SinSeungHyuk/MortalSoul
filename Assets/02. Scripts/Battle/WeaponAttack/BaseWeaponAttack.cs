@@ -11,11 +11,11 @@ namespace MS.Battle
         public bool IsAttacking => isAttacking;
 
         protected FieldCharacter owner;
-        protected BaseAttributeSet attributeSet;
+        protected AttributeSet attributeSet;
         protected SpineController spine;
         protected bool isAttacking;
 
-        public virtual void InitBaseWeaponAttack(FieldCharacter _owner, BaseAttributeSet _attrSet)
+        public virtual void InitBaseWeaponAttack(FieldCharacter _owner, AttributeSet _attrSet)
         {
             owner = _owner;
             attributeSet = _attrSet;

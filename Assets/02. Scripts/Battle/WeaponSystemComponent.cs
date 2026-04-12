@@ -13,12 +13,12 @@ namespace MS.Battle
         public EWeaponType CurWeaponType => curWeaponType;
 
         private FieldCharacter owner;
-        private BaseAttributeSet attrSet;
+        private AttributeSet attrSet;
         private EWeaponType curWeaponType;
         private BaseWeaponAttack curAttack;
 
 
-        public void InitWSC(FieldCharacter _owner, BaseAttributeSet _attrSet, EWeaponType _weaponType)
+        public void InitWSC(FieldCharacter _owner, AttributeSet _attrSet, EWeaponType _weaponType)
         {
             owner = _owner;
             attrSet = _attrSet;

@@ -12,7 +12,7 @@ namespace MS.Battle
     public class SkillSystemComponent
     {
         public FieldCharacter Owner { get; private set; }
-        public BaseAttributeSet AttributeSet { get; private set; }
+        public AttributeSet AttributeSet { get; private set; }
 
         private Dictionary<string, BaseSkill> ownedSkillDict;
         private Dictionary<string, CancellationTokenSource> runningSkillDict;
@@ -21,7 +21,7 @@ namespace MS.Battle
         public event Action<string> OnSkillUsed;
 
 
-        public void InitSSC(FieldCharacter _owner, BaseAttributeSet _attributeSet)
+        public void InitSSC(FieldCharacter _owner, AttributeSet _attributeSet)
         {
             Owner = _owner;
             AttributeSet = _attributeSet;

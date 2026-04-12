@@ -11,7 +11,7 @@ namespace MS.Battle
     {
         protected SkillSystemComponent ownerSSC;
         protected FieldCharacter owner;
-        protected BaseAttributeSet attributeSet;
+        protected AttributeSet attributeSet;
         protected SkillSettingData skillData;
 
         private float curCooltime;

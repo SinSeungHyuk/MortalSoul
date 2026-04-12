@@ -51,12 +51,11 @@ namespace MS.Field
                 return;
             }
 
-            var playerAttributeSet = new PlayerAttributeSet();
-            playerAttributeSet.InitPlayerAttributeSet(soulSettingData.AttributeSetSettingData);
+            var attributeSet = new AttributeSet();
+            attributeSet.Init(soulSettingData.AttributeSetSettingData);
 
             BSC = new BattleSystemComponent();
-            BSC.InitBSC(this, playerAttributeSet);
-            BSC.WSC.InitWSC(this, playerAttributeSet, soulSettingData.WeaponType);
+            BSC.InitBSC(this, attributeSet, soulSettingData.WeaponType);
 
             if (soulSettingData.SkillKeys != null)
             {
@@ -90,18 +89,18 @@ namespace MS.Field
         {
             if (!psc.CanSwap()) return;
 
-            BSC.SSC.CancelAllSkills();
-
             var newSoulData = Main.Instance.DataManager.SettingData.CharacterSettingData.GetSoulSettingData(psc.SubSoulKey);
-            var playerAttributeSet = (PlayerAttributeSet)BSC.AttributeSet;
+            var attributeSet = BSC.AttributeSet;
 
-            playerAttributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
+            BSC.SSC.CancelAllSkills();
             BSC.WSC.ChangeWeaponType(newSoulData.WeaponType);
+
+            attributeSet.SwapBaseValues(newSoulData.AttributeSetSettingData);
             SpineController.SetCombinedSkin(newSoulData.SkinKeys);
             pmc.SetPlayerState(EPlayerState.Idle);
 
-            float swapSoulHealth = psc.SwapSoul(playerAttributeSet.Health);
-            playerAttributeSet.Health = swapSoulHealth;
+            float swapSoulHealth = psc.SwapSoul(attributeSet.Health);
+            attributeSet.Health = swapSoulHealth;
         }
     }
 }

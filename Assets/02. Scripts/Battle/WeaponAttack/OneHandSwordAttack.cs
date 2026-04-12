@@ -10,13 +10,6 @@ namespace MS.Battle
     {
         private int curComboCnt;
         private bool isNextCombo;
-        private PlayerAttributeSet playerAttributeSet;
-
-        public override void InitBaseWeaponAttack(FieldCharacter _owner, BaseAttributeSet _attrSet)
-        {
-            base.InitBaseWeaponAttack(_owner, _attrSet);
-            playerAttributeSet = (PlayerAttributeSet)_attrSet;
-        }
 
         public override void ActivateAttack()
         {
@@ -38,7 +31,7 @@ namespace MS.Battle
             {
                 while (true)
                 {
-                    float timeScale = playerAttributeSet.AttackSpeed.Value / 100f;
+                    float timeScale = attributeSet.AttackSpeed.Value / 100f;
 
                     if (curComboCnt == 0)
                     {
@@ -89,26 +82,20 @@ namespace MS.Battle
 
             foreach (var hit in hits)
             {
-                if (hit.TryGetComponent<FieldCharacter>(out var target) == false) 
+                if (hit.TryGetComponent<FieldCharacter>(out var target) == false)
                     continue;
 
-                // TODO :: BattleUtils를 통해 데미지 계산하여 넘겨주기
-                // bool isCritic = UnityEngine.Random.value * 100f < attributeSet.CriticChance.Value;
-                // float damage = _damageMul * attributeSet.BaseAttackPower.Value;
-                // if (isCritic) damage *= attributeSet.CriticMultiple.Value / 100f;
+                var info = new DamageInfo
+                {
+                    Attacker = owner,
+                    Target = target,
+                    AttributeType = EDamageAttributeType.None,
+                    Damage = attributeSet.BaseAttackPower.Value * _damageMul,
+                    KnockbackForce = Settings.BasicAttackKnockback,
+                    SourceSkill = null
+                };
 
-                // var info = new DamageInfo
-                // {
-                //     Attacker = owner,
-                //     Target = target,
-                //     AttributeType = EDamageAttributeType.None,
-                //     Damage = damage,
-                //     IsCritic = isCritic,
-                //     KnockbackForce = Settings.BasicAttackKnockback,
-                //     SourceSkill = null
-                // };
-
-                // target.BSC.TakeDamage(info);
+                target.BSC.TakeDamage(info);
             }
         }
     }
