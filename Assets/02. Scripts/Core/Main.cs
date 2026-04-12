@@ -51,6 +51,7 @@ namespace Core
 
         protected override void OnDestroy()
         {
+            MonsterManager?.ClearAll();
             BattleObjectManager?.ClearBattleObject();
             EffectManager?.ClearEffect();
             ObjectPoolManager?.ClearAllPools();

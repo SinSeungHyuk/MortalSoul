@@ -1,0 +1,21 @@
+{
+  "TestSlime": {
+    "AttributeSetSettingData": {
+      "MaxHealth": 50,
+      "BaseAttackPower": 10,
+      "SkillAttackPower": 10,
+      "Defense": 5,
+      "MoveSpeed": 80,
+      "CriticChance": 0,
+      "CriticMultiple": 150,
+      "Evasion": 0,
+      "LifeSteal": 0,
+      "CooltimeAccel": 0,
+      "AttackSpeed": 100,
+      "AttackRange": 2,
+      "WeaknessAttributeType": 0
+    },
+    "DropItemKey": "",
+    "SkillList": []
+  }
+}

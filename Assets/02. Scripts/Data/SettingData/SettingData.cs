@@ -22,8 +22,8 @@ namespace MS.Data
                 TextAsset characterJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("CharacterSettingData");
                 CharacterSettingData = JsonConvert.DeserializeObject<GameCharacterSettingData>(characterJson.text);
 
-                // TextAsset monsterJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("MonsterSettingData");
-                // MonsterSettingDict = JsonConvert.DeserializeObject<Dictionary<string, MonsterSettingData>>(monsterJson.text);
+                TextAsset monsterJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("MonsterSettingData");
+                MonsterSettingDict = JsonConvert.DeserializeObject<Dictionary<string, MonsterSettingData>>(monsterJson.text);
 
                 TextAsset skillJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("SkillSettingData");
                 SkillSettingDict = JsonConvert.DeserializeObject<Dictionary<string, SkillSettingData>>(skillJson.text);
