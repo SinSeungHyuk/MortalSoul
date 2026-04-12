@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Core
@@ -10,12 +9,10 @@ namespace Core
         public UIManager UIManager { get; private set; }
         public SoundManager SoundManager { get; private set; }
         public ObjectPoolManager ObjectPoolManager { get; private set; }
+        public EffectManager EffectManager { get; private set; }
         public MonsterManager MonsterManager { get; private set; }
         public BattleObjectManager BattleObjectManager { get; private set; }
-
-
-        // TODO :: TEST
-        public bool IsBootCompleted { get; private set; }
+        public GameManager GameManager { get; private set; }
 
         protected override void Awake()
         {
@@ -32,40 +29,34 @@ namespace Core
 
             ObjectPoolManager = new ObjectPoolManager();
             ObjectPoolManager.InitObjectPoolManager(poolContainer);
+            EffectManager = new EffectManager();
             MonsterManager = new MonsterManager();
             BattleObjectManager = new BattleObjectManager();
-        }
 
-        private void Update()
-        {
-            BattleObjectManager.OnUpdate(Time.deltaTime);
+            GameManager = new GameManager();
+            GameManager.InitGameManager();
         }
 
         private void Start()
         {
-            TESTBootAsync().Forget();
+            GameManager.StartGame();
+        }
+
+        private void Update()
+        {
+            GameManager.OnUpdate(Time.deltaTime);
         }
 
         protected override void OnDestroy()
         {
             BattleObjectManager?.ClearBattleObject();
+            EffectManager?.ClearEffect();
             ObjectPoolManager?.ClearAllPools();
             SoundManager?.ClearAllSounds();
             AddressableManager?.ReleaseAll();
             DataManager?.ReleaseGameData();
 
             base.OnDestroy();
-        }
-
-        private async UniTaskVoid TESTBootAsync()
-        {
-            await DataManager.SettingData.LoadAllSettingDataAsync();
-
-            // TODO: 던전 입장 타이밍에 InitGameData(), 종료/복귀 시 ReleaseGameData()로 이동. 지금은 부팅 직후 임시 생성.
-            DataManager.InitGameData();
-
-            IsBootCompleted = true;
-            Debug.Log("[Main] Boot completed");
         }
     }
 }
