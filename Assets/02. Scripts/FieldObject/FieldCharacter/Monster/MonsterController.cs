@@ -2,7 +2,6 @@ using Core;
 using Cysharp.Threading.Tasks;
 using MS.Core.StateMachine;
 using MS.Utils;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -13,22 +12,18 @@ namespace MS.Field
     public class MonsterController : MonoBehaviour
     {
         private Rigidbody2D rb;
-        private BoxCollider2D col;
         private SpineController spineController;
         private MonsterCharacter character;
         private MSStateMachine<MonsterController> stateMachine;
 
         public Rigidbody2D Rb => rb;
 
-        private bool isGrounded;
         private float curVelocityX;
-        private bool isDetected;
 
 
         private void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
-            col = GetComponent<BoxCollider2D>();
             spineController = GetComponent<SpineController>();
         }
 
@@ -36,7 +31,7 @@ namespace MS.Field
         {
             character = _character;
             rb.gravityScale = Settings.GravityScale;
-            isDetected = false;
+            rb.linearVelocity = Vector2.zero;
             curVelocityX = 0f;
 
             stateMachine = new MSStateMachine<MonsterController>(this);
@@ -54,7 +49,6 @@ namespace MS.Field
 
         public void OnFixedUpdate()
         {
-            UpdateGroundCheck();
             UpdateFallGravity();
             rb.linearVelocity = new Vector2(curVelocityX, rb.linearVelocityY);
         }
@@ -62,14 +56,6 @@ namespace MS.Field
         public void TransitToDead()
         {
             stateMachine.TransitState((int)EMonsterState.Dead);
-        }
-
-        private void UpdateGroundCheck()
-        {
-            Vector2 origin = (Vector2)transform.position + col.offset + Vector2.down * (col.size.y * 0.5f);
-            RaycastHit2D hit = Physics2D.BoxCast(origin, Settings.GroundCheckSize, 0f, Vector2.down,
-                Settings.GroundCheckDistance, Settings.GroundLayer);
-            isGrounded = hit.collider != null;
         }
 
         private void UpdateFallGravity()
@@ -137,7 +123,6 @@ namespace MS.Field
         {
             if (CheckDetection())
             {
-                isDetected = true;
                 stateMachine.TransitState((int)EMonsterState.Trace);
                 return;
             }

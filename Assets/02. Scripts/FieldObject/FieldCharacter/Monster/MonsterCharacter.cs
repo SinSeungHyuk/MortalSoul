@@ -49,13 +49,14 @@ namespace MS.Field
 
         protected override void Update()
         {
-            if (ObjectLifeState != FieldObjectLifeState.Live) return;
+            if (ObjectLifeState == FieldObjectLifeState.Death) return;
             base.Update();
             controller?.OnUpdate(Time.deltaTime);
         }
 
         private void FixedUpdate()
         {
+            if (ObjectLifeState == FieldObjectLifeState.Death) return;
             if (controller != null) controller.OnFixedUpdate();
         }
 
