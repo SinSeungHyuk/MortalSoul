@@ -66,7 +66,7 @@ namespace MS.Field
             if (soulSettingData.SkinKeys != null && soulSettingData.SkinKeys.Count > 0)
                 SpineController.SetCombinedSkin(soulSettingData.SkinKeys);
 
-            pmc.InitController(BSC.WSC);
+            pmc.InitController(this, BSC.WSC);
         }
 
         public void GainSubSoul(string _soulKey)

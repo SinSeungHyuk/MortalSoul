@@ -56,6 +56,19 @@ namespace MS.Battle
 
         public void ActivateAttack() => curAttack?.ActivateAttack();
 
+        public void ClearWSC()
+        {
+            if (curAttack != null)
+            {
+                curAttack.OnAttackStarted -= OnAttackStartedCallback;
+                curAttack.OnAttackEnded -= OnAttackEndedCallback;
+                curAttack = null;
+            }
+
+            OnAttackStarted = null;
+            OnAttackEnded = null;
+        }
+
         private void OnAttackStartedCallback() => OnAttackStarted?.Invoke();
         private void OnAttackEndedCallback() => OnAttackEnded?.Invoke();
     }

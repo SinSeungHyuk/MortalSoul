@@ -17,5 +17,10 @@ namespace MS.Field
         {
             BSC?.OnUpdate(Time.deltaTime);
         }
+
+        virtual protected void OnDestroy()
+        {
+            BSC?.ClearBSC();
+        }
     }
 }

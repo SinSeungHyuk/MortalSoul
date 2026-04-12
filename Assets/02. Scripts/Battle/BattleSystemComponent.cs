@@ -20,6 +20,7 @@ namespace MS.Battle
         public AttributeSet AttributeSet { get; private set; }
 
         private Dictionary<string, StatusEffect> statusEffectDict;
+        private List<string> removeStatusEffectList = new List<string>();
 
 
         public void InitBSC(FieldCharacter _owner, AttributeSet _attributeSet, EWeaponType? _weaponType = null)
@@ -35,6 +36,23 @@ namespace MS.Battle
                 WSC = new WeaponSystemComponent();
                 WSC.InitWSC(_owner, _attributeSet, _weaponType.Value);
             }
+        }
+
+        public void ClearBSC()
+        {
+            SSC?.ClearSSC();
+            WSC?.ClearWSC();
+
+            if (statusEffectDict != null)
+            {
+                foreach (var effect in statusEffectDict.Values)
+                    effect.End();
+                statusEffectDict.Clear();
+            }
+
+            OnHit = null;
+            OnDodged = null;
+            OnDead = null;
         }
 
         public float TakeDamage(DamageInfo _info)
@@ -115,7 +133,7 @@ namespace MS.Battle
 
         private void UpdateStatusEffects(float _deltaTime)
         {
-            var removeEffectKeyList = new List<string>();
+            removeStatusEffectList.Clear();
 
             foreach (var pair in statusEffectDict)
             {
@@ -124,11 +142,11 @@ namespace MS.Battle
                 if (pair.Value.IsFinished)
                 {
                     pair.Value.End();
-                    removeEffectKeyList.Add(pair.Key);
+                    removeStatusEffectList.Add(pair.Key);
                 }
             }
 
-            foreach (var key in removeEffectKeyList)
+            foreach (var key in removeStatusEffectList)
                 statusEffectDict.Remove(key);
         }
     }

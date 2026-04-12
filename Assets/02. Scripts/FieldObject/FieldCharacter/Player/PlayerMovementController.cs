@@ -17,6 +17,8 @@ namespace MS.Field
         private MSStateMachine<PlayerMovementController> stateMachine;
         private WeaponSystemComponent wsc;
 
+        public PlayerCharacter Player => player;
+
         private Vector2 moveInput;
         private bool isGrounded;
         private bool wasGrounded;
@@ -38,11 +40,11 @@ namespace MS.Field
             rb = GetComponent<Rigidbody2D>();
             col = GetComponent<BoxCollider2D>();
             spineController = GetComponent<SpineController>();
-            player = GetComponent<PlayerCharacter>();
         }
 
-        public void InitController(WeaponSystemComponent _wsc)
+        public void InitController(PlayerCharacter _player, WeaponSystemComponent _wsc)
         {
+            player = _player;
             rb.gravityScale = Settings.GravityScale;
 
             stateMachine = new MSStateMachine<PlayerMovementController>(this);
