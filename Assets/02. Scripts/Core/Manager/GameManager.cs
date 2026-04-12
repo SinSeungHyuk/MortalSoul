@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MS.Core.StateMachine;
 using MS.Data;
+using MS.Field;
 using UnityEngine;
 
 namespace Core
@@ -33,16 +34,6 @@ namespace Core
             stateMachine.OnUpdate(_deltaTime);
         }
 
-        public void TransitState(EGameState _state)
-        {
-            stateMachine.TransitState((int)_state);
-        }
-
-        public EGameState GetCurState()
-        {
-            return (EGameState)stateMachine.GetCurrentStateId();
-        }
-
         private void OnTitleEnter(int _prevStateId, object[] _params)
         {
             Debug.Log("[GameManager] Title 진입");
@@ -54,12 +45,18 @@ namespace Core
             await Main.Instance.DataManager.SettingData.LoadAllSettingDataAsync();
 
             Debug.Log("[GameManager] SettingData 로드 완료 → Village 전환");
-            TransitState(EGameState.Village);
+            stateMachine.TransitState((int)EGameState.Village);
         }
 
         private void OnVillageEnter(int _prevStateId, object[] _params)
         {
             Debug.Log("[GameManager] Village 진입");
+
+            if (Main.Instance.Player == null)
+                Main.Instance.Player = Object.FindAnyObjectByType<PlayerCharacter>();
+
+            Main.Instance.Player.InitPlayer("test");
+            Main.Instance.Player.GainSubSoul("test2");
         }
 
         private void OnVillageUpdate(float _deltaTime)

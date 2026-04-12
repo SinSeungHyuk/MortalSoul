@@ -5,6 +5,7 @@ namespace Core
 {
     public class Main : MonoSingleton<Main>
     {
+        #region Managers
         public DataManager DataManager { get; private set; }
         public AddressableManager AddressableManager { get; private set; }
         public UIManager UIManager { get; private set; }
@@ -14,6 +15,8 @@ namespace Core
         public MonsterManager MonsterManager { get; private set; }
         public BattleObjectManager BattleObjectManager { get; private set; }
         public GameManager GameManager { get; private set; }
+        #endregion
+
         public PlayerCharacter Player { get; set; }
 
         protected override void Awake()
@@ -47,19 +50,6 @@ namespace Core
         private void Update()
         {
             GameManager.OnUpdate(Time.deltaTime);
-        }
-
-        protected override void OnDestroy()
-        {
-            MonsterManager?.ClearAll();
-            BattleObjectManager?.ClearBattleObject();
-            EffectManager?.ClearEffect();
-            ObjectPoolManager?.ClearAllPools();
-            SoundManager?.ClearAllSounds();
-            AddressableManager?.ReleaseAll();
-            DataManager?.ReleaseGameData();
-
-            base.OnDestroy();
         }
     }
 }

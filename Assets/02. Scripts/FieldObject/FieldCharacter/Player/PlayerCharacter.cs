@@ -15,11 +15,6 @@ namespace MS.Field
         public PlayerSoulController PSC => psc;
 
 
-        private void Start()
-        {
-            InitTestAsync().Forget();
-        }
-
         protected override void Update()
         {
             base.Update();
@@ -29,13 +24,6 @@ namespace MS.Field
         private void FixedUpdate()
         {
             if (pmc != null) pmc.OnFixedUpdate();
-        }
-
-        private async UniTaskVoid InitTestAsync()
-        {
-            await UniTask.WaitUntil(() => Main.Instance.IsBootCompleted);
-            InitPlayer("test");
-            GainSubSoul("test2");
         }
 
         public void InitPlayer(string _mainSoulKey)
@@ -52,7 +40,7 @@ namespace MS.Field
             }
 
             var attributeSet = new AttributeSet();
-            attributeSet.Init(soulSettingData.AttributeSetSettingData);
+            attributeSet.InitAttributeSet(soulSettingData.AttributeSetSettingData);
 
             BSC = new BattleSystemComponent();
             BSC.InitBSC(this, attributeSet, soulSettingData.WeaponType);
@@ -67,7 +55,6 @@ namespace MS.Field
                 SpineController.SetSkin(soulSettingData.SkinKeys);
 
             pmc.InitController(this, BSC.WSC);
-            Main.Instance.Player = this;
         }
 
         public void GainSubSoul(string _soulKey)

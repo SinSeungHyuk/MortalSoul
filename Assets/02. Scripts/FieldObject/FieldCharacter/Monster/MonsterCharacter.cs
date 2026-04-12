@@ -30,7 +30,7 @@ namespace MS.Field
             }
 
             var attributeSet = new AttributeSet();
-            attributeSet.Init(monsterData.AttributeSetSettingData);
+            attributeSet.InitAttributeSet(monsterData.AttributeSetSettingData);
 
             BSC = new BattleSystemComponent();
             BSC.InitBSC(this, attributeSet);
@@ -69,20 +69,15 @@ namespace MS.Field
         private void OnDeadCallback()
         {
             ObjectLifeState = FieldObjectLifeState.Dying;
-            controller.TransitToDead();
+            controller.SetMonsterState(EMonsterState.Dead);
         }
 
-        public void OnDespawn()
+        public void OnDead()
         {
             BSC.OnDead -= OnDeadCallback;
             BSC.ClearBSC();
             ObjectLifeState = FieldObjectLifeState.Death;
-        }
-
-        protected override void OnDestroy()
-        {
-            if (BSC != null) BSC.OnDead -= OnDeadCallback;
-            base.OnDestroy();
+            Main.Instance.MonsterManager.ReleaseMonster(this);
         }
     }
 }

@@ -1,8 +1,8 @@
 using Core;
 using Cysharp.Threading.Tasks;
+using MS.Battle;
 using MS.Core.StateMachine;
 using MS.Utils;
-using System.Linq;
 using UnityEngine;
 
 namespace MS.Field
@@ -13,12 +13,17 @@ namespace MS.Field
     {
         private Rigidbody2D rb;
         private SpineController spineController;
-        private MonsterCharacter character;
+        private MonsterCharacter monster;
         private MSStateMachine<MonsterController> stateMachine;
 
         public Rigidbody2D Rb => rb;
 
         private float curVelocityX;
+        private float elapsedPatrolTime;
+        private float patrolMoveTime;
+        private float elapsedPatrolWaitTime;
+        private bool curPatrolMoving;
+        private int patrolDir;
 
 
         private void Awake()
@@ -29,7 +34,7 @@ namespace MS.Field
 
         public void InitController(MonsterCharacter _character)
         {
-            character = _character;
+            monster = _character;
             rb.gravityScale = Settings.GravityScale;
             rb.linearVelocity = Vector2.zero;
             curVelocityX = 0f;
@@ -53,9 +58,9 @@ namespace MS.Field
             rb.linearVelocity = new Vector2(curVelocityX, rb.linearVelocityY);
         }
 
-        public void TransitToDead()
+        public void SetMonsterState(EMonsterState _state)
         {
-            stateMachine.TransitState((int)EMonsterState.Dead);
+            stateMachine.TransitState((int)_state);
         }
 
         private void UpdateFallGravity()
@@ -74,18 +79,18 @@ namespace MS.Field
                 spineController.SetScaleX(false);
         }
 
-        private bool IsSameLayer()
+        private bool IsSameLayerPlayer()
         {
             var player = Main.Instance.Player;
             if (player == null) return false;
             return Mathf.Abs(player.Position.y - transform.position.y) <= Settings.MonsterLayerThresholdY;
         }
 
-        private bool CheckDetection()
+        private bool IsPlayerDetect()
         {
             var player = Main.Instance.Player;
             if (player == null) return false;
-            if (!IsSameLayer()) return false;
+            if (!IsSameLayerPlayer()) return false;
             return Mathf.Abs(player.Position.x - transform.position.x) < Settings.MonsterDetectionRange;
         }
 
@@ -93,65 +98,65 @@ namespace MS.Field
         {
             var player = Main.Instance.Player;
             if (player == null) return false;
-            float attackRange = character.BSC.AttributeSet.AttackRange.Value;
-            return Mathf.Abs(player.Position.x - transform.position.x) < attackRange;
+            return Mathf.Abs(player.Position.x - transform.position.x) < monster.BSC.AttributeSet.GetStatValueByType(EStatType.AttackRange);
         }
 
         private float GetMoveSpeed()
         {
-            return character.BSC.AttributeSet.MoveSpeed.Value / 100f * Settings.MoveSpeed;
+            return monster.BSC.AttributeSet.GetStatValueByType(EStatType.MoveSpeed) / 100f * Settings.MoveSpeed;
         }
 
-        #region Idle — 비전투 패트롤
 
-        private float patrolMoveTimer;
-        private float patrolMoveTime;
-        private float patrolWaitTimer;
-        private bool patrolMoving;
-        private int patrolDir;
+        private void ResetPatrol()
+        {
+            curPatrolMoving = false;
+            elapsedPatrolTime = 0f;
+            elapsedPatrolWaitTime = 0f;
+            patrolDir = Random.Range(0, 2) == 0 ? -1 : 1;
+        }
+
+        #region Idle 패트롤
 
         private void OnIdleEnter(int _prev, object[] _params)
         {
             curVelocityX = 0f;
-            spineController.PlayAnimation(Settings.AnimIdle, true);
-            patrolMoving = false;
-            patrolWaitTimer = 0f;
-            patrolDir = Random.Range(0, 2) == 0 ? -1 : 1;
+            spineController.PlayAnimation("idle", true);
+            ResetPatrol();
         }
 
         private void OnIdleUpdate(float _dt)
         {
-            if (CheckDetection())
+            if (IsPlayerDetect())
             {
                 stateMachine.TransitState((int)EMonsterState.Trace);
                 return;
             }
 
-            if (patrolMoving)
+            if (curPatrolMoving)
             {
-                patrolMoveTimer += _dt;
-                if (patrolMoveTimer >= patrolMoveTime)
+                elapsedPatrolTime += _dt;
+                if (elapsedPatrolTime >= patrolMoveTime)
                 {
                     curVelocityX = 0f;
-                    patrolMoving = false;
-                    patrolWaitTimer = 0f;
-                    spineController.PlayAnimation(Settings.AnimIdle, true);
+                    curPatrolMoving = false;
+                    elapsedPatrolWaitTime = 0f;
+                    spineController.PlayAnimation("idle", true);
                 }
                 else
                 {
-                    curVelocityX = patrolDir * GetMoveSpeed() * Settings.MonsterPatrolSpeedRatio;
+                    curVelocityX = patrolDir * GetMoveSpeed();
                     UpdateScaleX(patrolDir);
                 }
             }
             else
             {
-                patrolWaitTimer += _dt;
-                if (patrolWaitTimer >= Settings.MonsterPatrolWaitTime)
+                elapsedPatrolWaitTime += _dt;
+                if (elapsedPatrolWaitTime >= Settings.MonsterPatrolWaitTime)
                 {
                     patrolDir *= -1;
-                    patrolMoveTime = Random.Range(1f, 3f);
-                    patrolMoveTimer = 0f;
-                    patrolMoving = true;
+                    patrolMoveTime = Random.Range(0.5f, 2f);
+                    elapsedPatrolTime = 0f;
+                    curPatrolMoving = true;
                     spineController.PlayAnimation(Settings.AnimRun, true);
                 }
             }
@@ -159,16 +164,12 @@ namespace MS.Field
 
         #endregion
 
-        #region Trace — 영구 추적
-
-        private float fidgetTimer;
-        private int fidgetDir;
-        private bool fidgetInitialized;
+        #region Trace — 추적
 
         private void OnTraceEnter(int _prev, object[] _params)
         {
             curVelocityX = 0f;
-            fidgetInitialized = false;
+            curPatrolMoving = false;
             spineController.PlayAnimation(Settings.AnimRun, true);
         }
 
@@ -177,49 +178,46 @@ namespace MS.Field
             var player = Main.Instance.Player;
             if (player == null) return;
 
-            if (!IsSameLayer())
-            {
-                UpdateFidgetPatrol(_dt);
-                return;
-            }
+            bool inAttackRange = IsInAttackRange();
 
-            fidgetInitialized = false;
-
-            if (IsInAttackRange())
+            if (inAttackRange && IsSameLayerPlayer())
             {
                 stateMachine.TransitState((int)EMonsterState.Attack);
                 return;
             }
 
+            if (inAttackRange && !IsSameLayerPlayer())
+            {
+                if (!curPatrolMoving)
+                {
+                    patrolDir = Random.Range(0, 2) == 0 ? -1 : 1;
+                    patrolMoveTime = Random.Range(0.5f, 1.5f);
+                    elapsedPatrolTime = 0f;
+                    curPatrolMoving = true;
+                }
+
+                curVelocityX = patrolDir * GetMoveSpeed();
+                UpdateScaleX(patrolDir);
+
+                elapsedPatrolTime += _dt;
+                if (elapsedPatrolTime >= patrolMoveTime)
+                {
+                    patrolDir *= -1;
+                    patrolMoveTime = Random.Range(0.5f, 1.5f);
+                    elapsedPatrolTime = 0f;
+                }
+                return;
+            }
+
+            curPatrolMoving = false;
             float dirX = player.Position.x - transform.position.x;
             curVelocityX = Mathf.Sign(dirX) * GetMoveSpeed();
             UpdateScaleX(dirX);
         }
 
-        private void UpdateFidgetPatrol(float _dt)
-        {
-            if (!fidgetInitialized)
-            {
-                fidgetDir = Random.Range(0, 2) == 0 ? -1 : 1;
-                fidgetTimer = 0f;
-                fidgetInitialized = true;
-            }
-
-            float fidgetSpeed = GetMoveSpeed() * Settings.MonsterPatrolSpeedRatio;
-            curVelocityX = fidgetDir * fidgetSpeed;
-            UpdateScaleX(fidgetDir);
-
-            fidgetTimer += _dt;
-            if (fidgetTimer >= Settings.MonsterFidgetDistance / fidgetSpeed)
-            {
-                fidgetDir *= -1;
-                fidgetTimer = 0f;
-            }
-        }
-
         #endregion
 
-        #region Attack — 스킬 1회 실행
+        #region Attack — 스킬 실행
 
         private void OnAttackEnter(int _prev, object[] _params)
         {
@@ -229,7 +227,7 @@ namespace MS.Field
             if (player != null)
                 UpdateScaleX(player.Position.x - transform.position.x);
 
-            ExecuteAttackAsync().Forget();
+            MonsterAttackAsync().Forget();
         }
 
         private void OnAttackUpdate(float _dt)
@@ -237,9 +235,9 @@ namespace MS.Field
             curVelocityX = 0f;
         }
 
-        private async UniTaskVoid ExecuteAttackAsync()
+        private async UniTaskVoid MonsterAttackAsync()
         {
-            string skillKey = PickSkillByRate();
+            string skillKey = GetUseSkillKey();
 
             if (skillKey == null)
             {
@@ -249,31 +247,36 @@ namespace MS.Field
 
             try
             {
-                await character.BSC.UseSkill(skillKey);
+                await monster.BSC.UseSkill(skillKey);
             }
             catch (System.OperationCanceledException) { }
 
-            if (character.ObjectLifeState == FieldObject.FieldObjectLifeState.Live)
+            if (monster.ObjectLifeState == FieldObject.FieldObjectLifeState.Live)
                 stateMachine.TransitState((int)EMonsterState.Trace);
         }
 
-        private string PickSkillByRate()
+        private string GetUseSkillKey()
         {
-            var skillList = character.SkillList;
+            var skillList = monster.SkillList;
             if (skillList == null || skillList.Count == 0) return null;
 
-            var available = skillList.Where(s => !character.BSC.SSC.IsCooltime(s.SkillKey)).ToList();
-            if (available.Count == 0) return null;
+            int totalRate = 0;
+            for (int i = 0; i < skillList.Count; i++)
+            {
+                if (!monster.BSC.SSC.IsCooltime(skillList[i].SkillKey))
+                    totalRate += skillList[i].SkillActivateRate;
+            }
+            if (totalRate == 0) return null;
 
-            int totalRate = available.Sum(x => x.SkillActivateRate);
             int rand = Random.Range(0, totalRate);
             int sum = 0;
-            foreach (var s in available)
+            for (int i = 0; i < skillList.Count; i++)
             {
-                sum += s.SkillActivateRate;
-                if (rand < sum) return s.SkillKey;
+                if (monster.BSC.SSC.IsCooltime(skillList[i].SkillKey)) continue;
+                sum += skillList[i].SkillActivateRate;
+                if (rand < sum) return skillList[i].SkillKey;
             }
-            return available[available.Count - 1].SkillKey;
+            return null;
         }
 
         #endregion
@@ -284,19 +287,18 @@ namespace MS.Field
         {
             curVelocityX = 0f;
             rb.linearVelocity = Vector2.zero;
-            character.BSC.SSC.CancelAllSkills();
-            ExecuteDeadAsync().Forget();
+            monster.BSC.SSC.CancelAllSkills();
+            DeadAsync().Forget();
         }
 
-        private async UniTaskVoid ExecuteDeadAsync()
+        private async UniTaskVoid DeadAsync()
         {
-            spineController.PlayAnimation("Dead", false);
+            spineController.PlayAnimation("dead", false);
 
             try { await spineController.WaitForAnimCompleteAsync(); }
             catch (System.OperationCanceledException) { }
 
-            character.OnDespawn();
-            Main.Instance.MonsterManager.DespawnMonster(character);
+            monster.OnDead();
         }
 
         #endregion

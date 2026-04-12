@@ -6,9 +6,9 @@ namespace Core
 {
     public class MonsterManager
     {
-        private List<MonsterCharacter> activeMonsters = new List<MonsterCharacter>();
+        private List<MonsterCharacter> activeMonsterList = new List<MonsterCharacter>();
 
-        public IReadOnlyList<MonsterCharacter> ActiveMonsters => activeMonsters;
+        public IReadOnlyList<MonsterCharacter> ActiveMonsterList => activeMonsterList;
 
 
         public MonsterCharacter SpawnMonster(string _monsterKey, Vector3 _position)
@@ -18,28 +18,23 @@ namespace Core
 
             var monster = go.GetComponent<MonsterCharacter>();
             monster.InitMonster(_monsterKey);
-            activeMonsters.Add(monster);
+            activeMonsterList.Add(monster);
             return monster;
         }
 
-        public void DespawnMonster(MonsterCharacter _monster)
+        public void ReleaseMonster(MonsterCharacter _monster)
         {
-            activeMonsters.Remove(_monster);
+            activeMonsterList.Remove(_monster);
             Main.Instance.ObjectPoolManager.Return(_monster.MonsterKey, _monster.gameObject);
         }
 
         public void ClearAll()
         {
-            for (int i = activeMonsters.Count - 1; i >= 0; i--)
+            for (int i = activeMonsterList.Count - 1; i >= 0; i--)
             {
-                var monster = activeMonsters[i];
-                if (monster != null)
-                {
-                    monster.OnDespawn();
-                    Main.Instance.ObjectPoolManager.Return(monster.MonsterKey, monster.gameObject);
-                }
+                if (activeMonsterList[i] != null)
+                    activeMonsterList[i].OnDead();
             }
-            activeMonsters.Clear();
         }
     }
 }

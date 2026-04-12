@@ -43,7 +43,7 @@ namespace MS.Battle
 
         public float HealthRatio => MaxHealth.Value > 0 ? Health / MaxHealth.Value : 0f;
 
-        public void Init(AttributeSetSettingData _data)
+        public void InitAttributeSet(AttributeSetSettingData _data)
         {
             MaxHealth = new Stat(_data.MaxHealth);
             BaseAttackPower = new Stat(_data.BaseAttackPower);
