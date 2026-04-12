@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using MS.Data;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Video;
 
 namespace Core
 {
@@ -18,7 +19,7 @@ namespace Core
         {
             StopBGM();
 
-            GameObject instance = Main.Instance.ObjectPoolManager.Get("BGMEmitter");
+            GameObject instance = Main.Instance.ObjectPoolManager.Get("BGMEmitter", Vector3.zero);
             AudioSource audioSource = instance.GetComponent<AudioSource>();
             if (audioSource != null)
             {
@@ -36,7 +37,7 @@ namespace Core
 
             if (Main.Instance.DataManager.SettingData.SoundSettingDict.TryGetValue(_key, out SoundSettingData _soundData))
             {
-                GameObject instance = Main.Instance.ObjectPoolManager.Get("SFXEmitter");
+                GameObject instance = Main.Instance.ObjectPoolManager.Get("SFXEmitter", Vector3.zero);
                 AudioSource audioSource = instance.GetComponent<AudioSource>();
                 if (audioSource != null)
                 {

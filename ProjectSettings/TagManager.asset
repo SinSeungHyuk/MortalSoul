@@ -41,6 +41,18 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Tilemap BG
+    uniqueID: 2980539513
+    locked: 0
+  - name: Tilemap MG
+    uniqueID: 581157333
+    locked: 0
+  - name: Tilemap FG
+    uniqueID: 3802055051
+    locked: 0
+  - name: Tilemap FFG
+    uniqueID: 3864089315
+    locked: 0
   - name: FieldCharacter
     uniqueID: 203926223
     locked: 0
@@ -49,18 +61,6 @@ TagManager:
     locked: 0
   - name: SkillObject
     uniqueID: 2787465225
-    locked: 0
-  - name: Tilemap BG
-    uniqueID: -1314427783
-    locked: 0
-  - name: Tilemap MG
-    uniqueID: 581157333
-    locked: 0
-  - name: Tilemap FG
-    uniqueID: -492912245
-    locked: 0
-  - name: Tilemap FFG
-    uniqueID: -430877981
     locked: 0
   m_RenderingLayers:
   - Default
