@@ -1,4 +1,5 @@
 using UnityEngine;
+using MS.Field;
 
 namespace Core
 {
@@ -13,6 +14,7 @@ namespace Core
         public MonsterManager MonsterManager { get; private set; }
         public BattleObjectManager BattleObjectManager { get; private set; }
         public GameManager GameManager { get; private set; }
+        public PlayerCharacter Player { get; set; }
 
         protected override void Awake()
         {

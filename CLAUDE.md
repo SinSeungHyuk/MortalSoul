@@ -143,10 +143,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Work Flow
 ** 반드시 이 규칙을 따라 작업을 수행합니다. **
 0. 주석은 최소한으로 사용한다.
-1. MortalSoulDoc\01. WorkReq 폴더의 작업요청 md 문서를 참조할 경우 이 문서의 내용을 바탕으로 작업을 수행한다.
-2. 작업을 수행하기 시작하면 사용자 승인 없이 즉시 MortalSoulDoc\02. InProgress 폴더로 해당 md 파일을 옮긴다.
+1. Workspace\01. WorkReq 폴더의 작업요청 md 문서를 참조할 경우 이 문서의 내용을 바탕으로 작업을 수행한다.
+2. 작업을 수행하기 시작하면 사용자 승인 없이 즉시 Workspace\02. InProgress 폴더로 해당 md 파일을 옮긴다.
 3. 모든 작업이 완료되면 작업 내용을 요약하여 사용자에게 승인을 요청한다.
-4. 승인을 받으면 MortalSoulDoc\03. Archive 폴더로 해당 md 파일을 옮기고 작업내용/특이사항/태그를 작성한다. 태그는 적절하게 작성한다.
+4. 승인을 받으면 Workspace\03. Archive 폴더로 해당 md 파일을 옮기고 작업내용/특이사항/태그를 작성한다. 태그는 적절하게 작성한다.
 5. 이후 깃허브에 커밋-푸시까지 진행하여 최종적으로 작업을 마무리한다.
 
 ## 코드 규칙

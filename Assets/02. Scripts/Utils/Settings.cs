@@ -43,6 +43,14 @@ namespace MS.Utils
         public static float LifeStealValue = 1f;
         #endregion
 
+        #region MONSTER SETTING
+        public static float MonsterDetectionRange = 8f;
+        public static float MonsterLayerThresholdY = 2f;
+        public static float MonsterPatrolWaitTime = 1f;
+        public static float MonsterPatrolSpeedRatio = 0.5f;
+        public static float MonsterFidgetDistance = 1.5f;
+        #endregion
+
         #region LAYERMASK SETTING
         public static LayerMask MonsterLayer = LayerMask.GetMask("Monster");
         public static LayerMask PlayerLayer = LayerMask.GetMask("Player");

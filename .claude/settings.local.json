@@ -36,7 +36,8 @@
       "Bash(find \"c:/Users/syjsh/UnityProjects/MortalSoul/Assets/05. ExternalAssets/Shinabro\" -type d -empty -delete)",
       "Bash(find \"c:/Users/syjsh/UnityProjects/MortalSoul/Assets/05. ExternalAssets/Shinabro\" -name \"*.meta\" -delete)",
       "mcp__UnityMCP__manage_prefabs",
-      "mcp__UnityMCP__manage_material"
+      "mcp__UnityMCP__manage_material",
+      "Bash(python3 -c \"import uuid; print\\(uuid.uuid4\\(\\).hex\\)\")"
     ]
   },
   "disabledMcpjsonServers": [

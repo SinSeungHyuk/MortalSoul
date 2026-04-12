@@ -67,6 +67,7 @@ namespace MS.Field
                 SpineController.SetSkin(soulSettingData.SkinKeys);
 
             pmc.InitController(this, BSC.WSC);
+            Main.Instance.Player = this;
         }
 
         public void GainSubSoul(string _soulKey)
