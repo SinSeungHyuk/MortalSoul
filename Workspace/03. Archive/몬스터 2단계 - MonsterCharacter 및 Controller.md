@@ -114,4 +114,14 @@ rand = Random.Range(0, totalRate)
 - 드롭 아이템 시스템
 
 ---
-태그 : #Monster #MonsterCharacter #MonsterController #FSM #AI #Rigidbody2D #스킬 #패트롤
+
+### 작업 내용
+- MonsterCharacter 구현 (FieldCharacter 상속, BSC/SSC 초기화, 사망 콜백)
+- MonsterController FSM 구현 (Idle 패트롤 / Trace 추적 / Attack Rate기반 스킬 / Dead 사망)
+- Rate 기반 랜덤 스킬 선택 로직 구현
+
+### 특이사항
+- 추후 보스/원거리 몬스터 추가 시 MonsterController를 abstract base + virtual override 방식으로 리팩토링 예정 (Monster 설계.md 참조)
+
+---
+태그 : #Monster #MonsterCharacter #MonsterController #FSM #AI #Rigidbody2D #스킬 #패트롤 #완료

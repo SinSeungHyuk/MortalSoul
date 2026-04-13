@@ -75,4 +75,14 @@ MonsterManager
 - 몬스터 풀 정리(unload) 최적화 (메모리 프로파일링 후)
 
 ---
-태그 : #Monster #MonsterManager #ObjectPool #스폰 #통합테스트
+
+### 작업 내용
+- MonsterManager 구현 (SpawnMonster / ReleaseMonster / ClearAll + activeMonsters 리스트)
+- ObjectPool 연동 완료
+- 테스트용 몬스터로 스폰→FSM→사망→풀반환 파이프라인 검증 완료
+
+### 특이사항
+- 없음
+
+---
+태그 : #Monster #MonsterManager #ObjectPool #스폰 #통합테스트 #완료

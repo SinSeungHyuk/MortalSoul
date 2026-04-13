@@ -39,3 +39,15 @@
 - BattleObject 프리팹 생성 (리소스 작업)
 - WSC/SSC에서 BattleObject 스폰 연동 (별도 작업)
 - TakeDamage 구현 (별도 작업)
+
+---
+
+### 작업 내용
+- BattleObject / ProjectileObject / AreaObject / BattleObjectManager 4개 클래스 이주 완료
+- 3D→2D 변환, 싱글톤→Main 패턴 전환, 네이밍 변경 적용
+
+### 특이사항
+- 후속 개선사항(O(n²) 제거, 타겟 중복, 오너 사망 정리 등)은 별도 작업으로 InProgress에 존재
+
+---
+태그 : #BattleObject #ProjectileObject #AreaObject #이주 #완료
