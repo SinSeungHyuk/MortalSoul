@@ -157,7 +157,7 @@ namespace MS.Field
                     patrolMoveTime = Random.Range(0.5f, 2f);
                     elapsedPatrolTime = 0f;
                     curPatrolMoving = true;
-                    spineController.PlayAnimation(Settings.AnimRun, true);
+                    spineController.PlayAnimation("run", true);
                 }
             }
         }
@@ -170,7 +170,7 @@ namespace MS.Field
         {
             curVelocityX = 0f;
             curPatrolMoving = false;
-            spineController.PlayAnimation(Settings.AnimRun, true);
+            spineController.PlayAnimation("run", true);
         }
 
         private void OnTraceUpdate(float _dt)

@@ -14,7 +14,10 @@ GameObject:
   - component: {fileID: 7875587799187608310}
   - component: {fileID: 2112268915361669486}
   - component: {fileID: 3849654813404211396}
-  m_Layer: 6
+  - component: {fileID: 1187097765176762067}
+  - component: {fileID: 9168948126190984917}
+  - component: {fileID: 6261149121350814082}
+  m_Layer: 7
   m_Name: MonsterDog
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -88,9 +91,9 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 203926223
+  m_SortingLayer: 5
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &7875587799187608310
@@ -209,3 +212,39 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1.89}
   m_EdgeRadius: 0
+--- !u!114 &1187097765176762067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4597921852059231406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccf15c44c2079124e845ea1e9bb4ffe6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MS.Field.SpineController
+--- !u!114 &9168948126190984917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4597921852059231406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49fb5d543a95e6e4490771dca50f3bd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MS.Field.MonsterCharacter
+--- !u!114 &6261149121350814082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4597921852059231406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efcecf85a83d9ff4db01dd460a19a06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MS.Field.MonsterController

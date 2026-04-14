@@ -177,6 +177,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 8. 함수(메서드/생성자) 매개변수명은 반드시 언더스코어(`_`) 접두사를 붙입니다. 예: `void SetFacing(bool _right)`. 람다 파라미터는 예외.
 9. 주석은 최소한으로 작성하며 '/// <summary>' 패턴은 절대 사용하지 않는다.
 10. Current* 변수명은 Cur*로 줄여서 작성
+11. 클래스 내 멤버변수로 const 상수 선언은 최대한 자제하며 반드시 사용해야 할 경우 settings를 사용한다.
 
 ## 코드 아키텍처
 
@@ -386,5 +387,5 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 
 ## 레퍼런스 스크립트 (이전 프로젝트)
 
-> **위치**: `MortalSoulDoc/04. Assets/02. Scripts/`
+> **위치**: `Workspace/04. Note/02. Scripts/`
 > **용도**: 이전 프로젝트에서 사용했던 스크립트 모음. 초반 설계/구현 시 참고 자료로 활용. 더 이상 필요 없어지면 이 섹션과 해당 폴더를 삭제할 것.

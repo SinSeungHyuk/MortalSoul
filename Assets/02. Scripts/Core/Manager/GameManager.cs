@@ -3,6 +3,7 @@ using MS.Core.StateMachine;
 using MS.Data;
 using MS.Field;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace Core
 {
@@ -43,6 +44,7 @@ namespace Core
         private async UniTaskVoid BootAsync()
         {
             await Main.Instance.DataManager.SettingData.LoadAllSettingDataAsync();
+            await Main.Instance.MonsterManager.LoadAllMonsterAsync();
 
             Debug.Log("[GameManager] SettingData 로드 완료 → Village 전환");
             stateMachine.TransitState((int)EGameState.Village);
@@ -57,12 +59,16 @@ namespace Core
 
             Main.Instance.Player.InitPlayer("test");
             Main.Instance.Player.GainSubSoul("test2");
+
+            // TODO :: TEST
+            Main.Instance.MonsterManager.SpawnMonster("MonsterDog", Vector3.zero);
         }
 
         private void OnVillageUpdate(float _deltaTime)
         {
             Main.Instance.EffectManager.OnUpdate(_deltaTime);
             Main.Instance.BattleObjectManager.OnUpdate(_deltaTime);
+            Main.Instance.MonsterManager.OnUpdate(_deltaTime);
         }
 
         private void OnDungeonEnter(int _prevStateId, object[] _params)

@@ -47,11 +47,13 @@ namespace MS.Field
             controller.InitController(this);
         }
 
-        protected override void Update()
+        protected override void Update() { }
+
+        public void OnUpdate(float _deltaTime)
         {
             if (ObjectLifeState == FieldObjectLifeState.Death) return;
-            base.Update();
-            controller?.OnUpdate(Time.deltaTime);
+            BSC?.OnUpdate(_deltaTime);
+            controller?.OnUpdate(_deltaTime);
         }
 
         private void FixedUpdate()
