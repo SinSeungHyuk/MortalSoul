@@ -14,6 +14,7 @@ namespace Core
         public EffectManager EffectManager { get; private set; }
         public MonsterManager MonsterManager { get; private set; }
         public BattleObjectManager BattleObjectManager { get; private set; }
+        public VisualManager VisualManager { get; private set; }
         public GameManager GameManager { get; private set; }
         #endregion
 
@@ -37,6 +38,8 @@ namespace Core
             EffectManager = new EffectManager();
             MonsterManager = new MonsterManager();
             BattleObjectManager = new BattleObjectManager();
+            VisualManager = new VisualManager();
+            VisualManager.InitVisualManager();
 
             GameManager = new GameManager();
             GameManager.InitGameManager();

@@ -19,11 +19,12 @@ namespace MS.Field
         public Rigidbody2D Rb => rb;
 
         private float curVelocityX;
-        private float elapsedPatrolTime;
-        private float patrolMoveTime;
-        private float elapsedPatrolWaitTime;
-        private bool curPatrolMoving;
+        private float patrolTimer;
+        private float patrolDuration;
         private int patrolDir;
+        private bool curPatrolMoving;
+        private bool isAttacking;
+        private bool wasTracing;
 
 
         private void Awake()
@@ -106,16 +107,46 @@ namespace MS.Field
             return monster.BSC.AttributeSet.GetStatValueByType(EStatType.MoveSpeed) / 100f * Settings.MoveSpeed;
         }
 
-
         private void ResetPatrol()
         {
             curPatrolMoving = false;
-            elapsedPatrolTime = 0f;
-            elapsedPatrolWaitTime = 0f;
+            patrolTimer = 0f;
+            patrolDuration = Settings.MonsterPatrolWaitTime;
             patrolDir = Random.Range(0, 2) == 0 ? -1 : 1;
         }
 
-        #region Idle 패트롤
+        private void UpdatePatrol(float _dt)
+        {
+            patrolTimer += _dt;
+
+            if (patrolTimer < patrolDuration)
+            {
+                if (curPatrolMoving)
+                {
+                    curVelocityX = patrolDir * GetMoveSpeed();
+                    UpdateScaleX(patrolDir);
+                }
+                return;
+            }
+
+            patrolTimer = 0f;
+            curPatrolMoving = !curPatrolMoving;
+
+            if (curPatrolMoving)
+            {
+                patrolDir *= -1;
+                patrolDuration = Random.Range(0.5f, 1.5f);
+                spineController.PlayAnimation("run", true);
+            }
+            else
+            {
+                patrolDuration = Settings.MonsterPatrolWaitTime;
+                curVelocityX = 0f;
+                spineController.PlayAnimation("idle", true);
+            }
+        }
+
+        #region Idle — 플레이어 미인지 시 패트롤
 
         private void OnIdleEnter(int _prev, object[] _params)
         {
@@ -132,45 +163,19 @@ namespace MS.Field
                 return;
             }
 
-            if (curPatrolMoving)
-            {
-                elapsedPatrolTime += _dt;
-                if (elapsedPatrolTime >= patrolMoveTime)
-                {
-                    curVelocityX = 0f;
-                    curPatrolMoving = false;
-                    elapsedPatrolWaitTime = 0f;
-                    spineController.PlayAnimation("idle", true);
-                }
-                else
-                {
-                    curVelocityX = patrolDir * GetMoveSpeed();
-                    UpdateScaleX(patrolDir);
-                }
-            }
-            else
-            {
-                elapsedPatrolWaitTime += _dt;
-                if (elapsedPatrolWaitTime >= Settings.MonsterPatrolWaitTime)
-                {
-                    patrolDir *= -1;
-                    patrolMoveTime = Random.Range(0.5f, 2f);
-                    elapsedPatrolTime = 0f;
-                    curPatrolMoving = true;
-                    spineController.PlayAnimation("run", true);
-                }
-            }
+            UpdatePatrol(_dt);
         }
 
         #endregion
 
-        #region Trace — 추적
+        #region Trace — 같은 층이면 추적, 아니면 패트롤
 
         private void OnTraceEnter(int _prev, object[] _params)
         {
             curVelocityX = 0f;
-            curPatrolMoving = false;
+            ResetPatrol();
             spineController.PlayAnimation("run", true);
+            wasTracing = true;
         }
 
         private void OnTraceUpdate(float _dt)
@@ -178,38 +183,29 @@ namespace MS.Field
             var player = Main.Instance.Player;
             if (player == null) return;
 
-            bool inAttackRange = IsInAttackRange();
+            if (!IsSameLayerPlayer())
+            {
+                if (wasTracing)
+                {
+                    wasTracing = false;
+                    ResetPatrol();
+                }
+                UpdatePatrol(_dt);
+                return;
+            }
 
-            if (inAttackRange && IsSameLayerPlayer())
+            if (!wasTracing)
+            {
+                wasTracing = true;
+                spineController.PlayAnimation("run", true);
+            }
+
+            if (IsInAttackRange())
             {
                 stateMachine.TransitState((int)EMonsterState.Attack);
                 return;
             }
 
-            if (inAttackRange && !IsSameLayerPlayer())
-            {
-                if (!curPatrolMoving)
-                {
-                    patrolDir = Random.Range(0, 2) == 0 ? -1 : 1;
-                    patrolMoveTime = Random.Range(0.5f, 1.5f);
-                    elapsedPatrolTime = 0f;
-                    curPatrolMoving = true;
-                }
-
-                curVelocityX = patrolDir * GetMoveSpeed();
-                UpdateScaleX(patrolDir);
-
-                elapsedPatrolTime += _dt;
-                if (elapsedPatrolTime >= patrolMoveTime)
-                {
-                    patrolDir *= -1;
-                    patrolMoveTime = Random.Range(0.5f, 1.5f);
-                    elapsedPatrolTime = 0f;
-                }
-                return;
-            }
-
-            curPatrolMoving = false;
             float dirX = player.Position.x - transform.position.x;
             curVelocityX = Mathf.Sign(dirX) * GetMoveSpeed();
             UpdateScaleX(dirX);
@@ -222,37 +218,46 @@ namespace MS.Field
         private void OnAttackEnter(int _prev, object[] _params)
         {
             curVelocityX = 0f;
+            isAttacking = false;
+            spineController.PlayAnimation("idle", true);
 
             var player = Main.Instance.Player;
             if (player != null)
                 UpdateScaleX(player.Position.x - transform.position.x);
-
-            MonsterAttackAsync().Forget();
         }
 
         private void OnAttackUpdate(float _dt)
         {
             curVelocityX = 0f;
-        }
 
-        private async UniTaskVoid MonsterAttackAsync()
-        {
-            string skillKey = GetUseSkillKey();
+            if (isAttacking) return;
 
-            if (skillKey == null)
+            if (!IsInAttackRange() || !IsSameLayerPlayer())
             {
                 stateMachine.TransitState((int)EMonsterState.Trace);
                 return;
             }
 
+            string skillKey = GetUseSkillKey();
+            if (skillKey != null)
+                MonsterAttackAsync(skillKey).Forget();
+        }
+
+        private async UniTaskVoid MonsterAttackAsync(string _skillKey)
+        {
+            isAttacking = true;
             try
             {
-                await monster.BSC.UseSkill(skillKey);
+                await monster.BSC.UseSkill(_skillKey);
             }
             catch (System.OperationCanceledException) { }
-
-            if (monster.ObjectLifeState == FieldObject.FieldObjectLifeState.Live)
-                stateMachine.TransitState((int)EMonsterState.Trace);
+            finally
+            {
+                isAttacking = false;
+                if (monster.ObjectLifeState == FieldObject.FieldObjectLifeState.Live
+                    && stateMachine.IsCurState((int)EMonsterState.Attack))
+                    spineController.PlayAnimation("idle", true);
+            }
         }
 
         private string GetUseSkillKey()
