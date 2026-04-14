@@ -49,11 +49,11 @@ namespace Core
             }
         }
 
-        #region Low-Level API
+        #region Base Func
 
         public async UniTask ZoomFOV(float _target, float _duration)
         {
-            CancelChannel(ref zoomCts);
+            CancelAction(ref zoomCts);
             zoomCts = new CancellationTokenSource();
             // TODO: FOV lerp
             await UniTask.CompletedTask;
@@ -61,13 +61,13 @@ namespace Core
 
         public void SetFOV(float _target)
         {
-            CancelChannel(ref zoomCts);
+            CancelAction(ref zoomCts);
             // TODO: 즉시 FOV 세팅
         }
 
         public async UniTask MoveTo(Vector3 _position, float _duration)
         {
-            CancelChannel(ref moveCts);
+            CancelAction(ref moveCts);
             moveCts = new CancellationTokenSource();
             // TODO: Follow 해제 후 위치 lerp
             await UniTask.CompletedTask;
@@ -75,7 +75,7 @@ namespace Core
 
         public async UniTask MoveTo(Transform _target, float _duration)
         {
-            CancelChannel(ref moveCts);
+            CancelAction(ref moveCts);
             moveCts = new CancellationTokenSource();
             // TODO: Follow 해제 후 타겟 추적 lerp
             await UniTask.CompletedTask;
@@ -83,13 +83,13 @@ namespace Core
 
         public void SetPosition(Vector3 _position)
         {
-            CancelChannel(ref moveCts);
+            CancelAction(ref moveCts);
             // TODO: 즉시 위치 세팅
         }
 
         public async UniTask Shake(float _intensity, float _duration)
         {
-            CancelChannel(ref shakeCts);
+            CancelAction(ref shakeCts);
             shakeCts = new CancellationTokenSource();
             // TODO: Noise amplitude 세팅 → duration 대기 → 복귀
             await UniTask.CompletedTask;
@@ -97,13 +97,13 @@ namespace Core
 
         public void StopShake()
         {
-            CancelChannel(ref shakeCts);
+            CancelAction(ref shakeCts);
             // TODO: Noise amplitude 0
         }
 
         public async UniTask Rotate(float _angle, float _duration)
         {
-            CancelChannel(ref rotateCts);
+            CancelAction(ref rotateCts);
             rotateCts = new CancellationTokenSource();
             // TODO: Z축 회전 lerp
             await UniTask.CompletedTask;
@@ -111,16 +111,16 @@ namespace Core
 
         public void ResetToDefault()
         {
-            CancelChannel(ref zoomCts);
-            CancelChannel(ref moveCts);
-            CancelChannel(ref shakeCts);
-            CancelChannel(ref rotateCts);
+            CancelAction(ref zoomCts);
+            CancelAction(ref moveCts);
+            CancelAction(ref shakeCts);
+            CancelAction(ref rotateCts);
             // TODO: 모든 카메라/PP 값 기본값으로 복귀
         }
 
         #endregion
 
-        #region High-Level API
+        #region 실제 연출용 함수
 
         public void PlayHitImpact()
         {
@@ -134,7 +134,7 @@ namespace Core
 
         #endregion
 
-        private void CancelChannel(ref CancellationTokenSource _cts)
+        private void CancelAction(ref CancellationTokenSource _cts)
         {
             if (_cts == null) return;
             _cts.Cancel();

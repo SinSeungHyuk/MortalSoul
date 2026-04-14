@@ -125,3 +125,10 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 195933
+  packageName: SharpUI GUI
+  packageVersion: 1.0
+  assetPath: Assets/SharpUI/Textures/square_background_grayscale.png
+  uploadId: 452711
