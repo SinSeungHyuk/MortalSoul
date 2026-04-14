@@ -21,7 +21,6 @@ namespace MS.Field
 
         private Vector2 moveInput;
         private bool isGrounded;
-        private bool wasGrounded;
 
         private bool jumpRequested;
         private bool dashRequested;
@@ -100,8 +99,6 @@ namespace MS.Field
 
         private void UpdateGroundCheck()
         {
-            wasGrounded = isGrounded;
-
             Vector2 origin = (Vector2)transform.position + col.offset + Vector2.down * (col.size.y * 0.5f);
             RaycastHit2D hit = Physics2D.BoxCast(origin, Settings.GroundCheckSize, 0f, Vector2.down,
                 Settings.GroundCheckDistance, Settings.GroundLayer);
@@ -208,7 +205,7 @@ namespace MS.Field
             }
 
             // 착지 판정
-            if (isGrounded && !wasGrounded && rb.linearVelocityY <= 0f)
+            if (isGrounded && rb.linearVelocityY <= 0f)
             {
                 if (Mathf.Abs(moveInput.x) > 0.1f)
                     stateMachine.TransitState((int)EPlayerState.Move);

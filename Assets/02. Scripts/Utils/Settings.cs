@@ -11,7 +11,7 @@ namespace MS.Utils
         public static float AirControlMultiplier = 0.8f;
 
         // 점프 / 중력
-        public static float JumpForce = 18f;
+        public static float JumpForce = 12f;
         public static float GravityScale = 3f;
         public static float FallMultiple = 2.5f;
         public static float MaxFallSpeed = -20f;
@@ -19,8 +19,8 @@ namespace MS.Utils
         // 대시
         public static float DashSpeed = 20f;
         public static float DashDuration = 0.2f;
-        public static float DashCooldown = 0.8f;
-        public static float DashEndFreezeDuration = 0.2f;
+        public static float DashCooldown = 1f;
+        public static float DashEndFreezeDuration = 0.15f;
 
         // 지면 판정
         public static Vector2 GroundCheckSize = new Vector2(0.4f, 0.05f);
@@ -39,7 +39,7 @@ namespace MS.Utils
         #region BATTLE SETTING
         public static int BattleScalingConstant = 100;
         public static float BasicAttackKnockback = 2f;
-        public static float WeaknessAttributeMultiple = 1.5f;
+        public static float WeaknessAttributeMultiple = 1.3f;
         public static float LifeStealValue = 1f;
         #endregion
 

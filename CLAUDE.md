@@ -32,6 +32,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **던전 입장** — 마을에서 던전 입구와 상호작용하여 입장. 랜덤 던전 생성 및 진행
 4. **마을 복귀** — 던전 클리어/실패 시 마을로 복귀
 
+**게임 상태 전환**: `GameManager`가 `MSStateMachine<GameManager>`로 Title → Village → Dungeon 상태를 관리
+
 ### 던전 시스템
 
 - **랜덤 생성 구조** (슬레이더스파이어 방식): 루트가 존재하며, 입구에서 최종보스 방까지 진행
@@ -66,37 +68,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 2슬롯이 꽉 찼을 때 새 소울 획득 시 교체/버리기 선택 (되돌리기 없음)
 - 소울은 던전 내 휘발성 — 던전 종료 시 초기화
 
-**소울 스위칭**:
+**소울 스위칭** (`PlayerSoulController`가 관리):
 - 서브→메인으로 스위칭 시, **새로 메인이 되는 소울**의 고유 '스위칭 효과' 발동
 - 사망/서브 슬롯 비어있음 외 **모든 상태에서 소울 스위칭 가능**. 스왑 시 진행 중인 공격/스킬은 캔슬되고 Idle 상태로 전환
 
 **소울별 스탯**: 각 소울은 고유한 BaseStat을 가짐. 소울 교체 시 baseValue만 새 소울 값으로 swap하고, bonusStat(레벨업/버프)은 유지.
-- **체력 보존**: 소울별로 마지막 체력(lastHealth)을 저장. 교체 시 해당 소울의 마지막 체력 상태로 복원
+- **체력 보존**: 소울별로 마지막 체력을 `PlayerSoulController.curSubSoulHealth`로 저장. 교체 시 해당 소울의 마지막 체력 상태로 복원
 - **스탯 계층**: baseValue(소울 고유, 교체됨) + bonusStat "levelup" 키(레벨업 누적, 유지) + 기타 bonusStat(버프, 유지)
 
-### 플레이어 스탯 체계 (11종)
+### 스탯 체계 (12종)
 
-모든 값은 정수형. `PlayerAttributeSet`에서 관리.
+단일 `AttributeSet` 클래스에서 12종 스탯을 모두 관리 (플레이어/몬스터 공용).
 
 | # | 스탯 | 설명 | 기본값/단위 |
 |---|------|------|-----------|
 | 1 | `MaxHealth` | 최대 체력 | - |
 | 2 | `BaseAttackPower` | 기본공격 피해량 (WSC) | - |
 | 3 | `SkillAttackPower` | 스킬 공격 피해량 (SSC) | - |
-| 4 | `Defense` | 방어력. 수치가 올라갈수록 효율 감소 커브 | - |
+| 4 | `Defense` | 방어력. `BattleScaling` 커브로 효율 감소 | - |
 | 5 | `MoveSpeed` | 이동속도 % 가중치. `Settings.MoveSpeed` * (값/100) | 기본 100 (%) |
 | 6 | `CriticChance` | 치명타 확률 (%) | 0 (%) |
 | 7 | `CriticMultiple` | 치명타 피해 배율 (%) | 기본 150 (%) |
-| 8 | `Evasion` | 회피율. Defense와 동일한 커브 | - |
+| 8 | `Evasion` | 회피율. `BattleScaling` 커브 | - |
 | 9 | `LifeSteal` | 공격 시 체력 회복 확률 (%), 발동 시 +1 HP | 0 (%) |
-| 10 | `CooltimeAccel` | 쿨타임 감소. Defense와 동일한 커브 | - |
+| 10 | `CooltimeAccel` | 쿨타임 감소. `BattleScaling` 커브 | - |
 | 11 | `AttackSpeed` | 공격속도 %. 값만큼 애니메이션 재생속도 + 공격/스킬 쿨타임 감소 | 기본 100 (%) |
+| 12 | `AttackRange` | 몬스터 전용 공격 사거리 | - |
 
-> 몬스터 전용 `AttackRange`는 `MonsterAttributeSet`에서 별도로 관리.
+> `AttributeSet`에 `WeaknessAttributeType`(EDamageAttributeType) 속성도 포함.
 
 **소울 구성 요소**: 각 소울은 다음을 포함
 - 부위별 Spine 스킨 키값 (head, body, weapon 등)
-- 무기 타입 (대검, 한손검, 단도, 활, 지팡이 중 1개 — 소울에 종속)
+- 무기 타입 (양손검, 한손검, 단도, 활, 지팡이 중 1개 — 소울에 종속)
 - **기본공격**: WSC(WeaponSystemComponent)가 무기 타입별 `BaseWeaponAttack` 서브클래스 핸들러를 리플렉션으로 생성/보유하고 입력을 위임. 코드 드리븐(무기당 1 클래스, 수치/애니키 인라인). AttackSpeed에 비례해 애니메이션 재생속도 + 공격 주기 빨라짐
 - 고유 스킬 2개 (소울에 종속, SSC로 관리)
 - 스위칭 효과 (소울 고유)
@@ -107,9 +110,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **조작 규칙**:
 - 조이스틱을 사용하여 좌,우 이동을 진행하며 이동시 해당 방향을 바라본다. 이동 애니메이션은 항상 'Run1'을 사용한다.
-- 점프 사용 시 'Wait1' 애니메이션을 재생하며 점프를 수행하는 동안에는 다른 애니메이션을 재생할 수 없으며 공중에 있는 동안 좌,우 방향 전환 및 이동과 '대시'가 가능하다.
-- 대시는 'Wait1' 애니메이션을 재생하며 빠른 속도로 현재 바라보고 있는 방향을 향해 이동한다. 대시를 수행하는 동안 다른 애니메이션 및 동작을 할 수 없다.
-- **대시 종료 후 정지(Freeze)**: 대시가 끝나면 `Settings.DashEndFreezeDuration`(기본 0.25초) 동안 속도가 0으로 고정된다. 지상에서는 그 자리 정지, 공중에서는 그 시간만큼 공중에 떠 있다가 이후 중력에 의해 낙하한다. (스컬 원본 동일)
+- 점프 사용 시 'Wait4' 애니메이션을 재생하며 점프를 수행하는 동안에는 다른 애니메이션을 재생할 수 없으며 공중에 있는 동안 좌,우 방향 전환 및 이동과 '대시'가 가능하다.
+- 대시는 'Run3' 애니메이션을 재생하며 빠른 속도로 현재 바라보고 있는 방향을 향해 이동한다. 대시를 수행하는 동안 다른 애니메이션 및 동작을 할 수 없다.
+- **대시 종료 후 정지(Freeze)**: 대시가 끝나면 `Settings.DashEndFreezeDuration`(0.2초) 동안 속도가 0으로 고정된다. 지상에서는 그 자리 정지, 공중에서는 그 시간만큼 공중에 떠 있다가 이후 중력에 의해 낙하한다. (스컬 원본 동일)
 - **공격**은 버튼클릭을 통해 사용하며 공격을 수행하는 동안 **이동(좌우 방향 전환 포함)은 불가**하다. 단, **대시 / 점프 / 스킬** 등 액션 동작으로는 공격 모션을 **즉시 캔슬**할 수 있다(스컬 원본 동일 — 공격 진입 직후부터 캔슬 가능). 공격 중 피격당해도 공격이 취소되지 않음(슈퍼아머). 방향 전환은 콤보 종료 후에만 가능.
 - 스킬 캐스팅은 이동,점프,대시,공격 등으로 즉시 취소 가능.
 - 소울 스위칭 시 현재 상태(공격/스킬/대시/점프 등)와 무관하게 즉시 교체되며, 교체 완료 후 Idle 상태로 전환된다.
@@ -135,10 +138,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Spine 애니메이션** 사용. `SpineController`(플레이어/몬스터 공용)가 중간 레이어 역할 — Spine 내부 이벤트/Complete 콜백을 await 가능한 헬퍼로 노출:
 - `WaitForAnimEventAsync(eventKey)` — 지정한 user data 이벤트가 발생할 때까지 await (`UniTaskCompletionSource` 기반)
-- `WaitForCompleteAsync()` — 비루프 애니메이션의 Complete 콜백까지 await
-- `PlayAnimation` / `PlayLoop` 호출 시 진행중인 wait TCS는 자동 캔슬됨 → 외부에서 다른 애니로 끊으면 await도 `OperationCanceledException`으로 종료
-- Spine user data 이벤트 키: `Settings.SpineEventAttack = "attack"`, `Settings.SpineEventComboReady = "combo_ready"`
+- `WaitForAnimCompleteAsync()` — 비루프 애니메이션의 Complete 콜백까지 await
+- `PlayAnimation` 호출 시 진행중인 wait TCS는 자동 캔슬됨 → 외부에서 다른 애니로 끊으면 await도 `OperationCanceledException`으로 종료
+- Spine 이벤트 키: `Settings.AnimComboRdyEvent = "combo_ready"`
 - WSC는 이 헬퍼들을 await 체이닝하여 콤보 흐름을 구현 (구독형 콜백 아님)
+
+### 이펙트 / GameplayCue 시스템
+
+**MSEffect**: `ParticleSystem` 기반 이펙트 래퍼. 오브젝트 풀에서 스폰, duration 기반 자동 회수, 대상 추적(traceTarget) 지원.
+
+**GameplayCue**: `ScriptableObject` 기반 연출 번들. 이펙트(키/오프셋/회전/지속시간/부착 여부) + 사운드(키) + 카메라 셰이크를 하나의 에셋으로 묶어 `Play(FieldObject)` 또는 `Play(Vector3)`로 일괄 발동.
+
+### 전투 오브젝트 시스템
+
+**계층 구조**: `BattleObject(abstract)` → `ProjectileObject` / `AreaObject`
+
+- **BattleObject**: 오브젝트 풀 기반. owner/targetLayer/hitCount/maxAttackCount/duration 관리. 대상 추적(traceTarget) 지원. `BattleObjectManager`가 생명주기 관리
+- **ProjectileObject**: 방향+속도 기반 이동. `OnTriggerEnter2D`로 충돌 감지. 대상 추적 시 유도탄 가능
+- **AreaObject**: 범위 지속 피해 존. `OnTriggerEnter2D/Exit2D`로 대상 추적, attackInterval 기반 주기적 데미지. delayTime으로 시작 딜레이 지원
 
 ## Work Flow
 ** 반드시 이 규칙을 따라 작업을 수행합니다. **
@@ -169,11 +186,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `01. Scenes/` — 게임 씬 파일
 - `02. Scripts/` — C# 스크립트 (게임 로직의 핵심)
+  - `Core/` — Main 싱글톤, 매니저, 상태머신, 커스텀 UI 컴포넌트
+  - `Battle/` — 전투 시스템 (BSC/SSC/WSC, 스탯, 스킬, 무기, 상태이상)
+  - `FieldObject/` — 필드 오브젝트 계층 (캐릭터, 몬스터, 전투오브젝트)
+  - `Data/` — 전역 enum, SettingData(JSON), GameData(런타임)
+  - `Utils/` — Settings 상수, 수학/전투 유틸, Transform 확장
   - `Editor/` — Unity Editor 전용 스크립트
   - `Test/` — 테스트 스크립트
-- `03. Resources/` — Prefab 및 ScriptableObject 에셋
-- `04. Settings/` — 게임 설정 관련 파일 (JSON 데이터 포함)
-- `Settings/` — URP 렌더링 파이핀 설정
+- `03. Resources/` — Prefab, ScriptableObject, Spine, Sound 에셋
+- `04. Settings/` — 게임 설정 JSON 데이터 (SettingData/)
+- `Settings/` — URP 렌더링 파이프라인 설정
 
 ### 핵심 시스템
 
@@ -201,7 +223,14 @@ UIManager는 일반 클래스. `Main.Awake()`에서 `new` 후 `InitUIManager(tra
 **Main 패턴 (단일 모노싱글톤)**:
 - `Main`이 모든 매니저를 보유하여 중앙집중 관리 (`Core.Main : MonoSingleton<Main>`)
 - 각 매니저는 일반 클래스 (싱글톤 아님)
-- 보유 매니저: `DataManager`, `AddressableManager`, `UIManager`, `SoundManager`, `ObjectPoolManager`, `PlayerManager`, `MonsterManager`
+- 보유 매니저: `DataManager`, `AddressableManager`, `UIManager`, `SoundManager`, `ObjectPoolManager`, `EffectManager`, `MonsterManager`, `BattleObjectManager`, `GameManager`
+- 플레이어 참조: `Main.Instance.Player` (PlayerCharacter 직접 참조)
+
+**GameManager (게임 상태 관리)**:
+- `MSStateMachine<GameManager>`로 `EGameState`(Title/Village/Dungeon) 상태 전환
+- Title: 비동기 로딩 → Village 전환
+- Village: 플레이어 초기화, EffectManager/BattleObjectManager 업데이트
+- Dungeon: GameData 초기화 → 진행 → 종료 시 정리/해제
 
 **BattleSystemComponent (BSC)**:
 ```
@@ -209,11 +238,12 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 ├─ SkillSystemComponent (SSC)    — 항상 존재 (플레이어/몬스터 공통)
 ├─ WeaponSystemComponent (WSC)   — 플레이어만 존재 (nullable)
 ├─ StatusEffect 관리
-└─ TakeDamage
+├─ TakeDamage (회피→크리→약점→방어→체력→흡혈 파이프라인)
+└─ 이벤트: OnHit, OnDodged, OnDead
 ```
 - 플레이어 초기화: `BSC.InitBSC(owner, attrSet, weaponType)` → WSC 생성됨
 - 몬스터 초기화: `BSC.InitBSC(owner, attrSet)` → WSC = null
-- 소울 교체 시: `WSC.ChangeWeapon(newWeaponType)` 으로 무기 타입 + 콤보 리셋
+- 소울 교체 시: `WSC.ChangeWeaponType(newWeaponType)` 으로 무기 타입 + 콤보 리셋
 
 ### 핵심 스크립트
 
@@ -221,79 +251,120 @@ BattleSystemComponent (BSC) — 전투 시스템 통합 관리
 
 | 파일 | 설명 |
 |------|------|
-| `Main.cs` | 단일 모노싱글톤(`MonoSingleton<Main>`). 전 매니저 보유 |
+| `Main.cs` | 단일 모노싱글톤(`MonoSingleton<Main>`). 전 매니저 보유 + `Player` 프로퍼티 |
 | `Singleton.cs` | `MonoSingleton<T>` 베이스 |
 | `MSReactProp.cs` | 반응형 프로퍼티. `onValueChanged(oldVal, newVal)`. UI 데이터 바인딩 |
+| `MSEffect.cs` | ParticleSystem 기반 이펙트 래퍼. 풀 회수, 대상 추적, duration 관리 |
+| `GameplayCue.cs` | ScriptableObject 연출 번들 (이펙트+사운드+카메라셰이크). `Play(FieldObject)` / `Play(Vector3)` |
 | `StateMachine/MSStateMachine.cs` | 제네릭 상태머신. 상태 등록(Enter/Update/Exit) → 전환/업데이트 루프 |
 | `StateMachine/MSState.cs` | 상태 정의 구조 |
+| `UI/MSButton.cs` | 커스텀 버튼 컴포넌트 |
+| `UI/MSImage.cs` | 커스텀 이미지 컴포넌트 |
+| `UI/MSToggleButton.cs` | 토글 버튼 컴포넌트 |
+| `UI/MSToggleGroup.cs` | 토글 그룹 컴포넌트 |
+| `Manager/GameManager.cs` | 게임 상태머신(Title/Village/Dungeon). 상태별 초기화/업데이트/정리 |
 | `Manager/DataManager.cs` | `SettingData`(JSON 정적 데이터) + `GameData`(런타임 게임 데이터) 보유. `InitGameData` / `ReleaseGameData` |
-| `Manager/AddressableManager.cs` | Addressables 리소스 로드 래퍼 |
+| `Manager/AddressableManager.cs` | Addressables 리소스 로드 래퍼. 캐시 기반 동기/비동기 로드 |
 | `Manager/UIManager.cs` | View/Popup/System Canvas 관리 (일반 클래스) |
-| `Manager/SoundManager.cs` | 사운드 재생 |
-| `Manager/ObjectPoolManager.cs` | 오브젝트 풀 |
-| `Manager/PlayerManager.cs`, `MonsterManager.cs` | 캐릭터 인스턴스 관리 |
+| `Manager/SoundManager.cs` | BGM/SFX 재생. AudioMixer 볼륨 제어, SFX 쿨다운(0.05초), 풀 기반 |
+| `Manager/ObjectPoolManager.cs` | Addressable 기반 오브젝트 풀. `CreatePoolAsync`/`Get`/`Return`/`ClearAllPools` |
+| `Manager/EffectManager.cs` | MSEffect 생명주기 관리. `PlayEffect`/`StopEffectsByKey`/`ClearEffect` |
+| `Manager/MonsterManager.cs` | 몬스터 스폰/해제. `SpawnMonster`/`ReleaseMonster`/`ClearAll`. `ActiveMonsterList` 관리 |
+| `Manager/BattleObjectManager.cs` | 전투 오브젝트 생명주기. `SpawnBattleObject<T>`/`ClearBattleObject`. 프레임별 업데이트 + 회수 |
 
 #### Data (`Data/`)
+
+**GlobalDefine.cs** — 전역 enum 정의
+
+| enum | 값 |
+|------|------|
+| `EGrade` | Normal, Rare, Unique, Legendary |
+| `EZoneType` | Battle, Shop, Event, Boss |
+| `ESkillValueType` | Default, Damage, Knockback, Move, Buff, Duration, Casting |
+| `EWeaponType` | TwoHandSword, OneHandSword, Dagger, Bow, Staff |
+| `EGameState` | Title, Village, Dungeon |
 
 **SettingData (`Data/SettingData/`)** — JSON에서 비동기 로드되는 정적 게임 데이터
 
 | 파일 | 설명 |
 |------|------|
-| `GlobalDefine.cs` | `EGrade`(Normal/Rare/Unique/Legendary), `EZoneType`(Battle/Shop/Event/Boss), `ESkillValueType`, `EWeaponType`(GreatSword/OneHandSword/Dagger/Bow/Staff) 등 전역 enum |
-| `SettingData/SettingData.cs` | JSON 비동기 로드 진입점. CharacterSettingData, MonsterSettingDict, SkillSettingDict, SoundSettingDict 보유. `LoadAllSettingDataAsync()` |
-| `SettingData/CharacterSettingData.cs` | 캐릭터(소울) 설정. Grade, AttributeSet(11개 스탯), SkinKeys, WeaponType, SkillKeys[], SwitchingEffectKey, SubPassiveKey |
-| `SettingData/SkillSettingData.cs` | 스킬 설정. OwnerType, 속성, 쿨타임, SkillValueDict |
-| `SettingData/MonsterSettingData.cs` | 몬스터 설정. 6개 스탯 + 약점속성 + 스킬리스트 |
-| `SettingData/SoundSettingData.cs` | 사운드 키 / 클립 매핑 |
+| `SettingData.cs` | JSON 비동기 로드 진입점. CharacterSettingData, MonsterSettingDict, SkillSettingDict, SoundSettingDict 보유. `LoadAllSettingDataAsync()` |
+| `CharacterSettingData.cs` | `GameCharacterSettingData`(LevelSettingData + CharacterSettingDataDict) → `CharacterSettingData`(Grade, AttributeSetSettingData, SkinKeys, WeaponType, SkillKeys, SwitchingEffectKey, SubPassiveKey) → `AttributeSetSettingData`(12종 스탯 + WeaknessAttributeType) |
+| `SkillSettingData.cs` | IconKey, CategoryKeyList, AttributeType(EDamageAttributeType), Cooltime, IsPostUseCooltime, `SkillValueDict`(ESkillValueType→float) |
+| `MonsterSettingData.cs` | AttributeSetSettingData, DropItemKey, `SkillList`(MonsterSkillSettingData: SkillKey + SkillActivateRate 가중치) |
+| `SoundSettingData.cs` | MinVolume, MaxVolume, Loop |
 
 **GameData (`Data/GameData/`)** — 던전 진입 시 생성되는 런타임 데이터 (`DataManager.InitGameData()`)
 
 | 파일 | 설명 |
 |------|------|
 | `GameData.cs` | 컨테이너. `Soul`, `Level`, `Dungeon`, `Battle` 4개 서브 데이터 보유 |
-| `SoulGameData.cs` | 메인/서브 슬롯 소울 상태, 소울별 lastHealth, levelUpGrowth 등 |
-| `LevelGameData.cs` | 경험치/레벨 (소울 공용), 누적 레벨업 보상 횟수 |
-| `DungeonGameData.cs` | 현재 던전 진행 상태 (방, 분기 선택 등) |
-| `BattleGameData.cs` | 현재 방 전투 상태 |
+| `SoulGameData.cs` | MainSoulKey, SubSoulKey, `SoulHealthDict`(소울별 체력 추적) |
+| `LevelGameData.cs` | `CurrentLevel`/`CurrentExp` (MSReactProp), `PendingLevelUpCount`, `LevelUpGrowth`(EStatType→float) |
+| `DungeonGameData.cs` | CurrentZoneIndex, CurrentZoneType(EZoneType), IsResting |
+| `BattleGameData.cs` | KillCount, GoldEarned, `SkillDpsDict`(스킬별 DPS 추적) |
 
 #### FieldObject (`FieldObject/`)
 
-**계층 구조**: `FieldObject(abstract)` → `FieldCharacter(abstract)` → `PlayerCharacter` / `MonsterCharacter`
+**계층 구조**:
+- `FieldObject(abstract)` — FieldObjectType(Player/Monster/BattleObject/FieldItem), FieldObjectLifeState(Live/Dying/Death)
+  - `FieldCharacter(abstract)` — BSC, SpineController 보유
+    - `PlayerCharacter` — PMC(PlayerMovementController), PSC(PlayerSoulController) 보유
+    - `MonsterCharacter` — MonsterController, SkillList 보유
+  - `BattleObject(abstract)` — owner, targetLayer, hitCount, duration 관리
+    - `ProjectileObject` — 방향+속도 이동, 트리거 충돌
+    - `AreaObject` — 범위 지속 피해, 주기적 데미지
 
 | 파일 | 설명 |
 |------|------|
-| `FieldObject.cs` | 필드 오브젝트 베이스 |
+| `FieldObject.cs` | 필드 오브젝트 베이스. `FieldObjectType`/`FieldObjectLifeState` enum 정의 |
 | `FieldCharacter/FieldCharacter.cs` | `BSC`, `SpineController` 보유. `Update()`에서 `BSC.OnUpdate(dt)` 호출 |
-| `FieldCharacter/SpineController.cs` | Spine 애니메이션 관리(플레이어/몬스터 공용). Idle/Move/Jump/Dash 루프 재생, 방향 전환(`SetScaleX` / `IsFacingRight` getter), 스킨 합성(SetCombinedSkin), `WaitForAnimEventAsync` / `WaitForAnimCompleteAsync` 비동기 헬퍼 제공. `PlayAnimation(animName, loop, timeScale = 1f)` — 옵셔널 `_timeScale` 파라미터로 트랙 재생속도 설정(공격속도 반영). `PlayAnimation` 호출 시 진행중인 wait TCS 자동 캔슬 |
-| `FieldCharacter/Player/PlayerCharacter.cs` | 플레이어 최상위. BSC 초기화 |
-| `FieldCharacter/Player/PlayerController.cs` | Rigidbody2D 기반 이동. 상태머신(Idle/Move/Jump/Dash). 지면 판정(BoxCast), 중력/낙하 가속, 에어컨트롤. Input System Send Messages 방식(`OnMove`, `OnAttack`) — `OnAttack`은 `BSC.WSC.ActivateAttack()` 호출 |
+| `FieldCharacter/SpineController.cs` | Spine 애니메이션 관리(플레이어/몬스터 공용). 스킨 합성(`SetSkin`), 방향 전환(`SetScaleX`/`IsScaleXRight`), `WaitForAnimEventAsync`/`WaitForAnimCompleteAsync` 비동기 헬퍼. `PlayAnimation(animName, loop, timeScale)` |
+| `FieldCharacter/Player/PlayerCharacter.cs` | PMC + PSC 보유. `InitPlayer(mainSoulKey)`, `GainSubSoul`, `SwapSoul` |
+| `FieldCharacter/Player/PlayerMovementController.cs` | Rigidbody2D 기반 이동. `EPlayerState`(Idle/Move/Jump/Dash/Attack) 상태머신. 지면 판정(BoxCast), 대시 프리즈, 낙하 가속. Input System 콜백(`OnMove`/`OnJump`/`OnSprint`/`OnAttack`/`OnPrevious`) |
+| `FieldCharacter/Player/PlayerSoulController.cs` | 소울 스위칭 관리. MainSoulKey/SubSoulKey, `CanSwap`, `GainSubSoul`, `SwapSoul`, `GetMainSoulSkill`. `OnSoulSwapped` 이벤트 |
+| `FieldCharacter/Monster/MonsterCharacter.cs` | `InitMonster(monsterKey)`, BSC/스킬 초기화, 넉백 처리(`ApplyKnockback`), `OnDead` → MonsterManager 해제 |
+| `FieldCharacter/Monster/MonsterController.cs` | 몬스터 AI. `EMonsterState`(Idle/Trace/Attack/Dead) 상태머신. 플레이어 감지(`IsPlayerDetect`), 같은 층 판정(`IsSameLayerPlayer`), 공격 범위 판정(`IsInAttackRange`), 순찰(Patrol) 로직, 가중치 기반 스킬 선택(`GetUseSkillKey`) |
+| `BattleObject/BattleObject.cs` | 전투 오브젝트 베이스. owner/targetLayer/hitCount/maxAttackCount/duration, 대상 추적 |
+| `BattleObject/ProjectileObject.cs` | 투사체. moveDir/moveSpeed, 트리거 충돌 시 hitCallback 호출 |
+| `BattleObject/AreaObject.cs` | 지속 범위 피해. attackInterval 기반 주기적 공격, delayTime 시작 딜레이 |
 
 #### Battle (`Battle/`)
 
 | 파일 | 설명 |
 |------|------|
-| `Stat.cs` | 스탯 시스템(`MS.Battle` 네임스페이스). `EStatType`(12종, 플레이어 11 + 몬스터 AttackRange) + baseValue + bonusStatDict(Flat/Percentage). `OnValueChanged` 이벤트. 계산: `base * (1 + %합/100) + flat합` |
-| `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC + AttributeSet 보유, StatusEffect dict 관리(Apply/Update/End), TakeDamage. `InitBSC(owner, attrSet, weaponType = null)` — 단일 시그니처 + 옵셔널 `EWeaponType?`. 플레이어는 3번째 인자 전달(WSC 생성), 몬스터는 생략(WSC = null). `UseSkill(key)` 래퍼 |
-| `SkillSystemComponent.cs` | 스킬 관리 전담. 리플렉션으로 스킬 생성(`GiveSkill` — `MS.Battle.{skillKey}` 타입 검색), 쿨타임 체크, UniTask 비동기 실행, CancellationToken 취소(`CancelSkill`/`CancelAllSkills`), `runningSkillDict`로 중복 실행 차단 |
-| `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). 무기 타입별 `BaseWeaponAttack` 핸들러를 리플렉션으로 생성/보유하고 입력을 위임. `ChangeWeaponType(weaponType)`으로 핸들러 교체(`MS.Battle.{WeaponType}Attack` 타입 탐색), `ActivateAttack()`으로 입력 포워딩. 핸들러의 `OnAttackStarted`/`OnAttackEnded` 이벤트를 외부로 프록시 |
-| `WeaponAttack/BaseWeaponAttack.cs` | 무기 공격 로직 베이스 추상 클래스. `owner/attrSet/spine/isAttacking` 필드 + `OnAttackStarted/OnAttackEnded` 이벤트 + `OnAttackInput` abstract + Invoke 프록시. 각 무기별 서브클래스(`OneHandSwordAttack` 등)가 자기 콤보 루프/히트 판정/공격속도 처리를 통째로 소유(공용 헬퍼 없음). 스킬(`BaseSkill`) 상속 구조와 대칭 |
-| `WeaponAttack/OneHandSwordAttack.cs` | 한손검 기본공격 구현. 2콤보(`Attack_OneHand1`/`Attack_OneHand2`), 단타, `OverlapCircleAll` 히트 판정, 크리티컬 굴림, `Settings.BasicAttackKnockback` 사용 |
-| `WeaponAttack/{GreatSword,Dagger,Bow,Staff}Attack.cs` | 나머지 4종 무기 스텁 — 리플렉션 팩토리가 인식할 수 있도록 클래스 파일만 존재. `Debug.LogWarning`만 출력. 후속 작업에서 실제 구현 |
-| `AttributeSet/BaseAttributeSet.cs` | 공통 스탯 필드(MaxHealth/BaseAttackPower/Defense/MoveSpeed) + statDict + Health 관리 + OnHealthChanged 이벤트. 실제 Init은 서브클래스가 각자의 SettingData를 받아 직접 수행 |
-| `AttributeSet/PlayerAttributeSet.cs` | 플레이어 전용 스탯(SkillAttackPower, CriticChance, CriticMultiple, Evasion, LifeSteal, CooltimeAccel, AttackSpeed) |
-| `AttributeSet/MonsterAttributeSet.cs` | 몬스터 전용 스탯(AttackRange) |
-| `DamageInfo.cs` | 데미지 정보 구조체. Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce/SourceSkill. object initializer 구문으로 생성. 기본공격 속성은 `EDamageAttributeType.None`(무속성) 고정 |
-| `Skill/BaseSkill.cs` | 스킬 추상 기반. 쿨타임, `ActivateSkill(CancellationToken)` 비동기. `IsPostUseCooltime` 옵션 |
+| `Stat.cs` | 스탯 시스템(`MS.Battle`). `EStatType`(12종), `EBonusType`(Flat/Percentage). bonusStatDict 기반. `OnValueChanged` 이벤트. 계산: `(base + flat합) * (1 + %합/100)` |
+| `DamageInfo.cs` | `EDamageAttributeType`([Flags] None/Fire/Ice/Electric/Wind/Saint/Dark) enum 정의 + `DamageInfo` 구조체(Attacker/Target/AttributeType/Damage/IsCritic/KnockbackForce/SourceSkill) |
+| `BattleSystemComponent.cs` | 전투 통합 관리. SSC + WSC + AttributeSet 보유, StatusEffect dict 관리, TakeDamage(회피→크리→약점→방어→체력→흡혈), `OnHit`/`OnDodged`/`OnDead` 이벤트 |
+| `SkillSystemComponent.cs` | 스킬 관리 전담. 리플렉션 생성(`GiveSkill` — `MS.Battle.{skillKey}` 타입), 쿨타임 체크, UniTask 비동기 실행, CancellationToken 취소(`CancelSkill`/`CancelAllSkills`), `runningSkillDict`로 중복 차단. `OnSkillAdded`/`OnSkillUsed` 이벤트 |
+| `WeaponSystemComponent.cs` | 기본공격 전담(플레이어 전용). `ChangeWeaponType(weaponType)`으로 핸들러 교체(`MS.Battle.{WeaponType}Attack` 타입 탐색), `ActivateAttack()`으로 입력 포워딩. `OnAttackStarted`/`OnAttackEnded` 이벤트 프록시 |
+| `WeaponAttack/BaseWeaponAttack.cs` | 무기 공격 로직 베이스 추상 클래스. `owner/attributeSet/spine/isAttacking` 필드 + `OnAttackStarted/OnAttackEnded` 이벤트 + `ActivateAttack` abstract + Invoke 프록시 |
+| `WeaponAttack/OneHandSwordAttack.cs` | 한손검 기본공격 구현. 2콤보(`Attack_OneHand1`/`Attack_OneHand2`), `OverlapCircleAll` 히트 판정, 크리티컬 굴림 |
+| `WeaponAttack/TwoHandSwordAttack.cs` | 양손검 기본공격 — 스텁 (미구현) |
+| `WeaponAttack/{Dagger,Bow,Staff}Attack.cs` | 나머지 3종 무기 스텁 — 리플렉션 팩토리 인식용. 후속 작업에서 실제 구현 |
+| `AttributeSet/AttributeSet.cs` | 단일 클래스. 12종 `Stat` 프로퍼티 + `WeaknessAttributeType` + Health(클램프+이벤트) + `InitAttributeSet`/`SwapBaseValues`/`GetStatByType` |
+| `Skill/BaseSkill.cs` | 스킬 추상 기반. 쿨타임(`SetCooltime`/`ResetCooltime`, CooltimeAccel 반영), `ActivateSkillAsync(CancellationToken)`, `CanActivateSkill`, `SkillCastingAsync`, `IsPostUseCooltime` |
 | `Skill/TestOneHandAttack.cs` | 테스트용 한손검 스킬 구현체 |
-| `StatusEffect/StatusEffect.cs` | 상태이상. duration/elapsed + Start/Update/End 콜백 |
+| `StatusEffect/StatusEffect.cs` | 상태이상. duration/elapsed + `OnStatusStartCallback`/`OnStatusUpdateCallback`/`OnStatusEndCallback` 이벤트 |
 
 #### Utils (`Utils/`)
 
 | 파일 | 설명 |
 |------|------|
-| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, JumpForce=12, DashSpeed=30, DashDuration=0.3, DashCooldown=0.8, DashEndFreezeDuration=0.25, GravityScale=3, FallMultiplier=2.5, AirControlMultiplier=0.8), 애니메이션 키(AnimIdle="Wait1", AnimRun="Run1", AnimJump="Wait4", AnimDash="Run3"), Spine 트랙(`SpineMainTrack=0`), Spine 이벤트 키(`SpineEventAttack="attack"`, `SpineEventComboReady="combo_ready"`), 전투(`BattleScalingConstant=100`, `BasicAttackKnockback=2f`), 레이어마스크(Monster/Player/Ground), 색상 팔레트 |
-| `MathUtils.cs` | 수학 유틸 |
+| `Settings.cs` | 전역 상수. 이동(MoveSpeed=5, AirControlMultiplier=0.8), 점프/중력(JumpForce=18, GravityScale=3, FallMultiple=2.5, MaxFallSpeed=-20), 대시(DashSpeed=20, DashDuration=0.2, DashCooldown=0.8, DashEndFreezeDuration=0.2), 지면판정(GroundCheckSize, GroundCheckDistance=0.1), 애니메이션 키(AnimIdle="Wait1", AnimRun="Run1", AnimJump="Wait4", AnimDash="Run3", SpineMainTrack=0, AnimComboRdyEvent="combo_ready"), 전투(BattleScalingConstant=100, BasicAttackKnockback=2, WeaknessAttributeMultiple=1.5, LifeStealValue=1), 몬스터(MonsterDetectionRange=8, MonsterLayerThresholdY=2, MonsterPatrolWaitTime=1), 레이어마스크(Monster/Player/Ground), 색상 팔레트 |
+| `BattleUtils.cs` | 전투 계산 유틸. `CalcDefenseStat`, `CalcEvasionStat`, `CalcWeaknessAttribute`, `CalcCriticDamage` |
+| `MathUtils.cs` | 수학 유틸. `BattleScaling`, `DecreaseByPercent`, `IsSuccess` 등 |
 | `TransformExtensions.cs` | Transform 확장 (`FindChildDeep` 등) |
+| `DebugDraw.cs` | 디버그 드로잉 유틸 |
+
+#### Editor (`Editor/`)
+
+| 파일 | 설명 |
+|------|------|
+| `SpineAnimationInspectorWindow.cs` | Spine 애니메이션 인스펙터 윈도우 |
+| `AddressableEditor.cs` | Addressable 관련 에디터 도구 |
+| `UI/MSButtonEditor.cs` | MSButton 커스텀 인스펙터 |
+| `UI/MSToggleButtonEditor.cs` | MSToggleButton 커스텀 인스펙터 |
 
 #### Test (`Test/`)
 
