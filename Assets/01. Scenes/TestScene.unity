@@ -175,7 +175,8 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 712409747407792959, guid: b59766034e0977446afd9b6e55037ec1, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1554,6 +1555,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4690d2b89f0f87249ad80a9246fe0c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.Main
+  test: {fileID: 1526612372}
 --- !u!4 &1297350156
 Transform:
   m_ObjectHideFlags: 0
@@ -1722,7 +1724,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TestInteractable
   iconKey: UI_BTN_Chef
-  logMessage: "\uB300\uD654 \uC2DC\uC791"
+  dialogueKey: test_dialogue_01
 --- !u!1 &1420667345
 GameObject:
   m_ObjectHideFlags: 0
@@ -1916,7 +1918,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1526612367}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 074ee6a6894834148a498759cea918ec, type: 3}
   m_Name: 
@@ -2061,7 +2063,7 @@ GameObject:
   - component: {fileID: 2018406506}
   - component: {fileID: 2018406505}
   m_Layer: 5
-  m_Name: InteractButton
+  m_Name: btnInteract
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

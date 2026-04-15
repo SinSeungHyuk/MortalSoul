@@ -14,6 +14,7 @@ namespace MS.Data
         public Dictionary<string, MonsterSettingData> MonsterSettingDict { get; private set; }
         public Dictionary<string, SkillSettingData> SkillSettingDict { get; private set; }
         public Dictionary<string, SoundSettingData> SoundSettingDict { get; private set; }
+        public Dictionary<string, DialogueSettingData> DialogueDict { get; private set; }
 
         public async UniTask LoadAllSettingDataAsync()
         {
@@ -30,6 +31,9 @@ namespace MS.Data
 
                 // TextAsset soundJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("SoundSettingData");
                 // SoundSettingDict = JsonConvert.DeserializeObject<Dictionary<string, SoundSettingData>>(soundJson.text);
+
+                TextAsset dialogueJson = await Main.Instance.AddressableManager.LoadResourceAsync<TextAsset>("DialogueSettingData");
+                DialogueDict = JsonConvert.DeserializeObject<Dictionary<string, DialogueSettingData>>(dialogueJson.text);
             }
             catch (Exception e)
             {

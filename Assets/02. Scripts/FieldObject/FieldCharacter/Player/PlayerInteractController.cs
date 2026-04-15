@@ -1,5 +1,6 @@
 using System;
 using Core;
+using Cysharp.Threading.Tasks;
 using MS.Interaction;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ namespace MS.Field
 
         public void TryInteract()
         {
-            CurTarget?.Interact(Main.Instance.Player);
+            CurTarget?.InteractAsync(Main.Instance.Player).Forget();
         }
     }
 }

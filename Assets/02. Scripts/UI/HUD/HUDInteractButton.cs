@@ -17,12 +17,12 @@ namespace MS.UI.HUD
             icon = transform.FindChildComponentDeep<MSImage>("Icon");
 
             btn.onClick.AddListener(OnBtnInteractClicked);
-            gameObject.SetActive(false);
         }
 
-        private void Start()
+        public void InitTest()
         {
             Main.Instance.Player.PIC.OnTargetChanged += OnTargetChangedCallback;
+            gameObject.SetActive(false);
         }
 
         private void OnDestroy()

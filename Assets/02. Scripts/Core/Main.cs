@@ -5,9 +5,12 @@ namespace Core
 {
     public class Main : MonoSingleton<Main>
     {
+        public TestUIController test;
+
         #region Managers
         public DataManager DataManager { get; private set; }
         public AddressableManager AddressableManager { get; private set; }
+        public StringTable StringTable { get; private set; }
         public UIManager UIManager { get; private set; }
         public SoundManager SoundManager { get; private set; }
         public ObjectPoolManager ObjectPoolManager { get; private set; }
@@ -26,6 +29,7 @@ namespace Core
 
             DataManager = new DataManager();
             AddressableManager = new AddressableManager();
+            StringTable = new StringTable();
             UIManager = new UIManager();
             UIManager.InitUIManager(transform);
             SoundManager = new SoundManager();

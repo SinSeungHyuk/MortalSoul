@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using MS.Field;
 
 namespace MS.Interaction
@@ -5,6 +6,6 @@ namespace MS.Interaction
     public interface IInteractable
     {
         string InteractIconKey { get; }
-        void Interact(PlayerCharacter _player);
+        UniTask InteractAsync(PlayerCharacter _player);
     }
 }

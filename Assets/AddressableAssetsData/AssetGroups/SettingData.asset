@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62452d2c76e888a42992c64dcc1372cb
+    m_Address: DialogueSettingData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7fe6108fcdacc2c43a52cdb7b8e61195
     m_Address: MonsterSettingData
     m_ReadOnly: 0

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Spine
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Spine
+  m_GUID: e807c135a65e1724eadbd2539fc87ada
+  m_SerializeEntries:
+  - m_GUID: 0fa22c0a11270b74ca632509a3819152
+    m_Address: MonsterDog_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1595a9ae00865454981069070aaf1bce
+    m_Address: MonsterGhost_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c17f97b8c2e68a40b6abd12f02c7e78
+    m_Address: MonsterRat_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a34958a62460d444380fc8c9d2c18132
+    m_Address: MonsterJelly_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b9012a4a26bf40a49800cb0ae7e377a9
+    m_Address: MonsterKeyKeeper_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca770b8bce2474840a23c082798593db
+    m_Address: Character_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f1ab0d1e92f67cf40b29032941257cf3
+    m_Address: MonsterGorilla_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6c8d43aabf35ae14c98e02119d87fbeb, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: b576c6163ec61614ca7983cfb5c96526, type: 2}
+    - {fileID: 11400000, guid: 6fcc5b3777ed1ed4c8ad9fd04e3d4a1e, type: 2}

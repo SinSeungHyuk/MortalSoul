@@ -178,6 +178,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 9. 주석은 최소한으로 작성하며 '/// <summary>' 패턴은 절대 사용하지 않는다.
 10. Current* 변수명은 Cur*로 줄여서 작성
 11. 클래스 내 멤버변수로 const 상수 선언은 최대한 자제하며 반드시 사용해야 할 경우 settings를 사용한다.
+12. List<T> 변수명은 *List, Dictionary<T> 변수명은 *Dict로 작성한다.
+13. Button은 btn*, Text는 txt*, Image는 img* 로 작성한다.
 
 ## 코드 아키텍처
 

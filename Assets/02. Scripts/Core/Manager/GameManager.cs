@@ -62,6 +62,7 @@ namespace Core
 
             // TODO :: TEST
             Main.Instance.MonsterManager.SpawnMonster("MonsterDog", Vector3.zero);
+            Main.Instance.test.InitTest();
         }
 
         private void OnVillageUpdate(float _deltaTime)

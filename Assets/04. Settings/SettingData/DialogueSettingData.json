@@ -1,0 +1,40 @@
+{
+  "test_dialogue_01": {
+    "DialogueList": [
+      {
+        "SpeakerKey": "수호자",
+        "PortraitSpineKey": "Character_SkeletonData",
+        "SkinKeyList": [
+          "BODY/base",
+          "HEAD/headA",
+          "HAIR/hairA_a"
+        ],
+        "IsLeft": true,
+        "Text": "오랜만이군, 이방인. 이 마을에 온 이유가 있나?"
+      },
+      {
+        "SpeakerKey": "플레이어",
+        "PortraitSpineKey": "Character_SkeletonData",
+        "SkinKeyList": [
+          "BODY/base",
+          "HEAD/headA",
+          "HAIR/hairA_a",
+          "RIGHTHAND/Sword_OneHand_Common1"
+        ],
+        "IsLeft": false,
+        "Text": "던전으로 가는 길을 찾고 있다."
+      },
+      {
+        "SpeakerKey": "수호자",
+        "PortraitSpineKey": "Character_SkeletonData",
+        "SkinKeyList": [
+          "BODY/base",
+          "HEAD/headA",
+          "HAIR/hairA_a"
+        ],
+        "IsLeft": true,
+        "Text": "그렇다면 북쪽 문을 지나가라. 하지만 방심하진 말게."
+      }
+    ]
+  }
+}
