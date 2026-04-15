@@ -53,6 +53,7 @@ namespace MS.Utils
         public static LayerMask MonsterLayer = LayerMask.GetMask("Monster");
         public static LayerMask PlayerLayer = LayerMask.GetMask("Player");
         public static LayerMask GroundLayer = LayerMask.GetMask("Ground");
+        public static LayerMask InteractableLayer = LayerMask.GetMask("Interactable");
         #endregion
 
         #region COLOR SETTING

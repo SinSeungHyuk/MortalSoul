@@ -10,9 +10,11 @@ namespace MS.Field
     {
         private PlayerMovementController pmc;
         private PlayerSoulController psc;
+        private PlayerInteractController pic;
 
         public PlayerMovementController PMC => pmc;
         public PlayerSoulController PSC => psc;
+        public PlayerInteractController PIC => pic;
 
 
         protected override void Update()
@@ -29,6 +31,7 @@ namespace MS.Field
         public void InitPlayer(string _mainSoulKey)
         { 
             pmc = GetComponent<PlayerMovementController>();
+            pic = GetComponentInChildren<PlayerInteractController>();
             psc = new PlayerSoulController();
             psc.InitPSC(this, _mainSoulKey);
 
